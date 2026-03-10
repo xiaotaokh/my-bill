@@ -136,7 +136,7 @@ Page({
   },
 
   // 表单提交
-  async onSubmit(e) {
+  onSubmit(e) {
     const formData = e.detail.value;
 
     // 设置类别
@@ -156,32 +156,32 @@ Page({
 
     wx.showLoading({ title: '保存中...' });
 
-    try {
-      // 确定资产状态
-      let status = 'active'; // 默认服役中
-      if (this.data.isRetired) {
-        status = 'retired';
-      } else if (this.data.isSold) {
-        status = 'sold';
+    // 确定资产状态
+    let status = 'active'; // 默认服役中
+    if (this.data.isRetired) {
+      status = 'retired';
+    } else if (this.data.isSold) {
+      status = 'sold';
+    }
+
+    // 保存到云数据库
+    const db = wx.cloud.database({
+      env: getApp().globalData.envId
+    });
+    db.collection('assets').add({
+      data: {
+        name: formData.name.trim(),
+        price: parseFloat(formData.price),
+        purchaseDate: formData.purchaseDate,
+        category: formData.category,
+        remark: formData.remark || '',
+        status: status,
+        excludeTotal: this.data.excludeTotal,
+        excludeDaily: this.data.excludeDaily,
+        createdAt: db.serverDate(),
+        updatedAt: db.serverDate()
       }
-
-      // 保存到云数据库
-      const db = wx.cloud.database();
-      await db.collection('assets').add({
-        data: {
-          name: formData.name.trim(),
-          price: parseFloat(formData.price),
-          purchaseDate: formData.purchaseDate,
-          category: formData.category,
-          remark: formData.remark || '',
-          status: status,
-          excludeTotal: this.data.excludeTotal,
-          excludeDaily: this.data.excludeDaily,
-          createdAt: db.serverDate(),
-          updatedAt: db.serverDate()
-        }
-      });
-
+    }).then(() => {
       wx.hideLoading();
       wx.showToast({
         title: '保存成功',
@@ -204,13 +204,13 @@ Page({
           }
         });
       }, 1500);
-    } catch (err) {
+    }).catch(err => {
       console.error('保存失败:', err);
       wx.hideLoading();
       wx.showToast({
         title: '保存失败，请重试',
         icon: 'none'
       });
-    }
+    });
   }
 });

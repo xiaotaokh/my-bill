@@ -3,7 +3,7 @@
 
 function addTestData() {
   const db = wx.cloud.database();
-
+  
   const testData = [
     {
       name: "MacBook Pro",

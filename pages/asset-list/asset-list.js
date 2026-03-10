@@ -30,32 +30,45 @@ Page({
   },
 
   // 加载资产数据
-  async loadAssets() {
+  loadAssets() {
     wx.showLoading({ title: '加载中...' });
 
-    try {
-      const db = wx.cloud.database();
+    const db = wx.cloud.database({
+      env: getApp().globalData.envId
+    });
 
-      const res = await db.collection('assets')
-        .orderBy('createdAt', 'desc')
-        .get();
-
-      this.setData({
-        assets: res.data,
-        filteredAssets: res.data
+    db.collection('assets')
+      .orderBy('createdAt', 'desc')
+      .get()
+      .then(res => {
+        this.setData({
+          assets: res.data,
+          filteredAssets: res.data
+        });
+        // 应用默认排序
+        this.applySort();
+      })
+      .catch(err => {
+        console.error('加载资产失败:', err);
+        wx.showModal({
+          title: '加载失败',
+          content: '错误信息: ' + (err.message || JSON.stringify(err)),
+          showCancel: false
+        });
+      })
+      .finally(() => {
+        wx.hideLoading();
       });
+  },
 
-      // 应用默认排序
-      this.applySort();
-    } catch (err) {
-      console.error('加载资产失败:', err);
-      wx.showToast({
-        title: '加载失败',
-        icon: 'none'
-      });
-    } finally {
-      wx.hideLoading();
+  // 辅助函数：安全解析日期（兼容iOS）
+  parseDate(dateInput) {
+    if (!dateInput) return new Date();
+    if (dateInput instanceof Date) return dateInput;
+    if (typeof dateInput === 'string') {
+      return new Date(dateInput.replace(/-/g, '/'));
     }
+    return new Date(dateInput);
   },
 
   // 按状态筛选

@@ -15,41 +15,55 @@ Page({
   },
 
   // 加载资产详情
-  async loadAssetDetail(id) {
+  loadAssetDetail(id) {
     wx.showLoading({ title: '加载中...' });
 
-    try {
-      const db = wx.cloud.database();
-      const res = await db.collection('assets').doc(id).get();
-
-      if (res.data) {
-        this.setData({
-          asset: res.data
+    const db = wx.cloud.database({
+      env: getApp().globalData.envId
+    });
+    db.collection('assets').doc(id).get()
+      .then(res => {
+        if (res.data) {
+          this.setData({
+            asset: res.data
+          });
+        } else {
+          wx.showToast({
+            title: '资产不存在',
+            icon: 'none'
+          });
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 1500);
+        }
+      })
+      .catch(err => {
+        console.error('加载资产失败:', err);
+        wx.showModal({
+          title: '加载失败',
+          content: '错误信息: ' + (err.message || JSON.stringify(err)),
+          showCancel: false
         });
-      } else {
-        wx.showToast({
-          title: '资产不存在',
-          icon: 'none'
-        });
-        setTimeout(() => {
-          wx.navigateBack();
-        }, 1500);
-      }
-    } catch (err) {
-      console.error('加载资产失败:', err);
-      wx.showToast({
-        title: '加载失败',
-        icon: 'none'
+      })
+      .finally(() => {
+        wx.hideLoading();
       });
-    } finally {
-      wx.hideLoading();
+  },
+
+  // 辅助函数：安全解析日期（兼容iOS）
+  parseDate(dateInput) {
+    if (!dateInput) return new Date();
+    if (dateInput instanceof Date) return dateInput;
+    if (typeof dateInput === 'string') {
+      return new Date(dateInput.replace(/-/g, '/'));
     }
+    return new Date(dateInput);
   },
 
   // 格式化日期
   formatDate(dateStr) {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
+    const date = this.parseDate(dateStr);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -59,7 +73,7 @@ Page({
   // 格式化日期时间
   formatDateTime(dateStr) {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
+    const date = this.parseDate(dateStr);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -71,7 +85,7 @@ Page({
   // 计算服役天数
   getServedDays(purchaseDate) {
     if (!purchaseDate) return 0;
-    const purchase = new Date(purchaseDate);
+    const purchase = this.parseDate(purchaseDate);
     const now = new Date();
     const diffTime = Math.abs(now - purchase);
     return Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -107,40 +121,42 @@ Page({
   },
 
   // 确认删除
-  async confirmDelete() {
+  confirmDelete() {
     wx.showLoading({ title: '删除中...' });
 
-    try {
-      const db = wx.cloud.database();
-      await db.collection('assets').doc(this.data.assetId).remove();
+    const db = wx.cloud.database({
+      env: getApp().globalData.envId
+    });
+    db.collection('assets').doc(this.data.assetId).remove()
+      .then(() => {
+        wx.hideLoading();
+        wx.showToast({
+          title: '删除成功',
+          icon: 'success'
+        });
 
-      wx.hideLoading();
-      wx.showToast({
-        title: '删除成功',
-        icon: 'success'
-      });
-
-      // 返回并刷新
-      setTimeout(() => {
-        wx.navigateBack({
-          success: () => {
-            const pages = getCurrentPages();
-            if (pages.length > 1) {
-              const prevPage = pages[pages.length - 2];
-              if (prevPage.loadAssets) {
-                prevPage.loadAssets();
+        // 返回并刷新
+        setTimeout(() => {
+          wx.navigateBack({
+            success: () => {
+              const pages = getCurrentPages();
+              if (pages.length > 1) {
+                const prevPage = pages[pages.length - 2];
+                if (prevPage.loadAssets) {
+                  prevPage.loadAssets();
+                }
               }
             }
-          }
+          });
+        }, 1500);
+      })
+      .catch(err => {
+        console.error('删除失败:', err);
+        wx.hideLoading();
+        wx.showToast({
+          title: '删除失败',
+          icon: 'none'
         });
-      }, 1500);
-    } catch (err) {
-      console.error('删除失败:', err);
-      wx.hideLoading();
-      wx.showToast({
-        title: '删除失败',
-        icon: 'none'
       });
-    }
   }
 });

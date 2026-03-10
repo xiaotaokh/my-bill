@@ -45,46 +45,67 @@ Page({
   },
 
   // 加载资产数据
-  async loadAssets() {
+  loadAssets() {
     wx.showLoading({ title: '加载中...' });
 
-    try {
-      // 检查云开发是否已初始化
-      if (!wx.cloud) {
-        console.log('云开发未初始化，显示空数据');
-        this.setData({
-          assets: [],
-          filteredAssets: []
-        });
-        wx.hideLoading();
-        return;
-      }
-
-      // 从云数据库获取资产数据
-      const db = wx.cloud.database();
-      const _ = db.command;
-
-      const res = await db.collection('assets')
-        .orderBy('createdAt', 'desc')
-        .get();
-
-      this.setData({
-        assets: res.data,
-        filteredAssets: res.data
-      });
-
-      // 计算统计数据
-      this.calculateStats();
-    } catch (err) {
-      console.error('加载资产失败:', err);
-      // 即使失败也显示空状态，不崩溃
+    // 检查云开发是否已初始化
+    if (!wx.cloud) {
+      console.log('云开发未初始化，显示空数据');
       this.setData({
         assets: [],
         filteredAssets: []
       });
-    } finally {
       wx.hideLoading();
+      return;
     }
+
+    // 从云数据库获取资产数据
+    // 显式指定环境ID，防止真机环境丢失
+    const db = wx.cloud.database({
+      env: getApp().globalData.envId
+    });
+
+    db.collection('assets')
+      .orderBy('createdAt', 'desc')
+      .get()
+      .then(res => {
+        console.log('获取资产成功:', res.data.length);
+        this.setData({
+          assets: res.data,
+          filteredAssets: res.data
+        });
+        // 计算统计数据
+        this.calculateStats();
+      })
+      .catch(err => {
+        console.error('加载资产失败:', err);
+        // 真机调试显示具体错误
+        wx.showModal({
+          title: '加载失败',
+          content: '错误信息: ' + (err.message || JSON.stringify(err)),
+          showCancel: false
+        });
+        
+        // 即使失败也显示空状态，不崩溃
+        this.setData({
+          assets: [],
+          filteredAssets: []
+        });
+      })
+      .finally(() => {
+        wx.hideLoading();
+      });
+  },
+
+  // 辅助函数：安全解析日期（兼容iOS）
+  parseDate(dateInput) {
+    if (!dateInput) return new Date();
+    if (dateInput instanceof Date) return dateInput;
+    if (typeof dateInput === 'string') {
+      // iOS不支持 2023-01-01 这种格式（有时支持但带时间就不行），统一替换为 /
+      return new Date(dateInput.replace(/-/g, '/'));
+    }
+    return new Date(dateInput);
   },
 
   // 计算统计数据
@@ -108,7 +129,7 @@ Page({
         activeCount++;
         // 计算服役天数
         if (asset.purchaseDate && !asset.excludeDaily) {
-          const purchaseDate = new Date(asset.purchaseDate);
+          const purchaseDate = this.parseDate(asset.purchaseDate);
           const now = new Date();
           const days = Math.floor((now - purchaseDate) / (1000 * 60 * 60 * 24));
           totalDays += days;
@@ -182,15 +203,15 @@ Page({
         break;
       case 1: // 购买时间
         sorted.sort((a, b) => {
-          const dateA = new Date(a.purchaseDate).getTime();
-          const dateB = new Date(b.purchaseDate).getTime();
+          const dateA = this.parseDate(a.purchaseDate).getTime();
+          const dateB = this.parseDate(b.purchaseDate).getTime();
           return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
         });
         break;
       case 2: // 添加时间
         sorted.sort((a, b) => {
-          const dateA = new Date(a.createdAt).getTime();
-          const dateB = new Date(b.createdAt).getTime();
+          const dateA = this.parseDate(a.createdAt).getTime();
+          const dateB = this.parseDate(b.createdAt).getTime();
           return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
         });
         break;
@@ -200,8 +221,8 @@ Page({
           if (a.status !== 'active') return 1;
           if (b.status !== 'active') return -1;
 
-          const dateA = new Date(a.purchaseDate).getTime();
-          const dateB = new Date(b.purchaseDate).getTime();
+          const dateA = this.parseDate(a.purchaseDate).getTime();
+          const dateB = this.parseDate(b.purchaseDate).getTime();
           const daysA = (Date.now() - dateA) / (1000 * 60 * 60 * 24);
           const daysB = (Date.now() - dateB) / (1000 * 60 * 60 * 24);
           return sortOrder === 'desc' ? daysB - daysA : daysA - daysB;
@@ -212,8 +233,8 @@ Page({
           if (a.status !== 'active') return 1;
           if (b.status !== 'active') return -1;
 
-          const dateA = new Date(a.purchaseDate).getTime();
-          const dateB = new Date(b.purchaseDate).getTime();
+          const dateA = this.parseDate(a.purchaseDate).getTime();
+          const dateB = this.parseDate(b.purchaseDate).getTime();
           const daysA = (Date.now() - dateA) / (1000 * 60 * 60 * 24);
           const daysB = (Date.now() - dateB) / (1000 * 60 * 60 * 24);
           const costA = daysA > 0 ? a.price / daysA : 0;
@@ -231,7 +252,7 @@ Page({
   // 格式化日期
   formatDate(dateStr) {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
+    const date = this.parseDate(dateStr);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
