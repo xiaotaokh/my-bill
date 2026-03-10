@@ -1,0 +1,100 @@
+<!--asset-add.wxml-->
+<view class="container">
+  <form bindsubmit="onSubmit">
+    <view class="form-section">
+      <!-- 物品名称 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="required">*</text>
+          <text>物品名称</text>
+        </view>
+        <input class="form-input" name="name" placeholder="请输入物品名称" maxlength="50" />
+      </view>
+
+      <!-- 价格 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="required">*</text>
+          <text>价格</text>
+        </view>
+        <input class="form-input" type="number" name="price" placeholder="请输入价格" />
+      </view>
+
+      <!-- 购买日期 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="required">*</text>
+          <text>购买日期</text>
+        </view>
+        <picker mode="date" name="purchaseDate" bindchange="onDateChange" value="{{purchaseDate}}">
+          <view class="form-picker">
+            {{purchaseDate || '请选择购买日期'}}
+            <text class="picker-arrow">›</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 类别 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="required">*</text>
+          <text>类别</text>
+        </view>
+        <view class="category-selector">
+          <picker mode="selector" range="{{categories}}" bindchange="onCategoryChange" class="form-picker">
+            <view class="picker-value">
+              {{categories[currentCategoryIndex] || '请选择类别'}}
+              <text class="picker-arrow">›</text>
+            </view>
+          </picker>
+          <view class="add-category" bindtap="addCategory">
+            <text class="add-icon">+</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 备注 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text>备注</text>
+        </view>
+        <textarea class="form-textarea" name="remark" placeholder="请输入备注信息（可选）" maxlength="200" />
+      </view>
+
+      <!-- 选项开关 -->
+      <view class="form-item switch-group">
+        <view class="form-label">选项</view>
+        <view class="switch-items">
+          <!-- 已退役 -->
+          <view class="switch-item">
+            <text class="switch-label">已退役</text>
+            <switch checked="{{isRetired}}" bindchange="onRetiredChange" color="#667eea" />
+          </view>
+
+          <!-- 已卖出 -->
+          <view class="switch-item">
+            <text class="switch-label">已卖出</text>
+            <switch checked="{{isSold}}" bindchange="onSoldChange" color="#667eea" />
+          </view>
+
+          <!-- 不计入总资产 -->
+          <view class="switch-item">
+            <text class="switch-label">不计入总资产</text>
+            <switch checked="{{excludeTotal}}" bindchange="onExcludeTotalChange" color="#667eea" />
+          </view>
+
+          <!-- 不计入日均 -->
+          <view class="switch-item">
+            <text class="switch-label">不计入日均</text>
+            <switch checked="{{excludeDaily}}" bindchange="onExcludeDailyChange" color="#667eea" />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 提交按钮 -->
+    <view class="submit-btn-container">
+      <button class="submit-btn" form-type="submit">保存资产</button>
+    </view>
+  </form>
+</view>

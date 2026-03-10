@@ -1,0 +1,93 @@
+<!--asset-list.wxml-->
+<view class="container">
+  <!-- 筛选和排序 -->
+  <view class="filter-bar">
+    <!-- 状态筛选 -->
+    <view class="status-filter">
+      <view
+        class="status-item {{activeStatus === 'all' ? 'active' : ''}}"
+        bindtap="filterByStatus"
+        data-status="all"
+      >全部</view>
+      <view
+        class="status-item {{activeStatus === 'active' ? 'active' : ''}}"
+        bindtap="filterByStatus"
+        data-status="active"
+      >服役中</view>
+      <view
+        class="status-item {{activeStatus === 'retired' ? 'active' : ''}}"
+        bindtap="filterByStatus"
+        data-status="retired"
+      >已退役</view>
+      <view
+        class="status-item {{activeStatus === 'sold' ? 'active' : ''}}"
+        bindtap="filterByStatus"
+        data-status="sold"
+      >已卖出</view>
+    </view>
+
+    <!-- 排序选择 -->
+    <view class="sort-bar">
+      <picker bindchange="changeSort" value="{{currentSortIndex}}" range="{{sortOptions}}">
+        <view class="sort-picker">
+          <text>排序：{{sortOptions[currentSortIndex]}}</text>
+          <text class="sort-icon {{sortOrder === 'desc' ? 'desc' : 'asc'}}">▼</text>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- 资产列表 -->
+  <scroll-view
+    class="asset-list"
+    scroll-y
+    enable-flex
+  >
+    <block wx:if="{{filteredAssets.length > 0}}">
+      <view
+        class="asset-card"
+        wx:for="{{filteredAssets}}"
+        wx:key="_id"
+        bindtap="goToDetail"
+        data-id="{{item._id}}"
+      >
+        <view class="asset-header">
+          <view class="asset-name">{{item.name}}</view>
+          <view class="asset-status status-{{item.status}}">{{item.status === 'active' ? '服役中' : item.status === 'retired' ? '已退役' : '已卖出'}}</view>
+        </view>
+
+        <view class="asset-info">
+          <view class="info-row">
+            <text class="label">分类：</text>
+            <text class="value">{{item.category}}</text>
+          </view>
+          <view class="info-row">
+            <text class="label">价格：</text>
+            <text class="value price">¥{{item.price}}</text>
+          </view>
+          <view class="info-row">
+            <text class="label">购买时间：</text>
+            <text class="value">{{item.purchaseDate}}</text>
+          </view>
+        </view>
+
+        <view class="asset-extra" wx:if="{{item.status === 'active'}}">
+          <view class="extra-item">
+            <text class="extra-label">服役时长</text>
+            <text class="extra-value">{{item.purchaseDate ? item.purchaseDate : '-'}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <view wx:else class="empty-state">
+      <text>暂无资产数据</text>
+      <view class="add-btn" bindtap="goToAdd">添加资产</view>
+    </view>
+  </scroll-view>
+
+  <!-- 添加按钮 -->
+  <view class="fab" bindtap="goToAdd">
+    <text>+</text>
+  </view>
+</view>

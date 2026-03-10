@@ -1,0 +1,28 @@
+# 小程序
+project.config.json
+project.private.config.json
+settings.json
+
+# 云函数
+cloudfunctions/*/node_modules/
+cloudfunctions/*/.gitignore
+cloudfunctions/*/npm-debug.log
+
+# IDE
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# 系统
+Thumbs.db
+Desktop.ini
+
+# 日志
+*.log
+
+# 临时文件
+*.tmp
+*.temp

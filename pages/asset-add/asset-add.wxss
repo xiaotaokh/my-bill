@@ -1,0 +1,165 @@
+/* asset-add.wxss */
+.container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 20rpx;
+}
+
+.form-section {
+  background-color: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.form-item {
+  margin-bottom: 30rpx;
+  padding-bottom: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.form-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  gap: 8rpx;
+}
+
+.required {
+  color: #f44336;
+  font-size: 32rpx;
+  line-height: 1;
+}
+
+.form-input,
+.form-textarea,
+.form-picker {
+  width: 100%;
+  padding: 20rpx;
+  background-color: #f9f9f9;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.form-input {
+  min-height: 80rpx;
+  line-height: 1.5;
+}
+
+.form-textarea {
+  min-height: 160rpx;
+  line-height: 1.6;
+  padding: 24rpx;
+  resize: none;
+}
+
+.form-picker {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.picker-value,
+.form-picker {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.picker-arrow {
+  font-size: 40rpx;
+  color: #999;
+  font-weight: bold;
+}
+
+.category-selector {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.add-category {
+  width: 80rpx;
+  height: 80rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.add-icon {
+  font-size: 40rpx;
+  color: white;
+  font-weight: bold;
+}
+
+/* 开关组 */
+.switch-group {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.switch-items {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.switch-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx;
+  background-color: #f9f9f9;
+  border-radius: 12rpx;
+}
+
+.switch-label {
+  font-size: 28rpx;
+  color: #333;
+}
+
+/* 提交按钮 */
+.submit-btn-container {
+  padding: 40rpx 30rpx;
+}
+
+.submit-btn {
+  width: 100%;
+  height: 96rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 32rpx;
+  font-weight: bold;
+  border-radius: 16rpx;
+  border: none;
+  box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.4);
+}
+
+.submit-btn:after {
+  border: none;
+}
+
+.submit-btn:active {
+  opacity: 0.9;
+}
+
+/* 错误提示 */
+.error-text {
+  color: #f44336;
+  font-size: 24rpx;
+  margin-top: 10rpx;
+  padding-left: 4rpx;
+}

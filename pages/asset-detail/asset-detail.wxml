@@ -1,0 +1,63 @@
+<!--asset-detail.wxml-->
+<view class="container">
+  <view class="detail-card">
+    <!-- 资产状态标签 -->
+    <view class="status-badge {{asset.status === 'active' ? 'status-active' : asset.status === 'retired' ? 'status-retired' : 'status-sold'}}">
+      {{asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出'}}
+    </view>
+
+    <!-- 资产名称 -->
+    <view class="asset-name">{{asset.name}}</view>
+
+    <!-- 价格 -->
+    <view class="asset-price">¥{{asset.price}}</view>
+
+    <!-- 类别 -->
+    <view class="asset-category">
+      <text>🏷️ {{asset.category}}</text>
+    </view>
+
+    <!-- 基本信息 -->
+    <view class="info-section">
+      <view class="info-item">
+        <view class="info-label">购买日期</view>
+        <view class="info-value">{{formatDate(asset.purchaseDate)}}</view>
+      </view>
+
+      <view class="info-item">
+        <view class="info-label">添加时间</view>
+        <view class="info-value">{{formatDateTime(asset.createdAt)}}</view>
+      </view>
+
+      <view class="info-item" wx:if="{{asset.status === 'active'}}">
+        <view class="info-label">服役时长</view>
+        <view class="info-value">{{getServedDays(asset.purchaseDate)}} 天</view>
+      </view>
+
+      <view class="info-item" wx:if="{{asset.status === 'active'}}">
+        <view class="info-label">日均成本</view>
+        <view class="info-value">¥{{getDailyCost(asset.price, asset.purchaseDate)}}</view>
+      </view>
+
+      <view class="info-item" wx:if="{{asset.excludeTotal || asset.excludeDaily}}">
+        <view class="info-label">特殊设置</view>
+        <view class="info-value">
+          <block wx:if="{{asset.excludeTotal}}">❌ 不计入总资产</block>
+          <block wx:if="{{asset.excludeDaily && asset.excludeTotal}}">，</block>
+          <block wx:if="{{asset.excludeDaily}}">❌ 不计入日均</block>
+        </view>
+      </view>
+
+      <view class="info-item" wx:if="{{asset.remark}}">
+        <view class="info-label">备注</view>
+        <view class="info-value remark">{{asset.remark}}</view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-buttons">
+      <button class="edit-btn" bindtap="editAsset">编辑</button>
+      <button class="delete-btn" bindtap="deleteAsset">删除</button>
+    </view>
+  </view>
+</view>

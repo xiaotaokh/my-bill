@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /Users/taohang/Documents/project/Demo/myBill/pages/*/)",
+      "Bash(node --check /Users/taohang/Documents/project/Demo/myBill/pages/index/index.js 2>&1)",
+      "Bash(for f in /Users/taohang/Documents/project/Demo/myBill/pages/*/*.js; do echo \"=== $f ===\" && node --check \"$f\" 2>&1 && echo \"OK\" || echo \"ERROR\"; done)",
+      "Bash(npx miniprogram-simulate --version 2>&1 || echo \"未安装\")"
+    ]
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-code-plugins": true
+  }
+}
