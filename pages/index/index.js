@@ -70,9 +70,11 @@ Page({
       .get()
       .then(res => {
         console.log('获取资产成功:', res.data.length);
+        // 为每个资产添加计算字段
+        const assetsWithCalculated = res.data.map(asset => this.calculateAssetFields(asset));
         this.setData({
-          assets: res.data,
-          filteredAssets: res.data
+          assets: assetsWithCalculated,
+          filteredAssets: assetsWithCalculated
         });
         // 计算统计数据
         this.calculateStats();
@@ -106,6 +108,52 @@ Page({
       return new Date(dateInput.replace(/-/g, '/'));
     }
     return new Date(dateInput);
+  },
+
+  // 格式化日期为 YYYY-MM-DD
+  formatDate(dateStr) {
+    if (!dateStr) return '';
+    const date = this.parseDate(dateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  },
+
+  // 为单个资产计算显示字段
+  calculateAssetFields(asset) {
+    const purchaseDate = this.parseDate(asset.purchaseDate);
+    const now = new Date();
+
+    // 计算已使用天数
+    let usedDays = 0;
+    if (asset.purchaseDate) {
+      usedDays = Math.floor((now - purchaseDate) / (1000 * 60 * 60 * 24));
+      if (usedDays < 0) usedDays = 0;
+    }
+
+    // 计算日均成本（仅服役中的资产计算）
+    let dailyCost = '0.00';
+    if (asset.status === 'active' && !asset.excludeDaily && usedDays > 0) {
+      dailyCost = (asset.price / usedDays).toFixed(2);
+    } else if (asset.status === 'active' && !asset.excludeDaily && usedDays === 0) {
+      dailyCost = asset.price.toFixed(2); // 当天添加的，日均成本等于原价
+    }
+
+    // 计算日期范围
+    const startDate = this.formatDate(asset.purchaseDate);
+    let endDate = '至今';
+    if (asset.status === 'retired' || asset.status === 'sold') {
+      // 已退役或已卖出的，使用当前日期作为结束日期
+      endDate = this.formatDate(asset.retireDate || asset.soldDate || now);
+    }
+
+    return {
+      ...asset,
+      usedDays,
+      dailyCost,
+      dateRange: asset.status === 'active' ? `${startDate} - 至今` : `${startDate} - ${endDate}`
+    };
   },
 
   // 计算统计数据
@@ -247,16 +295,6 @@ Page({
     this.setData({
       filteredAssets: sorted
     });
-  },
-
-  // 格式化日期
-  formatDate(dateStr) {
-    if (!dateStr) return '';
-    const date = this.parseDate(dateStr);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   },
 
   // 跳转到添加页面

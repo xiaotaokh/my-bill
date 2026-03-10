@@ -16,10 +16,14 @@
 
   <!-- 总资产圆形卡片 -->
   <view class="total-card">
-    <view class="total-card-inner">
+    <view class="total-card-left">
       <view class="total-label">总资产</view>
       <view class="total-value">¥{{totalPrice}}</view>
-      <view class="total-daily">日均成本 ¥{{dailyCost}}</view>
+    </view>
+    <view class="total-divider"></view>
+    <view class="total-card-right">
+      <view class="daily-label">日均成本</view>
+      <view class="daily-value">¥{{dailyCost}}</view>
     </view>
     <view class="total-glow"></view>
   </view>
@@ -129,11 +133,24 @@
           </view>
           <view class="card-info">
             <text class="category-tag">{{item.category}}</text>
-            <text class="purchase-date">购于 {{item.purchaseDate}}</text>
+            <text class="purchase-date">{{item.dateRange}}</text>
           </view>
-        </view>
-        <view class="card-right">
-          <text class="asset-price">¥{{item.price}}</text>
+          <view class="card-stats">
+            <view class="stat-item">
+              <text class="stat-label">日均成本</text>
+              <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
+            </view>
+            <view class="stat-divider"></view>
+            <view class="stat-item">
+              <text class="stat-label">已使用</text>
+              <text class="stat-value">{{item.usedDays}}天</text>
+            </view>
+            <view class="stat-divider"></view>
+            <view class="stat-item">
+              <text class="stat-label">价格</text>
+              <text class="stat-value price">¥{{item.price}}</text>
+            </view>
+          </view>
         </view>
       </view>
     </block>
