@@ -39,18 +39,31 @@ Page({
       })
       .catch(err => {
         console.error('加载资产失败:', err);
-        wx.showModal({
-          title: '加载失败',
-          content: '错误信息: ' + (err.message || JSON.stringify(err)),
-          showCancel: false
-        });
+
+        // 检查是否是权限错误（访问他人数据）
+        if (err.errCode === -502001 || (err.message && err.message.includes('permission'))) {
+          wx.showToast({
+            title: '无权访问此资产',
+            icon: 'none'
+          });
+        } else {
+          wx.showModal({
+            title: '加载失败',
+            content: '错误信息：' + (err.message || JSON.stringify(err)),
+            showCancel: false
+          });
+        }
+
+        setTimeout(() => {
+          wx.navigateBack();
+        }, 1500);
       })
       .finally(() => {
         wx.hideLoading();
       });
   },
 
-  // 辅助函数：安全解析日期（兼容iOS）
+  // 辅助函数：安全解析日期（兼容 iOS）
   parseDate(dateInput) {
     if (!dateInput) return new Date();
     if (dateInput instanceof Date) return dateInput;

@@ -33,11 +33,24 @@ Page({
   loadAssets() {
     wx.showLoading({ title: '加载中...' });
 
+    // 检查 openid 是否已获取
+    const openid = getApp().globalData.openid;
+    if (!openid) {
+      console.log('openid 未获取，等待后重试');
+      setTimeout(() => this.loadAssets(), 500);
+      wx.hideLoading();
+      return;
+    }
+
     const db = wx.cloud.database({
       env: getApp().globalData.envId
     });
 
+    // 只获取当前用户的资产
     db.collection('assets')
+      .where({
+        _openid: openid
+      })
       .orderBy('createdAt', 'desc')
       .get()
       .then(res => {

@@ -5,16 +5,15 @@ Page({
     name: '',
     price: '',
     purchaseDate: '',
-    category: '',
     remark: '',
     isRetired: false,
     isSold: false,
     excludeTotal: false,
     excludeDaily: false,
 
-    // 类别
-    categories: ['电子设备', '房产', '车辆', '投资', '其他'],
-    currentCategoryIndex: 0,
+    // 类别 - 初始为空，从数据库加载
+    categories: [],
+    selectedCategories: [], // 支持多选
 
     // 表单验证
     errors: {}
@@ -29,6 +28,49 @@ Page({
     this.setData({
       purchaseDate: `${year}-${month}-${day}`
     });
+    // 加载类别
+    this.loadCategories();
+  },
+
+  // 加载类别
+  loadCategories() {
+    wx.cloud.callFunction({
+      name: 'getCategories',
+      success: (res) => {
+        console.log('加载类别成功:', res);
+        if (res.result && res.result.success && res.result.data) {
+          const categories = res.result.data.map(item => item.name);
+          console.log('类别列表:', categories);
+          this.setData({ categories });
+          // 默认选中第一个类别
+          if (categories.length > 0) {
+            this.setData({ selectedCategories: [categories[0]] });
+          }
+        } else {
+          console.log('加载类别失败，云函数返回错误:', res.result);
+          this.setData({ categories: [] });
+        }
+      },
+      fail: (err) => {
+        console.error('加载类别失败:', err);
+        this.setData({ categories: [] });
+      }
+    });
+  },
+
+  // 物品名称输入
+  onNameInput(e) {
+    this.setData({ name: e.detail.value });
+  },
+
+  // 价格输入
+  onPriceInput(e) {
+    this.setData({ price: e.detail.value });
+  },
+
+  // 备注输入
+  onRemarkInput(e) {
+    this.setData({ remark: e.detail.value });
   },
 
   // 购买日期改变
@@ -38,12 +80,28 @@ Page({
     });
   },
 
-  // 类别改变
-  onCategoryChange(e) {
-    this.setData({
-      currentCategoryIndex: e.detail.value,
-      category: this.data.categories[e.detail.value]
-    });
+  // 切换类别选择（支持多选）
+  toggleCategory(e) {
+    const category = e.currentTarget.dataset.category;
+    const { selectedCategories } = this.data;
+    const index = selectedCategories.indexOf(category);
+
+    if (index > -1) {
+      // 已选中，取消选择（至少保留一个）
+      if (selectedCategories.length > 1) {
+        selectedCategories.splice(index, 1);
+        this.setData({ selectedCategories });
+      }
+    } else {
+      // 未选中，添加
+      selectedCategories.push(category);
+      this.setData({ selectedCategories });
+    }
+
+    // 清除类别错误
+    if (this.data.errors.category) {
+      this.setData({ 'errors.category': null });
+    }
   },
 
   // 添加新类别
@@ -56,15 +114,40 @@ Page({
       success: (res) => {
         if (res.confirm && res.content) {
           const newCategory = res.content.trim();
-          if (newCategory && !this.data.categories.includes(newCategory)) {
-            this.setData({
-              categories: [...this.data.categories, newCategory],
-              currentCategoryIndex: this.data.categories.length
-            });
-          } else if (newCategory) {
-            wx.showToast({
-              title: '类别已存在',
-              icon: 'none'
+          if (newCategory) {
+            wx.showLoading({ title: '添加中...' });
+            // 调用云函数添加类别
+            wx.cloud.callFunction({
+              name: 'addCategory',
+              data: { name: newCategory },
+              success: (res) => {
+                wx.hideLoading();
+                if (res.result.success) {
+                  const newCategories = [...this.data.categories, newCategory];
+                  this.setData({
+                    categories: newCategories,
+                    // 自动选中新添加的类别
+                    selectedCategories: [...this.data.selectedCategories, newCategory]
+                  });
+                  wx.showToast({
+                    title: '添加成功',
+                    icon: 'success'
+                  });
+                } else {
+                  wx.showToast({
+                    title: res.result.error || '添加失败',
+                    icon: 'none'
+                  });
+                }
+              },
+              fail: (err) => {
+                wx.hideLoading();
+                console.error('添加类别失败:', err);
+                wx.showToast({
+                  title: '添加失败，请重试',
+                  icon: 'none'
+                });
+              }
             });
           }
         }
@@ -112,7 +195,7 @@ Page({
     if (!formData.name || formData.name.trim() === '') {
       errors.name = '请输入物品名称';
     } else if (formData.name.length > 50) {
-      errors.name = '物品名称不能超过50个字符';
+      errors.name = '物品名称不能超过 50 个字符';
     }
 
     // 验证价格
@@ -127,9 +210,9 @@ Page({
       errors.purchaseDate = '请选择购买日期';
     }
 
-    // 验证类别
-    if (!formData.category) {
-      errors.category = '请选择类别';
+    // 验证类别（至少选择一个）
+    if (!formData.category || formData.category.trim() === '') {
+      errors.category = '请至少选择一个类别';
     }
 
     return errors;
@@ -139,8 +222,8 @@ Page({
   onSubmit(e) {
     const formData = e.detail.value;
 
-    // 设置类别
-    formData.category = this.data.categories[this.data.currentCategoryIndex] || this.data.categories[0];
+    // 将选中的类别用逗号连接（支持多选）
+    formData.category = this.data.selectedCategories.join(',');
 
     // 验证表单
     const errors = this.validateForm(formData);
@@ -164,12 +247,24 @@ Page({
       status = 'sold';
     }
 
+    // 获取 openid
+    const openid = getApp().globalData.openid;
+    if (!openid) {
+      wx.hideLoading();
+      wx.showToast({
+        title: '获取用户信息失败，请重试',
+        icon: 'none'
+      });
+      return;
+    }
+
     // 保存到云数据库
     const db = wx.cloud.database({
       env: getApp().globalData.envId
     });
     db.collection('assets').add({
       data: {
+        _openid: openid,
         name: formData.name.trim(),
         price: parseFloat(formData.price),
         purchaseDate: formData.purchaseDate,
@@ -193,7 +288,7 @@ Page({
         wx.navigateBack({
           delta: 1,
           success: () => {
-            // 触发上一页的onShow
+            // 触发上一页的 onShow
             const pages = getCurrentPages();
             if (pages.length > 1) {
               const prevPage = pages[pages.length - 2];

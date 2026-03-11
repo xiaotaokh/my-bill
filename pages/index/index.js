@@ -29,23 +29,61 @@ Page({
       sold: '已卖出'
     },
 
+    // 分类筛选
+    activeCategory: 'all',
+    categories: [],
+
     // 排序
     sortOptions: ['价格', '购买时间', '添加时间', '服役时长', '日均成本'],
     currentSortIndex: 0,
     sortOrder: 'desc', // asc 或 desc
+
+    // 加载状态标志
+    isLoading: false
   },
 
   onLoad: function () {
+    this.loadCategories();
+    // 直接调用 loadAssets，它内部会等待 openid
     this.loadAssets();
   },
 
   onShow: function () {
-    // 每次进入页面重新加载数据
+    // 每次进入页面重新加载数据，但如果正在加载中则跳过
+    if (this.data.isLoading) return;
+    this.loadCategories();
     this.loadAssets();
+  },
+
+  // 加载类别
+  loadCategories() {
+    wx.cloud.callFunction({
+      name: 'getCategories',
+      success: (res) => {
+        console.log('加载类别返回:', JSON.stringify(res.result, null, 2));
+        const resultData = res.result;
+        if (resultData && resultData.data && Array.isArray(resultData.data)) {
+          const categories = resultData.data.map(item => item.name);
+          console.log('类别列表:', categories);
+          this.setData({ categories });
+        } else {
+          console.log('加载类别失败，云函数返回:', resultData);
+          this.setData({ categories: [] });
+        }
+      },
+      fail: (err) => {
+        console.error('加载类别失败:', err);
+        this.setData({ categories: [] });
+      }
+    });
   },
 
   // 加载资产数据
   loadAssets() {
+    // 防止重复加载
+    if (this.data.isLoading) return;
+
+    this.setData({ isLoading: true });
     wx.showLoading({ title: '加载中...' });
 
     // 检查云开发是否已初始化
@@ -53,58 +91,83 @@ Page({
       console.log('云开发未初始化，显示空数据');
       this.setData({
         assets: [],
-        filteredAssets: []
+        filteredAssets: [],
+        isLoading: false
       });
       wx.hideLoading();
       return;
     }
 
-    // 从云数据库获取资产数据
-    // 显式指定环境ID，防止真机环境丢失
-    const db = wx.cloud.database({
-      env: getApp().globalData.envId
-    });
-
-    db.collection('assets')
-      .orderBy('createdAt', 'desc')
-      .get()
-      .then(res => {
-        console.log('获取资产成功:', res.data.length);
-        // 为每个资产添加计算字段
-        const assetsWithCalculated = res.data.map(asset => this.calculateAssetFields(asset));
-        this.setData({
-          assets: assetsWithCalculated,
-          filteredAssets: assetsWithCalculated
+    // 使用 app 的 getOpenid 方法获取 openid
+    const app = getApp();
+    app.getOpenid()
+      .then(openid => {
+        // 从云数据库获取资产数据
+        // 显式指定环境 ID，防止真机环境丢失
+        const db = wx.cloud.database({
+          env: app.globalData.envId
         });
-        // 计算统计数据
-        this.calculateStats();
+
+        // 只获取当前用户的资产
+        db.collection('assets')
+          .where({
+            _openid: openid
+          })
+          .orderBy('createdAt', 'desc')
+          .get()
+          .then(res => {
+            console.log('获取资产成功:', res.data.length);
+            // 为每个资产添加计算字段
+            const assetsWithCalculated = res.data.map(asset => this.calculateAssetFields(asset));
+            this.setData({
+              assets: assetsWithCalculated,
+              filteredAssets: assetsWithCalculated,
+              isLoading: false
+            });
+            // 计算统计数据
+            this.calculateStats();
+          })
+          .catch(err => {
+            console.error('加载资产失败:', err);
+            // 真机调试显示具体错误
+            wx.showModal({
+              title: '加载失败',
+              content: '错误信息：' + (err.message || JSON.stringify(err)),
+              showCancel: false
+            });
+
+            // 即使失败也显示空状态，不崩溃
+            this.setData({
+              assets: [],
+              filteredAssets: [],
+              isLoading: false
+            });
+          })
+          .finally(() => {
+            wx.hideLoading();
+          });
       })
       .catch(err => {
-        console.error('加载资产失败:', err);
-        // 真机调试显示具体错误
-        wx.showModal({
-          title: '加载失败',
-          content: '错误信息: ' + (err.message || JSON.stringify(err)),
-          showCancel: false
-        });
-        
-        // 即使失败也显示空状态，不崩溃
+        console.error('获取 openid 失败:', err);
         this.setData({
           assets: [],
-          filteredAssets: []
+          filteredAssets: [],
+          isLoading: false
         });
-      })
-      .finally(() => {
         wx.hideLoading();
+        wx.showToast({
+          title: '获取用户信息失败',
+          icon: 'none'
+        });
       });
   },
 
-  // 辅助函数：安全解析日期（兼容iOS）
+  // 辅助函数：安全解析日期（兼容 iOS）
   parseDate(dateInput) {
     if (!dateInput) return new Date();
     if (dateInput instanceof Date) return dateInput;
     if (typeof dateInput === 'string') {
-      // iOS不支持 2023-01-01 这种格式（有时支持但带时间就不行），统一替换为 /
+      // iOS 不支持 2023-01-01 这种格式（有时支持但带时间就不行），统一替换为 /
       return new Date(dateInput.replace(/-/g, '/'));
     }
     return new Date(dateInput);
@@ -204,11 +267,16 @@ Page({
   // 按状态筛选
   filterByStatus(e) {
     const status = e.currentTarget.dataset.status;
-    const { assets } = this.data;
+    const { assets, activeCategory } = this.data;
 
     let filtered = assets;
+    // 先按分类筛选
+    if (activeCategory !== 'all') {
+      filtered = filtered.filter(asset => asset.category === activeCategory);
+    }
+    // 再按状态筛选
     if (status !== 'all') {
-      filtered = assets.filter(asset => asset.status === status);
+      filtered = filtered.filter(asset => asset.status === status);
     }
 
     this.setData({
@@ -218,6 +286,77 @@ Page({
 
     // 重新应用排序
     this.applySort();
+  },
+
+  // 按分类筛选
+  filterByCategory(e) {
+    const category = e.currentTarget.dataset.category;
+    const { assets, activeStatus } = this.data;
+
+    let filtered = assets;
+    // 先按分类筛选
+    if (category !== 'all') {
+      filtered = filtered.filter(asset => asset.category === category);
+    }
+    // 再按状态筛选
+    if (activeStatus !== 'all') {
+      filtered = filtered.filter(asset => asset.status === activeStatus);
+    }
+
+    this.setData({
+      activeCategory: category,
+      filteredAssets: filtered
+    });
+
+    // 重新应用排序
+    this.applySort();
+  },
+
+  // 新增类别
+  addCategory() {
+    wx.showModal({
+      title: '添加新类别',
+      editable: true,
+      placeholderText: '请输入新类别名称',
+      confirmButtonText: '确定',
+      success: (res) => {
+        if (res.confirm && res.content) {
+          const newCategory = res.content.trim();
+          if (newCategory) {
+            wx.showLoading({ title: '添加中...' });
+            // 调用云函数添加类别
+            wx.cloud.callFunction({
+              name: 'addCategory',
+              data: { name: newCategory },
+              success: (res) => {
+                wx.hideLoading();
+                if (res.result.success) {
+                  // 重新加载类别列表
+                  this.loadCategories();
+                  wx.showToast({
+                    title: '添加成功',
+                    icon: 'success'
+                  });
+                } else {
+                  wx.showToast({
+                    title: res.result.error || '添加失败',
+                    icon: 'none'
+                  });
+                }
+              },
+              fail: (err) => {
+                wx.hideLoading();
+                console.error('添加类别失败:', err);
+                wx.showToast({
+                  title: '添加失败，请重试',
+                  icon: 'none'
+                });
+              }
+            });
+          }
+        }
+      }
+    });
   },
 
   // 改变排序

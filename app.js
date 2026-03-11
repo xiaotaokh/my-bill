@@ -10,8 +10,8 @@ App({
     }
 
     // 获取用户信息
-    // 注意：微信已不再支持在onLaunch中自动获取用户信息（wx.getUserInfo接口已调整）
-    // 真机调试时此处容易报错，且云开发主要依赖openid鉴权，不影响核心功能
+    // 注意：微信已不再支持在 onLaunch 中自动获取用户信息（wx.getUserInfo 接口已调整）
+    // 真机调试时此处容易报错，且云开发主要依赖 openid 鉴权，不影响核心功能
     // 如需获取头像昵称，建议在具体页面通过按钮引导用户点击 wx.getUserProfile
     /*
     wx.getSetting({
@@ -27,10 +27,50 @@ App({
       }
     })
     */
+
+    // 获取当前用户 openid
+    this.getOpenid();
+  },
+
+  // 获取用户 openid
+  getOpenid: function() {
+    // 如果已经有 openid，直接返回 resolved 的 Promise
+    if (this.globalData.openid) {
+      return Promise.resolve(this.globalData.openid);
+    }
+    // 如果已经有 Promise 在进行中，返回同一个 Promise
+    if (this.globalData.openidPromise) {
+      return this.globalData.openidPromise;
+    }
+
+    // 创建新的 Promise 并保存
+    this.globalData.openidPromise = new Promise((resolve, reject) => {
+      wx.cloud.callFunction({
+        name: 'getUserOpenid',
+        success: (res) => {
+          if (res.result && res.result.openid) {
+            this.globalData.openid = res.result.openid;
+            console.log('获取 openid 成功:', res.result.openid);
+            resolve(res.result.openid);
+          } else {
+            console.error('获取 openid 失败：返回结果为空', res);
+            reject(res);
+          }
+        },
+        fail: (err) => {
+          console.error('获取 openid 失败:', err);
+          reject(err);
+        }
+      });
+    });
+
+    return this.globalData.openidPromise;
   },
 
   globalData: {
     userInfo: null,
-    envId: 'cloud1-4gdakam95d203bfc'
+    envId: 'cloud1-4gdakam95d203bfc',
+    openid: null,
+    openidPromise: null  // 保存 openid 的 Promise
   }
 })
