@@ -13,7 +13,6 @@ Page({
 
     // 类别 - 初始为空，从数据库加载
     categories: [],
-    selectedCategories: [], // 支持多选
 
     // 表单验证
     errors: {}
@@ -39,13 +38,12 @@ Page({
       success: (res) => {
         console.log('加载类别成功:', res);
         if (res.result && res.result.success && res.result.data) {
-          const categories = res.result.data.map(item => item.name);
+          const categories = res.result.data.map(item => ({
+            name: item.name,
+            selected: false // 默认不选中
+          }));
           console.log('类别列表:', categories);
           this.setData({ categories });
-          // 默认选中第一个类别
-          if (categories.length > 0) {
-            this.setData({ selectedCategories: [categories[0]] });
-          }
         } else {
           console.log('加载类别失败，云函数返回错误:', res.result);
           this.setData({ categories: [] });
@@ -82,26 +80,12 @@ Page({
 
   // 切换类别选择（支持多选）
   toggleCategory(e) {
-    const category = e.currentTarget.dataset.category;
-    const { selectedCategories } = this.data;
-    const index = selectedCategories.indexOf(category);
+    const index = e.currentTarget.dataset.index;
+    const key = `categories[${index}].selected`;
 
-    if (index > -1) {
-      // 已选中，取消选择（至少保留一个）
-      if (selectedCategories.length > 1) {
-        selectedCategories.splice(index, 1);
-        this.setData({ selectedCategories });
-      }
-    } else {
-      // 未选中，添加
-      selectedCategories.push(category);
-      this.setData({ selectedCategories });
-    }
-
-    // 清除类别错误
-    if (this.data.errors.category) {
-      this.setData({ 'errors.category': null });
-    }
+    this.setData({
+      [key]: !this.data.categories[index].selected
+    });
   },
 
   // 添加新类别
@@ -123,11 +107,9 @@ Page({
               success: (res) => {
                 wx.hideLoading();
                 if (res.result.success) {
-                  const newCategories = [...this.data.categories, newCategory];
+                  const newCategories = [...this.data.categories, { name: newCategory, selected: true }];
                   this.setData({
-                    categories: newCategories,
-                    // 自动选中新添加的类别
-                    selectedCategories: [...this.data.selectedCategories, newCategory]
+                    categories: newCategories
                   });
                   wx.showToast({
                     title: '添加成功',
@@ -219,11 +201,22 @@ Page({
   },
 
   // 表单提交
-  onSubmit(e) {
-    const formData = e.detail.value;
+  onSubmit() {
+    // 构造表单数据
+    const formData = {
+      name: this.data.name,
+      price: this.data.price,
+      purchaseDate: this.data.purchaseDate,
+      remark: this.data.remark
+    };
+
+    // 获取选中的类别
+    const selectedCats = this.data.categories
+      .filter(item => item.selected)
+      .map(item => item.name);
 
     // 将选中的类别用逗号连接（支持多选）
-    formData.category = this.data.selectedCategories.join(',');
+    formData.category = selectedCats.join(',');
 
     // 验证表单
     const errors = this.validateForm(formData);

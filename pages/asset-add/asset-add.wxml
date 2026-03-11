@@ -68,16 +68,16 @@
       </view>
       <view class="category-grid">
         <view
-          class="category-item {{selectedCategories.includes(item) ? 'selected' : ''}}"
+          class="category-item {{item.selected ? 'selected' : ''}}"
           wx:for="{{categories}}"
-          wx:key="*this"
+          wx:key="name"
           bindtap="toggleCategory"
-          data-category="{{item}}"
+          data-index="{{index}}"
         >
-          <view class="category-icon">
-            <text wx:if="{{selectedCategories.includes(item)}}">✓</text>
+          <view class="checkbox {{item.selected ? 'checked' : ''}}">
+            <text class="check-mark">✓</text>
           </view>
-          <text class="category-name">{{item}}</text>
+          <text class="category-name">{{item.name}}</text>
         </view>
 
         <!-- 空状态 -->
@@ -101,6 +101,7 @@
           class="item-textarea"
           name="remark"
           placeholder="请输入备注信息（可选）"
+          placeholder-class="textarea-placeholder"
           maxlength="200"
           value="{{remark}}"
           bindinput="onRemarkInput"
@@ -112,7 +113,7 @@
     <!-- 选项开关 -->
     <view class="form-group">
       <view class="form-header">
-        <text class="form-title">选项</text>
+        <text class="form-title">其他</text>
       </view>
       <view class="switch-list">
         <view class="switch-item">
@@ -151,14 +152,11 @@
     </view>
 
     <!-- 占位空间，防止内容被底部按钮遮挡 -->
-    <view class="form-spacer"></view>
+    <view class="form-spacer" style="height: 140rpx;"></view>
   </form>
 
-  <!-- 悬浮底部保存按钮 -->
+  <!-- fixed 悬浮保存按钮 -->
   <view class="submit-bar">
-    <button class="submit-btn" form-type="submit">
-      <text class="btn-icon">💾</text>
-      <text class="btn-text">保存资产</text>
-    </button>
+    <button class="submit-btn" bindtap="onSubmit">保存资产</button>
   </view>
 </view>
