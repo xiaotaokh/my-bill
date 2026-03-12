@@ -152,28 +152,43 @@
         >
           <view class="card-left">
             <view class="asset-avatar">
-              <text class="avatar-icon">{{item.icon || getAvatarIcon(item)}}</text>
+              <text class="avatar-icon">{{item.icon || '📦'}}</text>
             </view>
           </view>
           <view class="card-content">
             <view class="card-header">
-              <text class="asset-name">{{item.name}}</text>
+              <view class="name-with-category">
+                <text class="asset-name">{{item.name}}</text>
+                <view wx:if="{{activeCategory === 'all'}}" class="category-tag-inline">
+                  <image wx:if="{{item.categoryIconUrl}}" class="tag-icon-inline" src="{{item.categoryIconUrl}}" mode="aspectFit"></image>
+                  <text wx:else class="tag-icon-text-inline">{{item.categoryIcon || '📦'}}</text>
+                  <text class="tag-text-inline">{{item.category}}</text>
+                </view>
+              </view>
               <view class="asset-badge {{item.status}}">
                 <text>{{item.status === 'active' ? '服役中' : item.status === 'retired' ? '已退役' : '已卖出'}}</text>
               </view>
             </view>
             <view class="card-info">
-              <text class="category-tag">{{item.category}}</text>
               <text class="purchase-date">{{item.dateRange}}</text>
             </view>
             <view class="card-stats">
+              <block wx:if="{{item.status === 'active'}}">
+                <view class="stat-item">
+                  <text class="stat-label">日均成本</text>
+                  <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
+                </view>
+                <view class="stat-divider"></view>
+              </block>
+              <block wx:else>
+                <view class="stat-item">
+                  <text class="stat-label">折合每日</text>
+                  <text class="stat-value cost">¥{{item.dailyEquivalent}}/天</text>
+                </view>
+                <view class="stat-divider"></view>
+              </block>
               <view class="stat-item">
-                <text class="stat-label">日均成本</text>
-                <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
-              </view>
-              <view class="stat-divider"></view>
-              <view class="stat-item">
-                <text class="stat-label">已使用</text>
+                <text class="stat-label">已使用(含今天)</text>
                 <text class="stat-value">{{item.usedDays}}天</text>
               </view>
               <view class="stat-divider"></view>

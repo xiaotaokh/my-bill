@@ -513,15 +513,22 @@ page {
 .card-header {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  justify-content: space-between;
   margin-bottom: 8rpx;
+}
+
+.name-with-category {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex: 1;
+  overflow: hidden;
 }
 
 .asset-name {
   font-size: 26rpx;
   font-weight: 600;
   color: #333;
-  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -600,11 +607,51 @@ page {
 }
 
 .category-tag {
+  display: flex;
+  align-items: center;
   font-size: 18rpx;
   color: #667eea;
   background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
   padding: 3rpx 10rpx;
   border-radius: 10rpx;
+}
+
+.tag-icon {
+  width: 22rpx;
+  height: 22rpx;
+  margin-right: 6rpx;
+}
+
+.tag-icon-text {
+  font-size: 20rpx;
+  margin-right: 6rpx;
+}
+
+/* 资产名后面的分类标签 - 更大 */
+.category-tag-inline {
+  display: flex;
+  align-items: center;
+  font-size: 22rpx;
+  color: #667eea;
+  background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+  margin-left: 10rpx;
+}
+
+.tag-icon-inline {
+  width: 28rpx;
+  height: 28rpx;
+  margin-right: 6rpx;
+}
+
+.tag-icon-text-inline {
+  font-size: 24rpx;
+  margin-right: 6rpx;
+}
+
+.tag-text-inline {
+  /* 文字样式 */
 }
 
 .purchase-date {
