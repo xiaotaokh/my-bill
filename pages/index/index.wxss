@@ -627,6 +627,30 @@ page {
   margin-right: 6rpx;
 }
 
+/* 不计入标签容器 */
+.exclude-tags {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-left: 10rpx;
+}
+
+.exclude-tag {
+  font-size: 20rpx;
+  padding: 4rpx 10rpx;
+  border-radius: 8rpx;
+}
+
+.exclude-tag.total {
+  color: #f59e0b;
+  background: #fef3c7;
+}
+
+.exclude-tag.daily {
+  color: #10b981;
+  background: #d1fae5;
+}
+
 /* 资产名后面的分类标签 - 更大 */
 .category-tag-inline {
   display: flex;

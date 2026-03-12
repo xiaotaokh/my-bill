@@ -24,7 +24,7 @@
       </view>
       <view class="total-divider"></view>
       <view class="total-card-right">
-        <view class="daily-label">日均成本</view>
+        <view class="daily-label">总日均成本</view>
         <view class="daily-value">¥{{dailyCost}}</view>
       </view>
       <view class="total-glow"></view>
@@ -152,13 +152,18 @@
         >
           <view class="card-left">
             <view class="asset-avatar">
-              <text class="avatar-icon">{{item.icon || '📦'}}</text>
+              <image wx:if="{{item.categoryIconUrl}}" class="avatar-img" src="{{item.categoryIconUrl}}" mode="aspectFit"></image>
+              <text wx:else class="avatar-icon">{{item.categoryIcon || '📦'}}</text>
             </view>
           </view>
           <view class="card-content">
             <view class="card-header">
               <view class="name-with-category">
                 <text class="asset-name">{{item.name}}</text>
+                <view wx:if="{{item.excludeTotal || item.excludeDaily}}" class="exclude-tags">
+                  <text wx:if="{{item.excludeTotal}}" class="exclude-tag total">不计入总资产</text>
+                  <text wx:if="{{item.excludeDaily}}" class="exclude-tag daily">不计入总日均</text>
+                </view>
                 <view wx:if="{{activeCategory === 'all'}}" class="category-tag-inline">
                   <image wx:if="{{item.categoryIconUrl}}" class="tag-icon-inline" src="{{item.categoryIconUrl}}" mode="aspectFit"></image>
                   <text wx:else class="tag-icon-text-inline">{{item.categoryIcon || '📦'}}</text>
@@ -184,6 +189,11 @@
                 <view class="stat-item">
                   <text class="stat-label">折合每日</text>
                   <text class="stat-value cost">¥{{item.dailyEquivalent}}/天</text>
+                </view>
+                <view class="stat-divider"></view>
+                <view class="stat-item">
+                  <text class="stat-label">日均成本</text>
+                  <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
                 </view>
                 <view class="stat-divider"></view>
               </block>

@@ -185,6 +185,26 @@
             color="#f59e0b"
           />
         </view>
+        <!-- 卖出日期选择器 -->
+        <view class="retired-date-wrapper" wx:if="{{isSold}}">
+          <view class="retired-date-item">
+            <view class="item-label">
+              <text class="required">*</text>
+              <text>卖出日期</text>
+            </view>
+            <picker
+              mode="date"
+              bindchange="onSoldDateChange"
+              value="{{soldDate}}"
+              class="item-picker"
+            >
+              <view class="picker-content">
+                <text class="picker-value">{{soldDate || '请选择卖出日期'}}</text>
+                <text class="picker-icon">›</text>
+              </view>
+            </picker>
+          </view>
+        </view>
         <view class="switch-item">
           <text class="switch-label">不计入总资产</text>
           <switch
@@ -194,7 +214,7 @@
           />
         </view>
         <view class="switch-item">
-          <text class="switch-label">不计入日均</text>
+          <text class="switch-label">不计入总日均</text>
           <switch
             checked="{{excludeDaily}}"
             bindchange="onExcludeDailyChange"

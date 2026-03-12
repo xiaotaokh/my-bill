@@ -11,6 +11,7 @@ Page({
     excludeTotal: false,
     excludeDaily: false,
     retiredDate: '', // 退役日期
+    soldDate: '', // 卖出日期
 
     // 缩略图选择
     selectedIcon: '📦', // 用户选择的自定义缩略图（默认为📦）
@@ -308,13 +309,28 @@ Page({
     const checked = e.detail.value;
     const updates = { isSold: checked };
 
-    // 如果已卖出，取消已退役并清空退役日期
+    // 如果打开已卖出，设置默认卖出日期为今天，并取消已退役
     if (checked) {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      updates.soldDate = `${year}-${month}-${day}`;
       updates.isRetired = false;
       updates.retiredDate = '';
+    } else {
+      // 关闭时清空卖出日期
+      updates.soldDate = '';
     }
 
     this.setData(updates);
+  },
+
+  // 卖出日期改变
+  onSoldDateChange(e) {
+    this.setData({
+      soldDate: e.detail.value
+    });
   },
 
   // 退役日期改变
@@ -365,6 +381,11 @@ Page({
     // 验证退役日期（如果已退役）
     if (this.data.isRetired && !this.data.retiredDate) {
       errors.retiredDate = '请选择退役日期';
+    }
+
+    // 验证卖出日期（如果已卖出）
+    if (this.data.isSold && !this.data.soldDate) {
+      errors.soldDate = '请选择卖出日期';
     }
 
     return errors;
@@ -425,6 +446,7 @@ Page({
         remark: formData.remark || '',
         status: status,
         retiredDate: this.data.isRetired ? this.data.retiredDate : '',
+        soldDate: this.data.isSold ? this.data.soldDate : '',
         excludeTotal: this.data.excludeTotal,
         excludeDaily: this.data.excludeDaily
       },

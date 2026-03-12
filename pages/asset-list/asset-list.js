@@ -14,6 +14,11 @@ Page({
       sold: '已卖出'
     },
 
+    // 排序字段映射（索引对应关系）
+    // 0:价格 1:购买时间 2:添加时间 3:服役时长 4:日均成本
+    // 前3个可在数据库层面排序，后2个需要前端排序
+    sortDbFields: ['price', 'purchaseDate', 'createdAt'],
+
     // 排序
     sortOptions: ['价格', '购买时间', '添加时间', '服役时长', '日均成本'],
     currentSortIndex: 0,
@@ -42,24 +47,46 @@ Page({
       return;
     }
 
+    const { currentSortIndex, sortOrder, sortDbFields, activeStatus } = this.data;
     const db = wx.cloud.database({
       env: getApp().globalData.envId
     });
 
-    // 只获取当前用户的资产
-    db.collection('assets')
-      .where({
-        _openid: openid
-      })
-      .orderBy('createdAt', 'desc')
-      .get()
+    // 构建查询条件
+    const whereCondition = {
+      _openid: openid
+    };
+
+    // 添加状态筛选条件
+    if (activeStatus && activeStatus !== 'all') {
+      whereCondition.status = activeStatus;
+    }
+
+    // 构建查询
+    let query = db.collection('assets').where(whereCondition);
+
+    // 判断是否可以在数据库层面排序（价格、购买时间、添加时间）
+    const sortField = sortDbFields[currentSortIndex];
+    if (sortField) {
+      // 数据库层面排序
+      query = query.orderBy(sortField, sortOrder);
+    } else {
+      // 计算字段排序，使用默认排序
+      query = query.orderBy('createdAt', 'desc');
+    }
+
+    query.get()
       .then(res => {
         this.setData({
           assets: res.data,
           filteredAssets: res.data
         });
-        // 应用默认排序
-        this.applySort();
+
+        // 只有前端排序字段（服役时长、日均成本）需要额外处理
+        // 数据库排序的字段已经排好序了，不需要再排序
+        if (!sortField) {
+          this.applySort();
+        }
       })
       .catch(err => {
         console.error('加载资产失败:', err);
@@ -87,34 +114,32 @@ Page({
   // 按状态筛选
   filterByStatus(e) {
     const status = e.currentTarget.dataset.status;
-    const { assets } = this.data;
-
-    let filtered = assets;
-    if (status !== 'all') {
-      filtered = assets.filter(asset => asset.status === status);
-    }
 
     this.setData({
-      activeStatus: status,
-      filteredAssets: filtered
+      activeStatus: status
     });
 
-    // 重新应用排序
-    this.applySort();
+    // 重新加载数据（带筛选条件）
+    this.loadAssets();
   },
 
   // 改变排序
   changeSort(e) {
     const index = parseInt(e.detail.value);
-    const { sortOrder } = this.data;
+    const { sortOrder, sortDbFields } = this.data;
 
     this.setData({
       currentSortIndex: index,
       sortOrder: sortOrder === 'desc' ? 'asc' : 'desc'
     });
 
-    // 应用排序
-    this.applySort();
+    // 如果是数据库支持的排序字段，重新从数据库查询
+    // 否则使用前端排序
+    if (sortDbFields[index]) {
+      this.loadAssets();
+    } else {
+      this.applySort();
+    }
   },
 
   // 切换排序顺序
@@ -134,7 +159,9 @@ Page({
     switch (currentSortIndex) {
       case 0: // 价格
         sorted.sort((a, b) => {
-          return sortOrder === 'desc' ? (b.price || 0) - (a.price || 0) : (a.price || 0) - (b.price || 0);
+          const priceA = Number(a.price) || 0;
+          const priceB = Number(b.price) || 0;
+          return sortOrder === 'desc' ? priceB - priceA : priceA - priceB;
         });
         break;
       case 1: // 购买时间

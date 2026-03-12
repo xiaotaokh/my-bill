@@ -35,9 +35,14 @@ Page({
     categoryList: [], // 包含图标信息的分类列表
     allCategories: [], // 用于设置页面显示所有分类
 
+    // 排序字段映射（索引对应关系）
+    // 0:价格 1:购买时间 2:添加时间 3:服役时长 4:日均成本
+    // 前3个可在数据库层面排序，后2个需要前端排序
+    sortDbFields: ['price', 'purchaseDate', 'createdAt'],
+
     // 排序
     sortOptions: ['价格', '购买时间', '添加时间', '服役时长', '日均成本'],
-    currentSortIndex: 0,
+    currentSortIndex: 2, // 默认按添加时间排序
     sortOrder: 'desc', // asc 或 desc
 
     // 视图控制
@@ -150,6 +155,8 @@ Page({
 
     // 使用 app 的 getOpenid 方法获取 openid
     const app = getApp();
+    const { currentSortIndex, sortOrder, sortDbFields, activeStatus, activeCategory } = this.data;
+
     app.getOpenid()
       .then(openid => {
         // 从云数据库获取资产数据
@@ -158,13 +165,35 @@ Page({
           env: app.globalData.envId
         });
 
-        // 只获取当前用户的资产
-        db.collection('assets')
-          .where({
-            _openid: openid
-          })
-          .orderBy('createdAt', 'desc')
-          .get()
+        // 构建查询条件
+        const whereCondition = {
+          _openid: openid
+        };
+
+        // 添加状态筛选条件
+        if (activeStatus && activeStatus !== 'all') {
+          whereCondition.status = activeStatus;
+        }
+
+        // 添加分类筛选条件
+        if (activeCategory && activeCategory !== 'all') {
+          whereCondition.category = activeCategory;
+        }
+
+        // 构建查询
+        let query = db.collection('assets').where(whereCondition);
+
+        // 判断是否可以在数据库层面排序（价格、购买时间、添加时间）
+        const sortField = sortDbFields[currentSortIndex];
+        if (sortField) {
+          // 数据库层面排序
+          query = query.orderBy(sortField, sortOrder);
+        } else {
+          // 计算字段排序，使用默认排序
+          query = query.orderBy('createdAt', 'desc');
+        }
+
+        query.get()
           .then(res => {
             console.log('获取资产成功:', res.data.length);
             // 为每个资产添加计算字段
@@ -174,8 +203,14 @@ Page({
               filteredAssets: assetsWithCalculated,
               isLoading: false
             });
-            // 计算统计数据
-            this.calculateStats();
+
+            // 只有前端排序字段（服役时长、日均成本）需要额外处理
+            // 数据库排序的字段已经排好序了，不需要再排序
+            if (!sortField) {
+              this.applySort();
+            } else {
+              this.calculateStats();
+            }
           })
           .catch(err => {
             console.error('加载资产失败:', err);
@@ -238,29 +273,36 @@ Page({
     const purchaseDate = this.parseDate(asset.purchaseDate);
     const now = new Date();
 
-    // 计算已使用天数（包含当天，所以+1）
+    // 计算已使用天数
     let usedDays = 0;
+    let endDate = now; // 用于日期范围显示
+
     if (asset.purchaseDate) {
-      usedDays = Math.floor((now - purchaseDate) / (1000 * 60 * 60 * 24)) + 1;
-      if (usedDays < 0) usedDays = 1;
+      // 已退役/已卖出：计算到退役/卖出日期
+      if ((asset.status === 'retired' || asset.status === 'sold') && (asset.retireDate || asset.soldDate)) {
+        endDate = this.parseDate(asset.retireDate || asset.soldDate);
+      }
+
+      usedDays = Math.floor((endDate - purchaseDate) / (1000 * 60 * 60 * 24)) + 1;
+      if (usedDays <= 0) usedDays = 1;
+    }
+
+    // 计算日期范围
+    const startDate = this.formatDate(asset.purchaseDate);
+    let dateRangeEnd = '至今';
+    if (asset.status === 'retired' || asset.status === 'sold') {
+      dateRangeEnd = this.formatDate(asset.retireDate || asset.soldDate || now);
     }
 
     // 计算日均成本（仅服役中的资产计算）
     let dailyCost = '0.00';
     // 折合每日（已退役/已卖出）
     let dailyEquivalent = '0.00';
-    if (asset.status === 'active' && !asset.excludeDaily && asset.price && usedDays >= 1) {
+    if (asset.status === 'active' && asset.price && usedDays >= 1) {
+      // 无论是否排除日均，都计算日均成本用于显示
       dailyCost = (asset.price / usedDays).toFixed(2);
     } else if ((asset.status === 'retired' || asset.status === 'sold') && asset.price && usedDays >= 1) {
       dailyEquivalent = (asset.price / usedDays).toFixed(2);
-    }
-
-    // 计算日期范围
-    const startDate = this.formatDate(asset.purchaseDate);
-    let endDate = '至今';
-    if (asset.status === 'retired' || asset.status === 'sold') {
-      // 已退役或已卖出的，使用当前日期作为结束日期
-      endDate = this.formatDate(asset.retireDate || asset.soldDate || now);
     }
 
     // 获取类别图标 - 优先使用云存储图片，否则使用emoji
@@ -273,7 +315,7 @@ Page({
       usedDays,
       dailyCost,
       dailyEquivalent,
-      dateRange: asset.status === 'active' ? `${startDate} - 至今` : `${startDate} - ${endDate}`,
+      dateRange: asset.status === 'active' ? `${startDate} - 至今` : `${startDate} - ${dateRangeEnd}`,
       categoryIcon,
       categoryIconUrl
     };
@@ -365,27 +407,25 @@ Page({
     const { filteredAssets } = this.data;
 
     let totalPrice = 0;
-    let totalDays = 0;
+    let dailyCostTotal = 0;
     let activeCount = 0;
     let retiredCount = 0;
     let soldCount = 0;
 
     filteredAssets.forEach(asset => {
-      // 排除不计入总资产的项
-      if (asset.excludeTotal) return;
+      // 排除不计入总资产的项（字符串 "true" 也需要排除）
+      if (asset.excludeTotal === true || asset.excludeTotal === 'true') return;
 
       totalPrice += asset.price || 0;
+
+      // 累加日均成本（仅服役中且未排除日均计算的资产）
+      if (asset.status === 'active' && asset.excludeDaily !== true && asset.excludeDaily !== 'true' && asset.dailyCost) {
+        dailyCostTotal += parseFloat(asset.dailyCost);
+      }
 
       // 计算状态数量
       if (asset.status === 'active') {
         activeCount++;
-        // 计算服役天数（包含当天，所以+1）
-        if (asset.purchaseDate && !asset.excludeDaily) {
-          const purchaseDate = this.parseDate(asset.purchaseDate);
-          const now = new Date();
-          const days = Math.floor((now - purchaseDate) / (1000 * 60 * 60 * 24)) + 1;
-          totalDays += days;
-        }
       } else if (asset.status === 'retired') {
         retiredCount++;
       } else if (asset.status === 'sold') {
@@ -393,12 +433,9 @@ Page({
       }
     });
 
-    // 计算日均成本
-    const dailyCost = totalDays > 0 ? (totalPrice / totalDays).toFixed(2) : 0;
-
     this.setData({
       totalPrice: totalPrice.toFixed(2),
-      dailyCost: dailyCost,
+      dailyCost: dailyCostTotal.toFixed(2),
       activeCount,
       retiredCount,
       soldCount
@@ -408,49 +445,25 @@ Page({
   // 按状态筛选
   filterByStatus(e) {
     const status = e.currentTarget.dataset.status;
-    const { assets, activeCategory } = this.data;
-
-    let filtered = assets;
-    // 先按分类筛选
-    if (activeCategory !== 'all') {
-      filtered = filtered.filter(asset => asset.category === activeCategory);
-    }
-    // 再按状态筛选
-    if (status !== 'all') {
-      filtered = filtered.filter(asset => asset.status === status);
-    }
 
     this.setData({
-      activeStatus: status,
-      filteredAssets: filtered
+      activeStatus: status
     });
 
-    // 重新应用排序
-    this.applySort();
+    // 重新加载数据（带筛选条件）
+    this.loadAssets();
   },
 
   // 按分类筛选
   filterByCategory(e) {
     const category = e.currentTarget.dataset.category;
-    const { assets, activeStatus } = this.data;
-
-    let filtered = assets;
-    // 先按分类筛选
-    if (category !== 'all') {
-      filtered = filtered.filter(asset => asset.category === category);
-    }
-    // 再按状态筛选
-    if (activeStatus !== 'all') {
-      filtered = filtered.filter(asset => asset.status === activeStatus);
-    }
 
     this.setData({
-      activeCategory: category,
-      filteredAssets: filtered
+      activeCategory: category
     });
 
-    // 重新应用排序
-    this.applySort();
+    // 重新加载数据（带筛选条件）
+    this.loadAssets();
   },
 
   // 新增类别
@@ -502,20 +515,23 @@ Page({
 
   // 改变排序
   changeSort(e) {
-    const index = e.detail.value;
-    const { sortOrder } = this.data;
+    const index = parseInt(e.detail.value);
+    const { sortOrder, sortDbFields } = this.data;
 
     this.setData({
-      currentSortIndex: index
-    });
-
-    // 切换排序顺序
-    this.setData({
+      currentSortIndex: index,
       sortOrder: sortOrder === 'desc' ? 'asc' : 'desc'
     });
 
-    // 应用排序
-    this.applySort();
+    console.log('排序切换:', index, sortDbFields[index]);
+
+    // 如果是数据库支持的排序字段，重新从数据库查询
+    // 否则使用前端排序
+    if (sortDbFields[index]) {
+      this.loadAssets();
+    } else {
+      this.applySort();
+    }
   },
 
   // 应用排序
@@ -526,7 +542,9 @@ Page({
     switch (currentSortIndex) {
       case 0: // 价格
         sorted.sort((a, b) => {
-          return sortOrder === 'desc' ? (b.price || 0) - (a.price || 0) : (a.price || 0) - (b.price || 0);
+          const priceA = Number(a.price) || 0;
+          const priceB = Number(b.price) || 0;
+          return sortOrder === 'desc' ? priceB - priceA : priceA - priceB;
         });
         break;
       case 1: // 购买时间

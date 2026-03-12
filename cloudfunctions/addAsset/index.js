@@ -21,6 +21,7 @@ exports.main = async (event, context) => {
       remark = '',
       status = 'active',
       retiredDate = '',  // 退役日期
+      soldDate = '',  // 卖出日期
       excludeTotal = false,
       excludeDaily = false
     } = event;
@@ -45,6 +46,7 @@ exports.main = async (event, context) => {
         remark: remark,
         status: status,
         retiredDate: retiredDate,  // 存储退役日期
+        soldDate: soldDate,  // 存储卖出日期
         excludeTotal: excludeTotal,
         excludeDaily: excludeDaily,
         createdAt: db.serverDate(),
