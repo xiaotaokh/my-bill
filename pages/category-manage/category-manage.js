@@ -82,24 +82,50 @@ Page({
     wx.cloud.callFunction({
       name: 'getCategories',
       success: (res) => {
-        console.log('加载类别返回:', JSON.stringify(res.result, null, 2));
         const resultData = res.result;
 
         if (resultData && resultData.success) {
-          // 为每个类别添加计算后的图标信息
-          const categoriesWithIcons = (resultData.data || []).map(category => ({
-            ...category,
-            computedIcon: this.getCategoryIcon(category)
-          }));
+          // 为每个类别处理图标（云存储ID转换为临时路径）
+          const processCategories = async () => {
+            const categoriesData = resultData.data || [];
 
-          // 应用当前排序
-          const sortedCategories = this.applySorting(categoriesWithIcons);
+            const categoriesWithIcons = await Promise.all(categoriesData.map(async category => {
+              let displayIcon = null;
 
-          this.setData({
-            categories: sortedCategories
-          });
+              // 如果是云存储的fileID，获取临时文件链接
+              if (category.icon && category.icon.startsWith('cloud://')) {
+                try {
+                  const fileRes = await wx.cloud.getTempFileURL({
+                    fileList: [category.icon]
+                  });
+                  if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
+                    displayIcon = fileRes.fileList[0].tempFileURL;
+                  }
+                } catch (e) {
+                  // 获取失败时使用 null，显示内置图标
+                }
+              } else if (category.icon && category.icon.startsWith('http')) {
+                // 已经是 http 临时链接，直接使用
+                displayIcon = category.icon;
+              }
+
+              return {
+                ...category,
+                displayIcon: displayIcon,
+                computedIcon: this.getCategoryIcon(category)
+              };
+            }));
+
+            // 应用当前排序
+            const sortedCategories = this.applySorting(categoriesWithIcons);
+
+            this.setData({
+              categories: sortedCategories
+            });
+          };
+
+          processCategories();
         } else {
-          console.log('加载类别失败，云函数返回:', resultData);
           this.setData({
             categories: []
           });
@@ -110,7 +136,6 @@ Page({
         }
       },
       fail: (err) => {
-        console.error('加载类别失败:', err);
         this.setData({
           categories: []
         });
@@ -261,8 +286,10 @@ Page({
       const category = this.data.categories.find(cat => cat._id === categoryId);
       if (category) {
         // 判断是内置图标还是上传的图片
-        const isUploadedImage = category.icon && (category.icon.startsWith('cloud://') || category.icon.startsWith('http'));
-        const builtinIcon = this.data.builtinIcons.find(item => item.icon === category.icon);
+        // 云存储fileID格式: cloud://xxx 或 http开头
+        const iconValue = category.icon || '';
+        const isBuiltinIcon = this.data.builtinIcons.some(item => item.icon === iconValue);
+        const isUploadedImage = !isBuiltinIcon && iconValue.length > 0;
 
         this.setData({
           dialogVisible: true,
@@ -270,9 +297,9 @@ Page({
           operationType: 'edit',
           editCategoryId: categoryId,
           tempCategoryName: category.name,
-          selectedIcon: category.icon || this.data.builtinIcons[0].icon,
-          selectedIconName: builtinIcon ? builtinIcon.name : (isUploadedImage ? '自定义图片' : this.data.builtinIcons[0].name),
-          uploadedImagePath: isUploadedImage ? category.icon : ''
+          selectedIcon: iconValue || this.data.builtinIcons[0].icon,
+          selectedIconName: isBuiltinIcon ? (this.data.builtinIcons.find(item => item.icon === iconValue)?.name || '') : (isUploadedImage ? '自定义图片' : ''),
+          uploadedImagePath: isUploadedImage ? iconValue : ''
         });
       }
     }
@@ -323,7 +350,7 @@ Page({
         that.uploadImage(tempFilePath);
       },
       fail: function(err) {
-        console.log("用户取消选择图片或出现错误:", err);
+        // 用户取消选择图片或出现错误
       }
     });
   },
@@ -361,7 +388,6 @@ Page({
           title: '上传失败',
           icon: 'none'
         });
-        console.error('上传图片失败:', err);
       }
     });
   },
@@ -457,7 +483,6 @@ Page({
       },
       fail: (err) => {
         wx.hideLoading();
-        console.error('添加类别失败:', err);
         wx.showToast({
           title: '添加失败，请重试',
           icon: 'none'
@@ -508,7 +533,6 @@ Page({
       },
       fail: (err) => {
         wx.hideLoading();
-        console.error('更新类别失败:', err);
         wx.showToast({
           title: '更新失败，请重试',
           icon: 'none'
@@ -603,7 +627,6 @@ Page({
             },
             fail: (err) => {
               wx.hideLoading();
-              console.error('删除类别失败:', err);
               wx.showToast({
                 title: '删除失败，请重试',
                 icon: 'none'

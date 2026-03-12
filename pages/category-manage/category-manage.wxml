@@ -24,7 +24,8 @@
       <view class="category-item" wx:for="{{categories}}" wx:key="_id">
         <view class="category-info">
           <view class="category-avatar">
-            <text>{{item.icon || item.computedIcon}}</text>
+            <image wx:if="{{item.displayIcon}}" src="{{item.displayIcon}}" mode="aspectFit" class="category-icon-img"></image>
+            <text wx:else>{{item.icon || item.computedIcon}}</text>
           </view>
           <text class="category-name">{{item.name}}</text>
         </view>

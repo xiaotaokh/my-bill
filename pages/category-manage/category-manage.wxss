@@ -119,6 +119,12 @@
   background: linear-gradient(135deg, #f0f4ff 0%, #f5f3ff 100%);
   border-radius: 16rpx;
   font-size: 44rpx;
+  overflow: hidden;
+}
+
+.category-icon-img {
+  width: 60rpx;
+  height: 60rpx;
 }
 
 .category-name {

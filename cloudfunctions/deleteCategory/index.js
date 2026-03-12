@@ -25,14 +25,14 @@ exports.main = async (event, context) => {
     // 获取待删除的类别信息
     const categoryDoc = await db.collection('categories').doc(categoryId).get();
 
-    if (!categoryDoc.data || categoryDoc.data.length === 0) {
+    if (!categoryDoc.data) {
       return {
         success: false,
         error: '类别不存在'
       };
     }
 
-    const categoryData = categoryDoc.data[0];
+    const categoryData = categoryDoc.data;
 
     // 验证类别属于当前用户
     if (categoryData._openid !== wxContext.OPENID) {
