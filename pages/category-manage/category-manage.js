@@ -5,9 +5,9 @@ Page({
     categories: [],
     loading: false,
     // 排序相关
-    sortOptions: ['名称', '添加时间'],
-    currentSortIndex: 0,
-    sortOrder: 'asc', // 'asc' 或 'desc'
+    sortOptions: ['名称', '创建时间'],
+    currentSortIndex: 1,
+    sortOrder: 'desc', // 'asc' 或 'desc'
 
     // 添加/编辑弹窗相关
     dialogVisible: false,
@@ -21,39 +21,41 @@ Page({
     selectedIconName: '',
     uploadedImagePath: '', // 用户上传的图片路径
 
+    // 保护的系统分类
+    protectedCategories: ['电子设备', '房产', '车辆', '投资', '其他'],
+
     // 内置图标列表（带中文名称）
     builtinIcons: [
       { name: '默认', icon: '📦' },
-      { name: '手机', icon: '📱' },
-      { name: '电脑', icon: '💻' },
-      { name: '平板', icon: '🖥️' },
-      { name: '相机', icon: '📷' },
-      { name: '手表', icon: '⌚' },
-      { name: '眼镜', icon: '👓' },
-      { name: '耳机', icon: '🎧' },
-      { name: '音响', icon: '🔊' },
-      { name: '车子', icon: '🚗' },
+      { name: '电子设备', icon: '💻' },
+      { name: '交通工具', icon: '🚗' },
       { name: '房子', icon: '🏠' },
-      { name: '钱包', icon: '👛' },
-      { name: '珠宝', icon: '💎' },
-      { name: '家电', icon: '📺' },
+      { name: '电器', icon: '📺' },
       { name: '家具', icon: '🛋️' },
-      { name: '衣物', icon: '👕' },
-      { name: '鞋', icon: '👟' },
-      { name: '包包', icon: '👜' },
+      { name: '服饰', icon: '👕' },
+      { name: '贵重物品', icon: '💎' },
+      { name: '金融', icon: '💰' },
       { name: '书籍', icon: '📚' },
-      { name: '餐饮', icon: '🍔' },
-      { name: '饮品', icon: '🥤' },
-      { name: '药品', icon: '💊' },
-      { name: '健身', icon: '💪' },
+      { name: '宠物', icon: '🐕' },
       { name: '乐器', icon: '🎸' },
-      { name: '游戏', icon: '🎮' },
+      { name: '五金工具', icon: '🔧' },
+      { name: '健身', icon: '💪' },
+      { name: '厨房用品', icon: '🍳' },
+      { name: '家纺布艺', icon: '🛏️' },
+      { name: '卫浴用品', icon: '🚿' },
+      { name: '办公学习', icon: '📎' },
+      { name: '儿童母婴', icon: '👶' },
+      { name: '旅行户外', icon: '🧳' },
+      { name: '酒水', icon: '🍷' },
+      { name: '实验器材', icon: '🔬' },
+      { name: '渔业用具', icon: '🎣' },
+      { name: '美容美发', icon: '💆' },
+      { name: '露营装备', icon: '⛺' },
+      { name: '收藏品', icon: '🏺' },
+      { name: '虚拟资产', icon: '💾' },
       { name: '投资', icon: '📈' },
-      { name: '现金', icon: '💵' },
-      { name: '黄金', icon: '🥇' },
-      { name: '信用卡', icon: '💳' },
       { name: '保险', icon: '🛡️' },
-      { name: '其他', icon: '➕' }
+      { name: '其他', icon: '🔖' }
     ]
   },
 
@@ -72,6 +74,11 @@ Page({
     });
   },
 
+  // 判断是否为受保护分类
+  isProtectedCategory: function(name) {
+    return this.data.protectedCategories.includes(name);
+  },
+
   // 加载类别列表
   loadCategories: function (callback) {
     if (this.data.loading) return;
@@ -85,9 +92,11 @@ Page({
         const resultData = res.result;
 
         if (resultData && resultData.success) {
-          // 为每个类别处理图标（云存储ID转换为临时路径）
           const processCategories = async () => {
             const categoriesData = resultData.data || [];
+
+            // 计算分类总数
+            const totalCount = categoriesData.length;
 
             const categoriesWithIcons = await Promise.all(categoriesData.map(async category => {
               let displayIcon = null;
@@ -111,8 +120,7 @@ Page({
 
               return {
                 ...category,
-                displayIcon: displayIcon,
-                computedIcon: this.getCategoryIcon(category)
+                displayIcon: displayIcon
               };
             }));
 
@@ -152,6 +160,92 @@ Page({
     });
   },
 
+  // 按名称排序
+  changeSortByName: function() {
+    const { currentSortIndex, sortOrder, categories } = this.data;
+    let newIndex = 0;
+    let newOrder = 'asc';
+
+    if (currentSortIndex === 0) {
+      // 同一字段，切换升序/降序
+      newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    }
+
+    this.setData({
+      currentSortIndex: newIndex,
+      sortOrder: newOrder
+    });
+
+    // 使用新值进行排序
+    const sorted = this.applySortingWithParams(categories, newIndex, newOrder);
+    this.setData({ categories: sorted });
+
+    wx.showToast({
+      title: newOrder === 'asc' ? '名称 ↑' : '名称 ↓',
+      icon: 'none',
+      duration: 500
+    });
+  },
+
+  // 按创建时间排序
+  changeSortByTime: function() {
+    const { currentSortIndex, sortOrder, categories } = this.data;
+    let newIndex = 1;
+    let newOrder = 'asc';
+
+    if (currentSortIndex === 1) {
+      // 同一字段，切换升序/降序
+      newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    }
+
+    this.setData({
+      currentSortIndex: newIndex,
+      sortOrder: newOrder
+    });
+
+    // 使用新值进行排序
+    const sorted = this.applySortingWithParams(categories, newIndex, newOrder);
+    this.setData({ categories: sorted });
+
+    wx.showToast({
+      title: newOrder === 'asc' ? '创建时间 ↑' : '创建时间 ↓',
+      icon: 'none',
+      duration: 500
+    });
+  },
+
+  // 带参数的排序方法
+  applySortingWithParams: function(categories, sortIndex, sortOrder) {
+    const sorted = [...categories];
+
+    switch(sortIndex) {
+      case 0: // 按名称排序
+        sorted.sort((a, b) => {
+          const nameA = a.name.toLowerCase();
+          const nameB = b.name.toLowerCase();
+          if (sortOrder === 'asc') {
+            return nameA.localeCompare(nameB);
+          } else {
+            return nameB.localeCompare(nameA);
+          }
+        });
+        break;
+      case 1: // 按创建时间排序
+        sorted.sort((a, b) => {
+          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          if (sortOrder === 'asc') {
+            return timeA - timeB;
+          } else {
+            return timeB - timeA;
+          }
+        });
+        break;
+    }
+
+    return sorted;
+  },
+
   // 应用排序
   applySorting: function(categories) {
     const sorted = [...categories];
@@ -169,7 +263,7 @@ Page({
           }
         });
         break;
-      case 1: // 按添加时间排序
+      case 1: // 按创建时间排序（createdAt）
         sorted.sort((a, b) => {
           const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -185,86 +279,7 @@ Page({
     return sorted;
   },
 
-  // 改变排序
-  changeSort: function(e) {
-    const index = parseInt(e.detail.value);
-    const { sortOrder, currentSortIndex } = this.data;
-
-    // 如果是同一个排序字段，则切换升序/降序；否则重置为升序
-    const newSortOrder = (currentSortIndex === index) ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc';
-
-    this.setData({
-      currentSortIndex: index,
-      sortOrder: newSortOrder
-    });
-
-    // 重新排序并更新显示
-    const sortedCategories = this.applySorting(this.data.categories);
-    this.setData({
-      categories: sortedCategories
-    });
-  },
-
   // 获取分类图标
-  getCategoryIcon: function (category) {
-    if (!category || !category.name) return '📦';
-
-    // 根据类别返回相应图标
-    const categoryIcons = {
-      '电子设备': '📱',
-      '家具': '🛋️',
-      '车辆': '🚗',
-      '电脑': '💻',
-      '房产': '🏠',
-      '投资': '📈',
-      '餐饮': '🍔',
-      '衣服': '👕',
-      '书籍': '📚',
-      '运动': '⚽',
-      '游戏': '🎮',
-      '其他': '📦'
-    };
-
-    // 检查是否存在于类别映射中
-    if (categoryIcons[category.name]) {
-      return categoryIcons[category.name];
-    }
-
-    // 检查类别是否有自定义图标
-    if (category.icon) {
-      return category.icon;
-    }
-
-    // 对于更细分的类别，提取关键词进行匹配
-    const lowerCategory = category.name.toLowerCase();
-    if (lowerCategory.includes('电子') || lowerCategory.includes('手机') || lowerCategory.includes('数码')) {
-      return '📱';
-    } else if (lowerCategory.includes('车')) {
-      return '🚗';
-    } else if (lowerCategory.includes('房')) {
-      return '🏠';
-    } else if (lowerCategory.includes('电脑') || lowerCategory.includes('笔记')) {
-      return '💻';
-    } else if (lowerCategory.includes('家') || lowerCategory.includes('具')) {
-      return '🛋️';
-    } else if (lowerCategory.includes('投') || lowerCategory.includes('资') || lowerCategory.includes('基金') || lowerCategory.includes('股票')) {
-      return '📈';
-    } else if (lowerCategory.includes('餐') || lowerCategory.includes('食')) {
-      return '🍔';
-    } else if (lowerCategory.includes('衣') || lowerCategory.includes('服')) {
-      return '👕';
-    } else if (lowerCategory.includes('书') || lowerCategory.includes('图书')) {
-      return '📚';
-    } else if (lowerCategory.includes('运') || lowerCategory.includes('动') || lowerCategory.includes('球')) {
-      return '⚽';
-    } else if (lowerCategory.includes('游') || lowerCategory.includes('戏')) {
-      return '🎮';
-    }
-
-    // 默认返回一个通用图标
-    return '📦';
-  },
-
   // ========== 添加/编辑分类相关方法 ==========
 
   // 显示分类添加/编辑弹窗
@@ -286,7 +301,6 @@ Page({
       const category = this.data.categories.find(cat => cat._id === categoryId);
       if (category) {
         // 判断是内置图标还是上传的图片
-        // 云存储fileID格式: cloud://xxx 或 http开头
         const iconValue = category.icon || '';
         const isBuiltinIcon = this.data.builtinIcons.some(item => item.icon === iconValue);
         const isUploadedImage = !isBuiltinIcon && iconValue.length > 0;
@@ -567,16 +581,6 @@ Page({
     });
   },
 
-  // 处理Dialog关闭事件（保留兼容）
-  handleDialogClose: function(e) {
-    this.closeDialog();
-  },
-
-  // 处理Dialog确认（保留兼容）
-  handleDialogConfirm: function(e) {
-    this.confirmCategoryOperation();
-  },
-
   // 删除分类
   deleteCategory: function (e) {
     const dataset = e.currentTarget.dataset;
@@ -585,8 +589,7 @@ Page({
     const category = this.data.categories[categoryIndex];
 
     // 检查是否为不可删除的默认分类
-    const protectedCategories = ['电子设备', '房产', '车辆', '投资', '其他'];
-    if (protectedCategories.includes(category.name)) {
+    if (this.isProtectedCategory(category.name)) {
       wx.showModal({
         title: '提示',
         content: '系统默认分类不能删除',

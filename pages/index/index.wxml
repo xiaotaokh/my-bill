@@ -74,25 +74,29 @@
 
     <!-- 筛选和排序 -->
     <view class="filter-section">
-      <!-- 分类筛选 -->
+      <!-- 分类筛选 - 带图标 -->
       <view class="category-bar">
+        <!-- 全部分类 -->
         <view
           class="category-pill {{activeCategory === 'all' ? 'active' : ''}}"
           bindtap="filterByCategory"
           data-category="all"
-        >全部</view>
-        <view
-          class="category-pill {{activeCategory === item ? 'active' : ''}}"
-          wx:for="{{categories}}"
-          wx:key="*this"
-          bindtap="filterByCategory"
-          data-category="{{item}}"
-        >{{item}}</view>
-        <!-- 新增类别入口 -->
-        <view class="category-add" bindtap="addCategory">
-          <text class="add-icon">+</text>
-          <text class="add-text">新增类别</text>
+        >
+          <text class="pill-icon">🏷️</text>
+          <text class="pill-text">全部</text>
         </view>
+        <!-- 分类列表 -->
+        <block wx:for="{{categoryList}}" wx:key="name">
+          <view
+            class="category-pill {{activeCategory === item.name ? 'active' : ''}}"
+            bindtap="filterByCategory"
+            data-category="{{item.name}}"
+          >
+            <image wx:if="{{item.displayIcon}}" class="pill-icon-img" src="{{item.displayIcon}}" mode="aspectFit"></image>
+            <text wx:else class="pill-icon">{{item.icon}}</text>
+            <text class="pill-text">{{item.name}}</text>
+          </view>
+        </block>
       </view>
       <!-- 状态筛选 -->
       <view class="filter-bar">
@@ -131,7 +135,7 @@
         <view class="sort-wrapper">
           <picker mode="selector" range="{{sortOptions}}" bindchange="changeSort">
             <view class="sort-btn">
-              <text>排序：{{sortOptions[currentSortIndex]}}</text>
+              <text class="sort-text">{{sortOptions[currentSortIndex]}}</text>
               <text class="sort-arrow {{sortOrder === 'desc' ? 'desc' : 'asc'}}">▼</text>
             </view>
           </picker>

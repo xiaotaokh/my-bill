@@ -10,6 +10,7 @@ Page({
     isSold: false,
     excludeTotal: false,
     excludeDaily: false,
+    retiredDate: '', // 退役日期
 
     // 缩略图选择
     selectedIcon: '📦', // 用户选择的自定义缩略图（默认为📦）
@@ -74,19 +75,47 @@ Page({
       success: (res) => {
         console.log('加载类别成功:', res);
         if (res.result && res.result.success && res.result.data) {
-          const categories = res.result.data.map(item => ({
-            name: item.name,
-            icon: item.icon || '', // 加载类别图标
-            selected: false // 默认不选中
-          }));
+          const processCategories = async () => {
+            const categoriesData = res.result.data;
 
-          // 默认选中第一个类别
-          if (categories.length > 0) {
-            categories[0].selected = true;
-          }
+            const categoriesWithIcons = await Promise.all(categoriesData.map(async category => {
+              let displayIcon = null;
 
-          console.log('类别列表:', categories);
-          this.setData({ categories });
+              // 如果是云存储的fileID，获取临时文件链接
+              if (category.icon && category.icon.startsWith('cloud://')) {
+                try {
+                  const fileRes = await wx.cloud.getTempFileURL({
+                    fileList: [category.icon]
+                  });
+                  if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
+                    displayIcon = fileRes.fileList[0].tempFileURL;
+                  }
+                } catch (e) {
+                  console.error('获取临时文件链接失败:', e);
+                }
+              } else if (category.icon && category.icon.startsWith('http')) {
+                // 已经是 http 临时链接，直接使用
+                displayIcon = category.icon;
+              }
+
+              return {
+                name: category.name,
+                icon: category.icon || '',
+                displayIcon: displayIcon, // 临时文件链接
+                selected: false // 默认不选中
+              };
+            }));
+
+            // 默认选中第一个类别
+            if (categoriesWithIcons.length > 0) {
+              categoriesWithIcons[0].selected = true;
+            }
+
+            console.log('类别列表:', categoriesWithIcons);
+            this.setData({ categories: categoriesWithIcons });
+          };
+
+          processCategories();
         } else {
           console.log('加载类别失败，云函数返回错误:', res.result);
           this.setData({ categories: [] });
@@ -256,23 +285,43 @@ Page({
   // 已退役开关
   onRetiredChange(e) {
     const checked = e.detail.value;
-    this.setData({ isRetired: checked });
+    const updates = { isRetired: checked };
 
-    // 如果已退役，取消已卖出
+    // 如果打开已退役，设置默认退役日期为今天，并取消已卖出
     if (checked) {
-      this.setData({ isSold: false });
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      updates.retiredDate = `${year}-${month}-${day}`;
+      updates.isSold = false;
+    } else {
+      // 关闭时清空退役日期
+      updates.retiredDate = '';
     }
+
+    this.setData(updates);
   },
 
   // 已卖出开关
   onSoldChange(e) {
     const checked = e.detail.value;
-    this.setData({ isSold: checked });
+    const updates = { isSold: checked };
 
-    // 如果已卖出，取消已退役
+    // 如果已卖出，取消已退役并清空退役日期
     if (checked) {
-      this.setData({ isRetired: false });
+      updates.isRetired = false;
+      updates.retiredDate = '';
     }
+
+    this.setData(updates);
+  },
+
+  // 退役日期改变
+  onRetiredDateChange(e) {
+    this.setData({
+      retiredDate: e.detail.value
+    });
   },
 
   // 不计入总资产开关
@@ -311,6 +360,11 @@ Page({
     // 验证类别（至少选择一个）
     if (!formData.category || formData.category.trim() === '') {
       errors.category = '请至少选择一个类别';
+    }
+
+    // 验证退役日期（如果已退役）
+    if (this.data.isRetired && !this.data.retiredDate) {
+      errors.retiredDate = '请选择退役日期';
     }
 
     return errors;
@@ -370,6 +424,7 @@ Page({
         icon: formData.icon, // 传递缩略图字段
         remark: formData.remark || '',
         status: status,
+        retiredDate: this.data.isRetired ? this.data.retiredDate : '',
         excludeTotal: this.data.excludeTotal,
         excludeDaily: this.data.excludeDaily
       },

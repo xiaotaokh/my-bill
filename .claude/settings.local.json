@@ -36,7 +36,10 @@
       "Bash(chmod +x clean-temp-files.sh && ./clean-temp-files.sh)",
       "Bash(find cloudfunctions -name \"miniprogram_npm\" -type d -exec rm -rf {} +)",
       "Bash(find . -name \"*.js\" -not -path \"./node_modules/*\" -not -path \"./cloudfunctions/*\" -not -path \"./miniprogram_npm/*\" -exec grep -l \"require\\\\|import\" {} \\\\;)",
-      "Bash(npm install tdesign-miniprogram --save)"
+      "Bash(npm install tdesign-miniprogram --save)",
+      "Bash(node -c pages/category-manage/category-manage.js 2>&1)",
+      "Bash(node -c /Users/taohang/Documents/project/Demo/myBill/pages/category-manage/category-manage.js 2>&1)",
+      "Bash(git checkout pages/index/index.js pages/index/index.wxml pages/index/index.wxss)"
     ]
   },
   "enabledPlugins": {

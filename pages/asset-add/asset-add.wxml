@@ -105,7 +105,11 @@
           <view class="checkbox {{item.selected ? 'checked' : ''}}">
             <text class="check-mark">✓</text>
           </view>
-          <view class="category-icon">{{item.icon || '🏷️'}}</view>  <!-- 显示类别图标 -->
+          <!-- 显示类别图标：支持自定义图片和emoji -->
+          <view class="category-icon-wrap">
+            <image wx:if="{{item.displayIcon}}" src="{{item.displayIcon}}" mode="aspectFit" class="category-icon-img"></image>
+            <text wx:else class="category-icon">{{item.icon || '🏷️'}}</text>
+          </view>
           <text class="category-name">{{item.name}}</text>
         </view>
 
@@ -152,6 +156,26 @@
             bindchange="onRetiredChange"
             color="#10b981"
           />
+        </view>
+        <!-- 退役日期选择器 -->
+        <view class="retired-date-wrapper" wx:if="{{isRetired}}">
+          <view class="retired-date-item">
+            <view class="item-label">
+              <text class="required">*</text>
+              <text>退役日期</text>
+            </view>
+            <picker
+              mode="date"
+              bindchange="onRetiredDateChange"
+              value="{{retiredDate}}"
+              class="item-picker"
+            >
+              <view class="picker-content">
+                <text class="picker-value">{{retiredDate || '请选择退役日期'}}</text>
+                <text class="picker-icon">›</text>
+              </view>
+            </picker>
+          </view>
         </view>
         <view class="switch-item">
           <text class="switch-label">已卖出</text>

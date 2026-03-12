@@ -32,6 +32,7 @@ Page({
     // 分类筛选
     activeCategory: 'all',
     categories: [],
+    categoryList: [], // 包含图标信息的分类列表
     allCategories: [], // 用于设置页面显示所有分类
 
     // 排序
@@ -64,27 +65,60 @@ Page({
     wx.cloud.callFunction({
       name: 'getCategories',
       success: (res) => {
-        console.log('加载类别返回:', JSON.stringify(res.result, null, 2));
         const resultData = res.result;
-        if (resultData && resultData.data && Array.isArray(resultData.data)) {
-          const categories = resultData.data.map(item => item.name);
-          console.log('类别列表:', categories);
-          this.setData({
-            categories,
-            allCategories: [...categories] // 同时更新所有分类
-          });
+        if (resultData && resultData.success && resultData.data) {
+          const processCategories = async () => {
+            const categoriesData = resultData.data || [];
+
+            const categoriesWithIcons = await Promise.all(categoriesData.map(async category => {
+              let displayIcon = null;
+
+              // 如果是云存储的fileID，获取临时文件链接
+              if (category.icon && category.icon.startsWith('cloud://')) {
+                try {
+                  const fileRes = await wx.cloud.getTempFileURL({
+                    fileList: [category.icon]
+                  });
+                  if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
+                    displayIcon = fileRes.fileList[0].tempFileURL;
+                  }
+                } catch (e) {
+                  // 获取失败时使用 null，显示 icon
+                }
+              } else if (category.icon && category.icon.startsWith('http')) {
+                displayIcon = category.icon;
+              }
+
+              return {
+                name: category.name,
+                icon: category.icon || '',
+                displayIcon: displayIcon
+              };
+            }));
+
+            // 分类名称数组（用于筛选）
+            const categoryNames = categoriesWithIcons.map(c => c.name);
+
+            this.setData({
+              categories: categoryNames,
+              categoryList: categoriesWithIcons,
+              allCategories: [...categoryNames]
+            });
+          };
+
+          processCategories();
         } else {
-          console.log('加载类别失败，云函数返回:', resultData);
           this.setData({
             categories: [],
+            categoryList: [],
             allCategories: []
           });
         }
       },
-      fail: (err) => {
-        console.error('加载类别失败:', err);
+      fail: () => {
         this.setData({
           categories: [],
+          categoryList: [],
           allCategories: []
         });
       }

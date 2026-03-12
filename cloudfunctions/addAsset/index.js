@@ -13,6 +13,7 @@ exports.main = async (event, context) => {
       icon,  // 图标字段
       remark = '',
       status = 'active',
+      retiredDate = '',  // 退役日期
       excludeTotal = false,
       excludeDaily = false
     } = event;
@@ -36,6 +37,7 @@ exports.main = async (event, context) => {
         icon: icon,  // 存储图标信息
         remark: remark,
         status: status,
+        retiredDate: retiredDate,  // 存储退役日期
         excludeTotal: excludeTotal,
         excludeDaily: excludeDaily,
         createdAt: db.serverDate(),
