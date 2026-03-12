@@ -11,6 +11,38 @@ Page({
     excludeTotal: false,
     excludeDaily: false,
 
+    // 缩略图选择
+    selectedIcon: '📦', // 用户选择的自定义缩略图（默认为📦）
+    selectedIconName: '默认',
+    uploadedImagePath: '', // 用户上传的图片路径
+    builtinIcons: [  // 内置的常见资产图标
+      { name: '默认', icon: '📦' },  // 将默认图标放在第一位
+      { name: '手机', icon: '📱' },
+      { name: '电脑', icon: '💻' },
+      { name: '平板', icon: '🖥️' },  // 修复平板图标，使用显示器图标
+      { name: '相机', icon: '📷' },
+      { name: '手表', icon: '⌚' },
+      { name: '眼镜', icon: '👓' },
+      { name: '耳机', icon: '🎧' },
+      { name: '音响', icon: '🔊' },
+      { name: '车子', icon: '🚗' },
+      { name: '房子', icon: '🏠' },
+      { name: '钱包', icon: '👛' },  // 修复钱包图标
+      { name: '珠宝', icon: '💎' },
+      { name: '家电', icon: '📺' },
+      { name: '家具', icon: '🛋️' },  // 修复家具图标
+      { name: '衣物', icon: '👕' },
+      { name: '鞋', icon: '👟' },
+      { name: '包包', icon: '👜' },
+      { name: '书籍', icon: '📚' },
+      { name: '餐饮', icon: '🍔' },
+      { name: '饮品', icon: '🥤' },
+      { name: '药品', icon: '💊' },
+      { name: '健身', icon: '💪' },
+      { name: '乐器', icon: '🎸' },
+      { name: '游戏', icon: '🎮' }
+    ],
+
     // 类别 - 初始为空，从数据库加载
     categories: [],
 
@@ -24,9 +56,13 @@ Page({
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
+
     this.setData({
-      purchaseDate: `${year}-${month}-${day}`
+      purchaseDate: `${year}-${month}-${day}`,
+      selectedIcon: '📦', // 设置默认的通用emoji
+      selectedIconName: '默认'
     });
+
     // 加载类别
     this.loadCategories();
   },
@@ -40,8 +76,15 @@ Page({
         if (res.result && res.result.success && res.result.data) {
           const categories = res.result.data.map(item => ({
             name: item.name,
+            icon: item.icon || '', // 加载类别图标
             selected: false // 默认不选中
           }));
+
+          // 默认选中第一个类别
+          if (categories.length > 0) {
+            categories[0].selected = true;
+          }
+
           console.log('类别列表:', categories);
           this.setData({ categories });
         } else {
@@ -52,6 +95,128 @@ Page({
       fail: (err) => {
         console.error('加载类别失败:', err);
         this.setData({ categories: [] });
+      }
+    });
+  },
+
+  // 辅助函数：判断是否为图片路径（云存储或网络路径）
+  isAssetImage(icon) {
+    if (!icon) return true;  // 没有图标时显示上传区域
+    // 检查是否为云存储路径或网络路径
+    return icon.indexOf('cloud://') !== -1 || icon.indexOf('http://') !== -1 || icon.indexOf('https://') !== -1;
+  },
+
+  // 移除已上传的图片
+  removeUploadedImage() {
+    // 删除上传图片后，默认选中第一个内置图标（默认图标）
+    this.setData({
+      uploadedImagePath: '',
+      selectedIcon: this.data.builtinIcons[0].icon, // 默认选中第一个内置图标
+      selectedIconName: this.data.builtinIcons[0].name
+    });
+  },
+
+  selectBuiltinIcon(e) {
+    const icon = e.currentTarget.dataset.icon;
+    this.setData({
+      selectedIcon: icon.icon,
+      selectedIconName: icon.name,
+      uploadedImagePath: '' // 清空之前上传的图片
+    });
+    // 移除提示信息
+    // wx.showToast({
+    //   title: `已选择${icon.name}`,
+    //   icon: 'success'
+    // });
+  },
+
+  // 选择自定义图标
+  chooseIcon() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      maxDuration: 30,
+      camera: 'back',
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        const size = res.tempFiles[0].size;
+
+        // 检查文件大小（2M限制）
+        if (size > 2 * 1024 * 1024) {
+          wx.showToast({
+            title: '图片大小不能超过2M',
+            icon: 'none'
+          });
+          return;
+        }
+
+        // 检查文件类型
+        const ext = tempFilePath.split('.').pop().toLowerCase();
+        const allowedTypes = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
+        if (!allowedTypes.includes(ext)) {
+          wx.showToast({
+            title: '仅支持jpg/png/webp/svg格式',
+            icon: 'none'
+          });
+          return;
+        }
+
+        // 设置临时路径作为预览，并清空之前选择的内置图标
+        this.setData({
+          selectedIcon: '', // 清空之前选择的内置图标
+          uploadedImagePath: tempFilePath // 设置上传图片的临时路径
+        });
+
+        // 上传图片到云存储
+        this.uploadIconToCloud(tempFilePath);
+      },
+      fail: (err) => {
+        console.error('选择图片失败:', err);
+        if (err.errMsg && err.errMsg.includes('cancel')) {
+          // 用户取消选择，不做任何操作
+          return;
+        }
+        wx.showToast({
+          title: '选择图片失败',
+          icon: 'none'
+        });
+      }
+    });
+  },
+
+  // 上传图标到云存储
+  uploadIconToCloud(filePath) {
+    wx.showLoading({ title: '上传中...' });
+
+    const fileName = `icons/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.png`;
+
+    wx.cloud.uploadFile({
+      cloudPath: fileName,
+      filePath: filePath,
+      success: (res) => {
+        console.log('上传成功:', res.fileID);
+        // 上传成功后，更新selectedIcon为云存储路径，保持缩略图显示
+        this.setData({
+          uploadedImagePath: res.fileID // 使用uploadedImagePath存储云存储路径
+        });
+        wx.hideLoading();
+        wx.showToast({
+          title: '上传成功',
+          icon: 'success'
+        });
+      },
+      fail: (err) => {
+        console.error('上传失败:', err);
+        wx.hideLoading();
+        wx.showToast({
+          title: '上传失败，请重试',
+          icon: 'none'
+        });
+        // 如果上传失败，清空上传路径
+        this.setData({
+          uploadedImagePath: ''
+        });
       }
     });
   },
@@ -85,55 +250,6 @@ Page({
 
     this.setData({
       [key]: !this.data.categories[index].selected
-    });
-  },
-
-  // 添加新类别
-  addCategory() {
-    wx.showModal({
-      title: '添加新类别',
-      editable: true,
-      placeholderText: '请输入新类别名称',
-      confirmButtonText: '确定',
-      success: (res) => {
-        if (res.confirm && res.content) {
-          const newCategory = res.content.trim();
-          if (newCategory) {
-            wx.showLoading({ title: '添加中...' });
-            // 调用云函数添加类别
-            wx.cloud.callFunction({
-              name: 'addCategory',
-              data: { name: newCategory },
-              success: (res) => {
-                wx.hideLoading();
-                if (res.result.success) {
-                  const newCategories = [...this.data.categories, { name: newCategory, selected: true }];
-                  this.setData({
-                    categories: newCategories
-                  });
-                  wx.showToast({
-                    title: '添加成功',
-                    icon: 'success'
-                  });
-                } else {
-                  wx.showToast({
-                    title: res.result.error || '添加失败',
-                    icon: 'none'
-                  });
-                }
-              },
-              fail: (err) => {
-                wx.hideLoading();
-                console.error('添加类别失败:', err);
-                wx.showToast({
-                  title: '添加失败，请重试',
-                  icon: 'none'
-                });
-              }
-            });
-          }
-        }
-      }
     });
   },
 
@@ -207,7 +323,10 @@ Page({
       name: this.data.name,
       price: this.data.price,
       purchaseDate: this.data.purchaseDate,
-      remark: this.data.remark
+      remark: this.data.remark,
+      // 优先使用上传的图片，如果有的话；否则使用选择的内置图标
+      // 如果两者都没有，使用默认图标
+      icon: this.data.uploadedImagePath || this.data.selectedIcon || '📦'
     };
 
     // 获取选中的类别
@@ -240,65 +359,57 @@ Page({
       status = 'sold';
     }
 
-    // 获取 openid
-    const openid = getApp().globalData.openid;
-    if (!openid) {
-      wx.hideLoading();
-      wx.showToast({
-        title: '获取用户信息失败，请重试',
-        icon: 'none'
-      });
-      return;
-    }
-
-    // 保存到云数据库
-    const db = wx.cloud.database({
-      env: getApp().globalData.envId
-    });
-    db.collection('assets').add({
+    // 调用云函数保存资产
+    wx.cloud.callFunction({
+      name: 'addAsset',
       data: {
-        _openid: openid,
         name: formData.name.trim(),
         price: parseFloat(formData.price),
         purchaseDate: formData.purchaseDate,
         category: formData.category,
+        icon: formData.icon, // 传递缩略图字段
         remark: formData.remark || '',
         status: status,
         excludeTotal: this.data.excludeTotal,
-        excludeDaily: this.data.excludeDaily,
-        createdAt: db.serverDate(),
-        updatedAt: db.serverDate()
-      }
-    }).then(() => {
-      wx.hideLoading();
-      wx.showToast({
-        title: '保存成功',
-        icon: 'success'
-      });
+        excludeDaily: this.data.excludeDaily
+      },
+      success: (res) => {
+        console.log('云函数调用成功:', res);
+        if (res.result.success) {
+          wx.hideLoading();
+          wx.showToast({
+            title: '保存成功',
+            icon: 'success'
+          });
 
-      // 返回首页并刷新
-      setTimeout(() => {
-        wx.navigateBack({
-          delta: 1,
-          success: () => {
-            // 触发上一页的 onShow
-            const pages = getCurrentPages();
-            if (pages.length > 1) {
-              const prevPage = pages[pages.length - 2];
-              if (prevPage.loadAssets) {
-                prevPage.loadAssets();
+          // 返回首页并刷新
+          setTimeout(() => {
+            wx.navigateBack({
+              delta: 1,
+              success: () => {
+                // 触发上一页的 onShow
+                const pages = getCurrentPages();
+                if (pages.length > 1) {
+                  const prevPage = pages[pages.length - 2];
+                  if (prevPage.loadAssets) {
+                    prevPage.loadAssets();
+                  }
+                }
               }
-            }
-          }
+            });
+          }, 1500);
+        } else {
+          throw new Error(res.result.error || '保存失败');
+        }
+      },
+      fail: (err) => {
+        console.error('云函数调用失败:', err);
+        wx.hideLoading();
+        wx.showToast({
+          title: '保存失败，请重试',
+          icon: 'none'
         });
-      }, 1500);
-    }).catch(err => {
-      console.error('保存失败:', err);
-      wx.hideLoading();
-      wx.showToast({
-        title: '保存失败，请重试',
-        icon: 'none'
-      });
+      }
     });
   }
 });

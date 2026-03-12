@@ -1,6 +1,11 @@
 <!--asset-detail.wxml-->
 <view class="container">
   <view class="detail-card">
+    <!-- 图标 -->
+    <view class="asset-icon-container">
+      <text class="asset-icon">{{asset.icon || getAvatarIcon(asset.category)}}</text>
+    </view>
+
     <!-- 资产状态标签 -->
     <view class="status-badge {{asset.status === 'active' ? 'status-active' : asset.status === 'retired' ? 'status-retired' : 'status-sold'}}">
       {{asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出'}}

@@ -3,7 +3,9 @@
     "pages/index/index",
     "pages/asset-list/asset-list",
     "pages/asset-add/asset-add",
-    "pages/asset-detail/asset-detail"
+    "pages/asset-detail/asset-detail",
+    "pages/category-manage/category-manage",
+    "pages/setting/setting"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -13,5 +15,9 @@
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json",
-  "cloud": true
+  "cloud": true,
+  "usingComponents": {
+    "t-dialog": "tdesign-miniprogram/dialog/dialog",
+    "t-input": "tdesign-miniprogram/input/input"
+  }
 }

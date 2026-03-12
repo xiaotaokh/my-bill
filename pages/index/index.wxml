@@ -3,201 +3,267 @@
   <!-- 顶部背景 -->
   <view class="header-bg"></view>
 
-  <!-- 日期显示 -->
-  <view class="date-section">
-    <view class="date-display">
-      <text class="date-day">{{currentDay}}</text>
-      <view class="date-info">
-        <text class="date-month">{{currentMonth}}月 {{currentYear}}</text>
-        <text class="date-week">{{currentWeek}}</text>
+  <!-- 主内容区域 -->
+  <view class="main-content" style="{{showSetting ? 'display: none;' : 'display: block;'}}">
+    <!-- 日期显示 -->
+    <view class="date-section">
+      <view class="date-display">
+        <text class="date-day">{{currentDay}}</text>
+        <view class="date-info">
+          <text class="date-month">{{currentMonth}}月 {{currentYear}}</text>
+          <text class="date-week">{{currentWeek}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 总资产卡片 -->
+    <view class="total-card">
+      <view class="total-card-left">
+        <view class="total-label">总资产</view>
+        <view class="total-value">¥{{totalPrice}}</view>
+      </view>
+      <view class="total-divider"></view>
+      <view class="total-card-right">
+        <view class="daily-label">日均成本</view>
+        <view class="daily-value">¥{{dailyCost}}</view>
+      </view>
+      <view class="total-glow"></view>
+    </view>
+
+    <!-- 统计指标卡片 -->
+    <view class="stats-section">
+      <view class="stat-row">
+        <view class="stat-item">
+          <view class="stat-icon active-icon">
+            <text class="iconfont">📦</text>
+          </view>
+          <view class="stat-content">
+            <text class="stat-number">{{activeCount}}</text>
+            <text class="stat-name">服役中</text>
+          </view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-icon retired-icon">
+            <text class="iconfont">🏠</text>
+          </view>
+          <view class="stat-content">
+            <text class="stat-number">{{retiredCount}}</text>
+            <text class="stat-name">已退役</text>
+          </view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-icon sold-icon">
+            <text class="iconfont">💰</text>
+          </view>
+          <view class="stat-content">
+            <text class="stat-number">{{soldCount}}</text>
+            <text class="stat-name">已卖出</text>
+          </view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-icon total-icon">
+            <text class="iconfont">📊</text>
+          </view>
+          <view class="stat-content">
+            <text class="stat-number">{{assets.length}}</text>
+            <text class="stat-name">资产总数</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 筛选和排序 -->
+    <view class="filter-section">
+      <!-- 分类筛选 -->
+      <view class="category-bar">
+        <view
+          class="category-pill {{activeCategory === 'all' ? 'active' : ''}}"
+          bindtap="filterByCategory"
+          data-category="all"
+        >全部</view>
+        <view
+          class="category-pill {{activeCategory === item ? 'active' : ''}}"
+          wx:for="{{categories}}"
+          wx:key="*this"
+          bindtap="filterByCategory"
+          data-category="{{item}}"
+        >{{item}}</view>
+        <!-- 新增类别入口 -->
+        <view class="category-add" bindtap="addCategory">
+          <text class="add-icon">+</text>
+          <text class="add-text">新增类别</text>
+        </view>
+      </view>
+      <!-- 状态筛选 -->
+      <view class="filter-bar">
+        <view
+          class="filter-pill {{activeStatus === 'all' ? 'active-all' : ''}}"
+          bindtap="filterByStatus"
+          data-status="all"
+        >全部</view>
+        <view
+          class="filter-pill {{activeStatus === 'active' ? 'active-active' : ''}}"
+          bindtap="filterByStatus"
+          data-status="active"
+        >服役中</view>
+        <view
+          class="filter-pill {{activeStatus === 'retired' ? 'active-retired' : ''}}"
+          bindtap="filterByStatus"
+          data-status="retired"
+        >已退役</view>
+        <view
+          class="filter-pill {{activeStatus === 'sold' ? 'active-sold' : ''}}"
+          bindtap="filterByStatus"
+          data-status="sold"
+        >已卖出</view>
+      </view>
+    </view>
+
+    <!-- 资产列表 -->
+    <scroll-view class="asset-list" scroll-y>
+      <view class="list-header">
+        <view class="list-title-wrapper">
+          <text class="list-title">我的资产</text>
+          <view class="list-count-badge">
+            <text>{{filteredAssets.length}}</text>
+          </view>
+        </view>
+        <view class="sort-wrapper">
+          <picker mode="selector" range="{{sortOptions}}" bindchange="changeSort">
+            <view class="sort-btn">
+              <text>排序：{{sortOptions[currentSortIndex]}}</text>
+              <text class="sort-arrow {{sortOrder === 'desc' ? 'desc' : 'asc'}}">▼</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+
+      <block wx:if="{{filteredAssets.length > 0}}">
+        <view
+          class="asset-card"
+          wx:for="{{filteredAssets}}"
+          wx:key="_id"
+          bindtap="goToDetail"
+          data-id="{{item._id}}"
+        >
+          <view class="card-left">
+            <view class="asset-avatar">
+              <text class="avatar-icon">{{item.icon || getAvatarIcon(item)}}</text>
+            </view>
+          </view>
+          <view class="card-content">
+            <view class="card-header">
+              <text class="asset-name">{{item.name}}</text>
+              <view class="asset-badge {{item.status}}">
+                <text>{{item.status === 'active' ? '服役中' : item.status === 'retired' ? '已退役' : '已卖出'}}</text>
+              </view>
+            </view>
+            <view class="card-info">
+              <text class="category-tag">{{item.category}}</text>
+              <text class="purchase-date">{{item.dateRange}}</text>
+            </view>
+            <view class="card-stats">
+              <view class="stat-item">
+                <text class="stat-label">日均成本</text>
+                <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
+              </view>
+              <view class="stat-divider"></view>
+              <view class="stat-item">
+                <text class="stat-label">已使用</text>
+                <text class="stat-value">{{item.usedDays}}天</text>
+              </view>
+              <view class="stat-divider"></view>
+              <view class="stat-item">
+                <text class="stat-label">价格</text>
+                <text class="stat-value price">¥{{item.price}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </block>
+
+      <block wx:else>
+        <view class="empty-state">
+          <view class="empty-illustration">
+            <text class="empty-icon">💎</text>
+          </view>
+          <text class="empty-title">还没有资产</text>
+          <text class="empty-desc">点击右下角按钮添加第一笔资产</text>
+        </view>
+      </block>
+
+      <view class="list-bottom-spacer"></view>
+    </scroll-view>
+  </view>
+
+  <!-- 设置视图 -->
+  <view class="setting-content" style="{{showSetting ? 'display: block;' : 'display: none;'}}">
+    <!-- 设置头部 -->
+    <view class="setting-header">
+      <view class="setting-back" bindtap="switchToHome">
+        <text class="back-icon">‹</text>
+      </view>
+      <text class="setting-title">设置</text>
+    </view>
+
+    <!-- 设置主内容 -->
+    <view class="setting-main">
+      <!-- 功能设置 -->
+      <view class="setting-section">
+        <view class="section-title">功能设置</view>
+        <view class="setting-item" bindtap="navigateToCategoryManage">
+          <text class="item-label">分类管理</text>
+          <text class="arrow">›</text>
+        </view>
+        <view class="setting-item">
+          <text class="item-label">数据备份</text>
+          <switch class="item-switch" checked />
+        </view>
+        <view class="setting-item">
+          <text class="item-label">隐私设置</text>
+          <text class="arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 分类管理展开内容 -->
+
+      <!-- 关于 -->
+      <view class="setting-section">
+        <view class="section-title">关于</view>
+        <view class="setting-item">
+          <text class="item-label">版本信息</text>
+          <text class="item-value">v1.0.0</text>
+        </view>
+        <view class="setting-item">
+          <text class="item-label">意见反馈</text>
+          <text class="arrow">›</text>
+        </view>
       </view>
     </view>
   </view>
 
-  <!-- 总资产圆形卡片 -->
-  <view class="total-card">
-    <view class="total-card-left">
-      <view class="total-label">总资产</view>
-      <view class="total-value">¥{{totalPrice}}</view>
-    </view>
-    <view class="total-divider"></view>
-    <view class="total-card-right">
-      <view class="daily-label">日均成本</view>
-      <view class="daily-value">¥{{dailyCost}}</view>
-    </view>
-    <view class="total-glow"></view>
-  </view>
-
-  <!-- 统计指标卡片 -->
-  <view class="stats-section">
-    <view class="stat-row">
-      <view class="stat-item">
-        <view class="stat-icon active-icon">
-          <text class="iconfont">📦</text>
+  <!-- 底部悬浮：首页/设置切换 + 新增资产按钮 -->
+  <view class="bottom-controls">
+    <!-- 首页/设置切换悬浮按钮 -->
+    <view class="mode-switch-fab">
+      <view class="fab-group">
+        <view class="fab-item {{!showSetting ? 'active' : ''}}" bindtap="switchToHome">
+          <text class="fab-icon">🏠</text>
+          <text class="fab-label">首页</text>
         </view>
-        <view class="stat-content">
-          <text class="stat-number">{{activeCount}}</text>
-          <text class="stat-name">服役中</text>
-        </view>
-      </view>
-      <view class="stat-item">
-        <view class="stat-icon retired-icon">
-          <text class="iconfont">🏠</text>
-        </view>
-        <view class="stat-content">
-          <text class="stat-number">{{retiredCount}}</text>
-          <text class="stat-name">已退役</text>
-        </view>
-      </view>
-      <view class="stat-item">
-        <view class="stat-icon sold-icon">
-          <text class="iconfont">💰</text>
-        </view>
-        <view class="stat-content">
-          <text class="stat-number">{{soldCount}}</text>
-          <text class="stat-name">已卖出</text>
-        </view>
-      </view>
-      <view class="stat-item">
-        <view class="stat-icon total-icon">
-          <text class="iconfont">📊</text>
-        </view>
-        <view class="stat-content">
-          <text class="stat-number">{{assets.length}}</text>
-          <text class="stat-name">资产总数</text>
+        <view class="fab-item" bindtap="navigateToSetting">
+          <text class="fab-icon">⚙️</text>
+          <text class="fab-label">设置</text>
         </view>
       </view>
     </view>
-  </view>
 
-  <!-- 筛选和排序 -->
-  <view class="filter-section">
-    <!-- 分类筛选 -->
-    <view class="category-bar">
-      <view
-        class="category-pill {{activeCategory === 'all' ? 'active' : ''}}"
-        bindtap="filterByCategory"
-        data-category="all"
-      >全部</view>
-      <view
-        class="category-pill {{activeCategory === item ? 'active' : ''}}"
-        wx:for="{{categories}}"
-        wx:key="*this"
-        bindtap="filterByCategory"
-        data-category="{{item}}"
-      >{{item}}</view>
-      <!-- 新增类别入口 -->
-      <view class="category-add" bindtap="addCategory">
-        <text class="add-icon">+</text>
-        <text class="add-text">新增类别</text>
+    <!-- 新增资产悬浮按钮 -->
+    <view class="add-asset-fab" bindtap="goToAdd">
+      <view class="fab-inner">
+        <text class="fab-icon">+</text>
       </view>
+      <view class="fab-glow"></view>
     </view>
-    <!-- 状态筛选 -->
-    <view class="filter-bar">
-      <view
-        class="filter-pill {{activeStatus === 'all' ? 'active-all' : ''}}"
-        bindtap="filterByStatus"
-        data-status="all"
-      >全部</view>
-      <view
-        class="filter-pill {{activeStatus === 'active' ? 'active-active' : ''}}"
-        bindtap="filterByStatus"
-        data-status="active"
-      >服役中</view>
-      <view
-        class="filter-pill {{activeStatus === 'retired' ? 'active-retired' : ''}}"
-        bindtap="filterByStatus"
-        data-status="retired"
-      >已退役</view>
-      <view
-        class="filter-pill {{activeStatus === 'sold' ? 'active-sold' : ''}}"
-        bindtap="filterByStatus"
-        data-status="sold"
-      >已卖出</view>
-    </view>
-  </view>
-
-  <!-- 资产列表 -->
-  <scroll-view class="asset-list" scroll-y>
-    <view class="list-header">
-      <view class="list-title-wrapper">
-        <text class="list-title">我的资产</text>
-        <view class="list-count-badge">
-          <text>{{filteredAssets.length}}</text>
-        </view>
-      </view>
-      <view class="sort-wrapper">
-        <picker mode="selector" range="{{sortOptions}}" bindchange="changeSort">
-          <view class="sort-btn">
-            <text>排序：{{sortOptions[currentSortIndex]}}</text>
-            <text class="sort-arrow {{sortOrder === 'desc' ? 'desc' : 'asc'}}">▼</text>
-          </view>
-        </picker>
-      </view>
-    </view>
-
-    <block wx:if="{{filteredAssets.length > 0}}">
-      <view
-        class="asset-card"
-        wx:for="{{filteredAssets}}"
-        wx:key="_id"
-        bindtap="goToDetail"
-        data-id="{{item._id}}"
-      >
-        <view class="card-left">
-          <view class="asset-avatar">
-            <text class="avatar-icon">{{item.category === '电子设备' ? '📱' : item.category === '车辆' ? '🚗' : item.category === '房产' ? '🏠' : item.category === '投资' ? '📈' : '📦'}}</text>
-          </view>
-        </view>
-        <view class="card-content">
-          <view class="card-header">
-            <text class="asset-name">{{item.name}}</text>
-            <view class="asset-badge {{item.status}}">
-              <text>{{item.status === 'active' ? '服役中' : item.status === 'retired' ? '已退役' : '已卖出'}}</text>
-            </view>
-          </view>
-          <view class="card-info">
-            <text class="category-tag">{{item.category}}</text>
-            <text class="purchase-date">{{item.dateRange}}</text>
-          </view>
-          <view class="card-stats">
-            <view class="stat-item">
-              <text class="stat-label">日均成本</text>
-              <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
-            </view>
-            <view class="stat-divider"></view>
-            <view class="stat-item">
-              <text class="stat-label">已使用</text>
-              <text class="stat-value">{{item.usedDays}}天</text>
-            </view>
-            <view class="stat-divider"></view>
-            <view class="stat-item">
-              <text class="stat-label">价格</text>
-              <text class="stat-value price">¥{{item.price}}</text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </block>
-
-    <block wx:else>
-      <view class="empty-state">
-        <view class="empty-illustration">
-          <text class="empty-icon">💎</text>
-        </view>
-        <text class="empty-title">还没有资产</text>
-        <text class="empty-desc">点击右下角按钮添加第一笔资产</text>
-      </view>
-    </block>
-
-    <view class="list-bottom-spacer"></view>
-  </scroll-view>
-
-  <!-- 添加按钮 -->
-  <view class="add-fab" bindtap="goToAdd">
-    <view class="fab-inner">
-      <text class="fab-icon">+</text>
-    </view>
-    <view class="fab-glow"></view>
   </view>
 </view>

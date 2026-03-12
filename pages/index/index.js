@@ -32,11 +32,15 @@ Page({
     // 分类筛选
     activeCategory: 'all',
     categories: [],
+    allCategories: [], // 用于设置页面显示所有分类
 
     // 排序
     sortOptions: ['价格', '购买时间', '添加时间', '服役时长', '日均成本'],
     currentSortIndex: 0,
     sortOrder: 'desc', // asc 或 desc
+
+    // 视图控制
+    showSetting: false, // 控制显示设置视图
 
     // 加载状态标志
     isLoading: false
@@ -65,15 +69,24 @@ Page({
         if (resultData && resultData.data && Array.isArray(resultData.data)) {
           const categories = resultData.data.map(item => item.name);
           console.log('类别列表:', categories);
-          this.setData({ categories });
+          this.setData({
+            categories,
+            allCategories: [...categories] // 同时更新所有分类
+          });
         } else {
           console.log('加载类别失败，云函数返回:', resultData);
-          this.setData({ categories: [] });
+          this.setData({
+            categories: [],
+            allCategories: []
+          });
         }
       },
       fail: (err) => {
         console.error('加载类别失败:', err);
-        this.setData({ categories: [] });
+        this.setData({
+          categories: [],
+          allCategories: []
+        });
       }
     });
   },
@@ -217,6 +230,116 @@ Page({
       dailyCost,
       dateRange: asset.status === 'active' ? `${startDate} - 至今` : `${startDate} - ${endDate}`
     };
+  },
+
+  // 获取资产对应的默认图标
+  getAvatarIcon(category) {
+    if (!category) return '📦'; // 默认图标
+
+    // 根据类别返回相应图标
+    const categoryIcons = {
+      '电子设备': '📱',
+      '家具': '🛋️',
+      '车子': '🚗',
+      '电脑': '💻',
+      '房产': '🏠',
+      '投资': '📈',
+      '餐饮': '🍔',
+      '衣服': '👕',
+      '书籍': '📚',
+      '运动': '⚽',
+      '游戏': '🎮'
+    };
+
+    // 检查是否存在于类别映射中
+    if (categoryIcons[category]) {
+      return categoryIcons[category];
+    }
+
+    // 对于更细分的类别，提取关键词进行匹配
+    const lowerCategory = category.toLowerCase();
+    if (lowerCategory.includes('电子') || lowerCategory.includes('手机') || lowerCategory.includes('数码')) {
+      return '📱';
+    } else if (lowerCategory.includes('车') || lowerCategory.includes('汽车')) {
+      return '🚗';
+    } else if (lowerCategory.includes('房') || lowerCategory.includes('地产') || lowerCategory.includes('房子')) {
+      return '🏠';
+    } else if (lowerCategory.includes('电脑') || lowerCategory.includes('笔记')) {
+      return '💻';
+    } else if (lowerCategory.includes('家') || lowerCategory.includes('具')) {
+      return ' uphol.';
+    } else if (lowerCategory.includes('投') || lowerCategory.includes('资') || lowerCategory.includes('基金') || lowerCategory.includes('股票')) {
+      return '📈';
+    } else if (lowerCategory.includes('餐') || lowerCategory.includes('食')) {
+      return '🍔';
+    } else if (lowerCategory.includes('衣') || lowerCategory.includes('服')) {
+      return '👕';
+    } else if (lowerCategory.includes('书') || lowerCategory.includes('图书')) {
+      return '📚';
+    } else if (lowerCategory.includes('运') || lowerCategory.includes('动') || lowerCategory.includes('球')) {
+      return '⚽';
+    } else if (lowerCategory.includes('游') || lowerCategory.includes('戏')) {
+      return '🎮';
+    }
+
+    // 默认返回一个通用图标
+    return '📦';
+  },
+
+  // 获取分类图标 - 供分类管理页面使用
+  getCategoryIcon(category) {
+    if (!category) return '📦';
+
+    // 根据类别返回相应图标
+    const categoryIcons = {
+      '电子设备': '📱',
+      '家具': ' uphol.',
+      '车辆': '🚗',
+      '车子': '🚗',
+      '电脑': '💻',
+      '房产': '🏠',
+      '投资': '📈',
+      '餐饮': '🍔',
+      '衣服': '👕',
+      '书籍': '📚',
+      '运动': '⚽',
+      '游戏': '🎮',
+      '其他': '📦'
+    };
+
+    // 检查是否存在于类别映射中
+    if (categoryIcons[category]) {
+      return categoryIcons[category];
+    }
+
+    // 对于更细分的类别，提取关键词进行匹配
+    const lowerCategory = category.toLowerCase();
+    if (lowerCategory.includes('电子') || lowerCategory.includes('手机') || lowerCategory.includes('数码')) {
+      return '📱';
+    } else if (lowerCategory.includes('车') || lowerCategory.includes('汽车')) {
+      return '🚗';
+    } else if (lowerCategory.includes('房') || lowerCategory.includes('地产') || lowerCategory.includes('房子')) {
+      return '🏠';
+    } else if (lowerCategory.includes('电脑') || lowerCategory.includes('笔记')) {
+      return '💻';
+    } else if (lowerCategory.includes('家') || lowerCategory.includes('具')) {
+      return ' uphol.';
+    } else if (lowerCategory.includes('投') || lowerCategory.includes('资') || lowerCategory.includes('基金') || lowerCategory.includes('股票')) {
+      return '📈';
+    } else if (lowerCategory.includes('餐') || lowerCategory.includes('食')) {
+      return '🍔';
+    } else if (lowerCategory.includes('衣') || lowerCategory.includes('服')) {
+      return '👕';
+    } else if (lowerCategory.includes('书') || lowerCategory.includes('图书')) {
+      return '📚';
+    } else if (lowerCategory.includes('运') || lowerCategory.includes('动') || lowerCategory.includes('球')) {
+      return '⚽';
+    } else if (lowerCategory.includes('游') || lowerCategory.includes('戏')) {
+      return '🎮';
+    }
+
+    // 默认返回一个通用图标
+    return '📦';
   },
 
   // 计算统计数据
@@ -412,7 +535,7 @@ Page({
           const dateB = this.parseDate(b.purchaseDate).getTime();
           const daysA = (Date.now() - dateA) / (1000 * 60 * 60 * 24);
           const daysB = (Date.now() - dateB) / (1000 * 60 * 60 * 24);
-          return sortOrder === 'desc' ? daysB - daysA : daysA - daysB;
+          return sortOrder === 'desc' ? daysB - daysA : daysA - daysA;
         });
         break;
       case 4: // 日均成本
@@ -440,6 +563,267 @@ Page({
   goToAdd() {
     wx.navigateTo({
       url: '/pages/asset-add/asset-add'
+    });
+  },
+
+  // 切换模式（首页/设置）
+  toggleMode() {
+    this.setData({
+      showSetting: !this.data.showSetting,
+      showCategoryManagement: false // 确保分类管理关闭
+    });
+  },
+
+  // 切换到首页视图
+  switchToHome() {
+    this.setData({
+      showSetting: false,
+      showCategoryManagement: false
+    });
+  },
+
+  // 切换到设置视图
+  switchToSetting() {
+    this.setData({
+      showSetting: true
+    });
+  },
+
+  // 导航到分类管理页面
+  navigateToCategoryManage() {
+    wx.navigateTo({
+      url: '/pages/category-manage/category-manage'
+    });
+  },
+
+  // 导航到独立设置页面
+  navigateToSetting() {
+    wx.navigateTo({
+      url: '/pages/setting/setting'
+    });
+  },
+
+  // 添加新分类
+  addNewCategory() {
+    wx.showModal({
+      title: '添加新类别',
+      editable: true,
+      placeholderText: '请输入新类别名称',
+      confirmButtonText: '确定',
+      success: (res) => {
+        if (res.confirm && res.content) {
+          const newCategory = res.content.trim();
+          if (newCategory) {
+            wx.showLoading({ title: '添加中...' });
+            // 调用云函数添加类别
+            wx.cloud.callFunction({
+              name: 'addCategory',
+              data: { name: newCategory },
+              success: (res) => {
+                wx.hideLoading();
+                if (res.result.success) {
+                  // 重新加载类别列表
+                  this.loadCategories();
+                  wx.showToast({
+                    title: '添加成功',
+                    icon: 'success'
+                  });
+                } else {
+                  wx.showToast({
+                    title: res.result.error || '添加失败',
+                    icon: 'none'
+                  });
+                }
+              },
+              fail: (err) => {
+                wx.hideLoading();
+                console.error('添加类别失败:', err);
+                wx.showToast({
+                  title: '添加失败，请重试',
+                  icon: 'none'
+                });
+              }
+            });
+          }
+        }
+      }
+    });
+  },
+
+  // 编辑分类
+  editCategory(e) {
+    const index = e.currentTarget.dataset.index;
+    const categoryList = [...this.data.allCategories];
+    const oldName = categoryList[index];
+
+    wx.showModal({
+      title: '编辑分类',
+      editable: true,
+      placeholderText: '请输入新的分类名称',
+      content: oldName,
+      success: (res) => {
+        if (res.confirm && res.content.trim() && res.content.trim() !== oldName) {
+          const newCategory = res.content.trim();
+
+          // 检查新名称是否已存在
+          if (categoryList.includes(newCategory)) {
+            wx.showToast({
+              title: '分类已存在',
+              icon: 'none'
+            });
+            return;
+          }
+
+          // 获取该分类的详细信息以便编辑
+          wx.cloud.callFunction({
+            name: 'getCategories',
+            success: (getRes) => {
+              if (getRes.result && getRes.result.data) {
+                const categories = getRes.result.data;
+                const categoryToEdit = categories.find(cat => cat.name === oldName);
+
+                if (categoryToEdit) {
+                  wx.showLoading({ title: '更新中...' });
+
+                  // 调用云函数更新类别
+                  wx.cloud.callFunction({
+                    name: 'updateCategory',
+                    data: {
+                      categoryId: categoryToEdit._id,
+                      name: newCategory,
+                      icon: categoryToEdit.icon || ''
+                    },
+                    success: (updateRes) => {
+                      wx.hideLoading();
+                      if (updateRes.result.success) {
+                        // 重新加载类别列表
+                        this.loadCategories();
+                        wx.showToast({
+                          title: '修改成功',
+                          icon: 'success'
+                        });
+                      } else {
+                        wx.showToast({
+                          title: updateRes.result.error || '更新失败',
+                          icon: 'none'
+                        });
+                      }
+                    },
+                    fail: (err) => {
+                      wx.hideLoading();
+                      console.error('更新类别失败:', err);
+                      wx.showToast({
+                        title: '更新失败，请重试',
+                        icon: 'none'
+                      });
+                    }
+                  });
+                } else {
+                  wx.showToast({
+                    title: '找不到对应分类',
+                    icon: 'none'
+                  });
+                }
+              }
+            },
+            fail: (err) => {
+              console.error('获取分类详情失败:', err);
+              wx.showToast({
+                title: '获取分类信息失败',
+                icon: 'none'
+              });
+            }
+          });
+        }
+      }
+    });
+  },
+
+  // 删除分类
+  deleteCategory(e) {
+    const index = e.currentTarget.dataset.index;
+    const categoryList = [...this.data.allCategories];
+    const categoryToDelete = categoryList[index];
+
+    // 检查是否为不可删除的默认分类
+    const protectedCategories = ['电子设备', '房产', '车辆', '投资', '其他'];
+    if (protectedCategories.includes(categoryToDelete)) {
+      wx.showModal({
+        title: '提示',
+        content: '系统默认分类不能删除',
+        showCancel: false,
+        confirmText: '确定'
+      });
+      return;
+    }
+
+    wx.showModal({
+      title: '确认删除',
+      content: `确定要删除分类 "${categoryToDelete}" 吗？此操作不可恢复`,
+      success: (res) => {
+        if (res.confirm) {
+          wx.showLoading({ title: '删除中...' });
+
+          // 首先获取该分类的详细信息
+          wx.cloud.callFunction({
+            name: 'getCategories',
+            success: (getRes) => {
+              if (getRes.result && getRes.result.data) {
+                const categories = getRes.result.data;
+                const categoryObj = categories.find(cat => cat.name === categoryToDelete);
+
+                if (categoryObj) {
+                  // 调用云函数删除类别
+                  wx.cloud.callFunction({
+                    name: 'deleteCategory', // 需要创建这个云函数
+                    data: {
+                      categoryId: categoryObj._id
+                    },
+                    success: (deleteRes) => {
+                      wx.hideLoading();
+                      if (deleteRes.result.success) {
+                        // 重新加载类别列表
+                        this.loadCategories();
+                        wx.showToast({
+                          title: '删除成功',
+                          icon: 'success'
+                        });
+                      } else {
+                        wx.showToast({
+                          title: deleteRes.result.error || '删除失败',
+                          icon: 'none'
+                        });
+                      }
+                    },
+                    fail: (err) => {
+                      wx.hideLoading();
+                      console.error('删除类别失败:', err);
+                      wx.showToast({
+                        title: '删除失败，请重试',
+                        icon: 'none'
+                      });
+                    }
+                  });
+                } else {
+                  wx.hideLoading();
+                  wx.showToast({
+                    title: '找不到对应分类',
+                    icon: 'none'
+                  });
+                }
+              }
+            },
+            fail: (err) => {
+              wx.hideLoading();
+              console.error('获取分类详情失败:', err);
+              wx.showToast({
+                title: '获取分类信息失败',
+                icon: 'none'
+              });
+            }
+          });
+        }
+      }
     });
   },
 

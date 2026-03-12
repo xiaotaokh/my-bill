@@ -1,0 +1,16 @@
+{
+  "name": "mybill",
+  "version": "1.0.0",
+  "description": "## 项目说明",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "antd-mini": "^3.4.3",
+    "tdesign-miniprogram": "^1.12.3",
+    "weui-miniprogram": "^1.5.6"
+  }
+}

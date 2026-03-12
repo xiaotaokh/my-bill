@@ -22,7 +22,7 @@ exports.main = async (event, context) => {
 
     return {
       success: true,
-      data: res.data
+      data: res.data // 包含类别图标信息
     };
   } catch (err) {
     console.error('获取类别失败:', err);

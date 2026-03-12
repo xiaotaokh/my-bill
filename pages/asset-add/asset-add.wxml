@@ -57,14 +57,41 @@
       </view>
     </view>
 
+    <!-- 缩略图选择 -->
+    <view class="form-group">
+      <view class="form-header">
+        <text class="form-title">选择缩略图</text>
+      </view>
+      <view class="icon-selector">
+        <!-- 内置图标选择行 -->
+        <view class="builtin-icons-row">
+          <view class="builtin-icon-item {{selectedIcon === item.icon ? 'selected' : ''}}" wx:for="{{builtinIcons}}" wx:key="index" bindtap="selectBuiltinIcon" data-icon="{{item}}">
+            <text class="builtin-icon">{{item.icon}}</text>
+            <text class="builtin-icon-name">{{item.name}}</text>
+          </view>
+        </view>
+
+        <!-- 上传组件 -->
+        <view class="upload-area-large" bindtap="chooseIcon">
+          <text class="upload-icon-large">📷</text>
+          <text class="upload-text-large">上传自定义缩略图</text>
+          <text class="upload-desc-large">支持jpg/png/webp/svg格式，不超过2M</text>
+        </view>
+
+        <!-- 用户上传的缩略图预览区域（显示在上传组件下方） -->
+        <view class="uploaded-preview-area" wx:if="{{uploadedImagePath}}">
+          <view class="image-container">
+            <image class="uploaded-preview-image" src="{{uploadedImagePath}}" mode="aspectFill"></image>
+            <view class="remove-upload" bindtap="removeUploadedImage">✕</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
     <!-- 类别选择 -->
     <view class="form-group">
       <view class="form-header">
-        <text class="form-title">选择类别</text>
-        <view class="category-action" bindtap="addCategory">
-          <text class="action-icon">+</text>
-          <text class="action-text">新增</text>
-        </view>
+        <text class="form-title">分类</text>
       </view>
       <view class="category-grid">
         <view
@@ -72,18 +99,20 @@
           wx:for="{{categories}}"
           wx:key="name"
           bindtap="toggleCategory"
+          data-category="{{item.name}}"
           data-index="{{index}}"
         >
           <view class="checkbox {{item.selected ? 'checked' : ''}}">
             <text class="check-mark">✓</text>
           </view>
+          <view class="category-icon">{{item.icon || '🏷️'}}</view>  <!-- 显示类别图标 -->
           <text class="category-name">{{item.name}}</text>
         </view>
 
         <!-- 空状态 -->
         <view class="category-empty" wx:if="{{categories.length === 0}}">
           <text class="empty-icon">📦</text>
-          <text class="empty-text">暂无类别，点击右上角新增</text>
+          <text class="empty-text">暂无类别</text>
         </view>
       </view>
       <view class="category-error" wx:if="{{errors.category}}">

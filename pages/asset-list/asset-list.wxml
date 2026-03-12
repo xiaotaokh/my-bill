@@ -51,30 +51,35 @@
         bindtap="goToDetail"
         data-id="{{item._id}}"
       >
-        <view class="asset-header">
-          <view class="asset-name">{{item.name}}</view>
-          <view class="asset-status status-{{item.status}}">{{item.status === 'active' ? '服役中' : item.status === 'retired' ? '已退役' : '已卖出'}}</view>
+        <view class="asset-avatar">
+          <text class="avatar-icon">{{item.icon || getAvatarIcon(item)}}</text>
         </view>
+        <view class="asset-content">
+          <view class="asset-header">
+            <view class="asset-name">{{item.name}}</view>
+            <view class="asset-status status-{{item.status}}">{{item.status === 'active' ? '服役中' : item.status === 'retired' ? '已退役' : '已卖出'}}</view>
+          </view>
 
-        <view class="asset-info">
-          <view class="info-row">
-            <text class="label">分类：</text>
-            <text class="value">{{item.category}}</text>
+          <view class="asset-info">
+            <view class="info-row">
+              <text class="label">分类：</text>
+              <text class="value">{{item.category}}</text>
+            </view>
+            <view class="info-row">
+              <text class="label">价格：</text>
+              <text class="value price">¥{{item.price}}</text>
+            </view>
+            <view class="info-row">
+              <text class="label">购买时间：</text>
+              <text class="value">{{item.purchaseDate}}</text>
+            </view>
           </view>
-          <view class="info-row">
-            <text class="label">价格：</text>
-            <text class="value price">¥{{item.price}}</text>
-          </view>
-          <view class="info-row">
-            <text class="label">购买时间：</text>
-            <text class="value">{{item.purchaseDate}}</text>
-          </view>
-        </view>
 
-        <view class="asset-extra" wx:if="{{item.status === 'active'}}">
-          <view class="extra-item">
-            <text class="extra-label">服役时长</text>
-            <text class="extra-value">{{item.purchaseDate ? item.purchaseDate : '-'}}</text>
+          <view class="asset-extra" wx:if="{{item.status === 'active'}}">
+            <view class="extra-item">
+              <text class="extra-label">服役时长</text>
+              <text class="extra-value">{{item.purchaseDate ? item.purchaseDate : '-'}}</text>
+            </view>
           </view>
         </view>
       </view>

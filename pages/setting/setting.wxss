@@ -1,0 +1,90 @@
+/* pages/setting/setting.wxss */
+
+.container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 40rpx;
+}
+
+.page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 60rpx 30rpx 40rpx;
+  margin-bottom: 20rpx;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.header-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #fff;
+}
+
+.settings-list {
+  padding: 20rpx;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-icon {
+  width: 60rpx;
+  height: 60rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  color: #fff;
+  font-size: 28rpx;
+}
+
+.setting-info {
+  flex: 1;
+}
+
+.setting-title {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 6rpx;
+}
+
+.setting-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.setting-arrow {
+  color: #ccc;
+  font-size: 32rpx;
+}
+
+.version-info {
+  padding: 60rpx 30rpx 0;
+  text-align: center;
+}
+
+.version-text {
+  font-size: 24rpx;
+  color: #999;
+}

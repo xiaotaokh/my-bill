@@ -1,3 +1,14 @@
+.builtin-icon-item.selected {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+  box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.2);
+}
+
+.builtin-icon-item.selected .builtin-icon-name {
+  color: #1e40af;
+  font-weight: 600;
+}
+
 /* asset-add.wxss */
 
 /* ========== 设计主题：蓝紫渐变 × 呼吸感 ==========
@@ -55,51 +66,6 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: 1rpx;
-}
-
-/* 已选数量提示 */
-.selected-count {
-  font-size: 24rpx;
-  color: #8b5cf6;
-  font-weight: 600;
-  padding: 8rpx 16rpx;
-  background: linear-gradient(135deg,
-    rgba(139, 92, 246, 0.1) 0%,
-    rgba(217, 70, 239, 0.1) 100%);
-  border-radius: 12rpx;
-  margin-right: 12rpx;
-}
-
-/* 类别新增按钮 - 渐变胶囊 */
-.category-action {
-  display: flex;
-  align-items: center;
-  gap: 6rpx;
-  padding: 14rpx 24rpx;
-  background: linear-gradient(135deg,
-    #06b6d4 0%,
-    #3b82f6 100%);
-  border-radius: 24rpx;
-  box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.35);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
-
-.action-icon {
-  font-size: 30rpx;
-  color: #fff;
-  font-weight: bold;
-  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
-}
-
-.action-text {
-  font-size: 24rpx;
-  color: #fff;
-  font-weight: 500;
 }
 
 /* 表单项 - 宽松布局 */
@@ -226,6 +192,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20rpx;
+  width: 100%;
 }
 
 .category-item {
@@ -291,6 +258,13 @@
   transition: all 0.25s ease;
 }
 
+.category-icon {
+  font-size: 32rpx;
+  margin-bottom: 8rpx;
+  width: 100%;
+  text-align: center;
+}
+
 .category-item.selected .category-name {
   color: #1e40af;
   font-weight: 600;
@@ -302,6 +276,7 @@
   align-items: center;
   justify-content: center;
   padding: 60rpx 0;
+  grid-column: 1 / -1; /* 跨越整个网格 */
 }
 
 .empty-icon {
@@ -364,6 +339,190 @@
   font-weight: 500;
 }
 
+/* 图标选择样式 */
+.icon-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+
+.builtin-icons-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  justify-content: center;
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.builtin-icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16rpx 12rpx;
+  border-radius: 12rpx;
+  background: white;
+  border: 2rpx solid #e5e7eb;
+  transition: all 0.2s ease;
+  min-width: 80rpx;
+}
+
+.builtin-icon-item:active {
+  transform: scale(0.95);
+  border-color: #8b5cf6;
+  background: #f0f4ff;
+}
+
+.builtin-icon {
+  font-size: 40rpx;
+  margin-bottom: 6rpx;
+}
+
+.builtin-icon-name {
+  font-size: 20rpx;
+  color: #6b7280;
+}
+
+.current-icon-display {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.selected-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx;
+  border: 2rpx solid #c7d2fe;
+  border-radius: 16rpx;
+  background: white;
+  flex: 1;
+}
+
+.selected-icon-text {
+  font-size: 60rpx;
+  margin-bottom: 10rpx;
+}
+
+.selected-icon-name {
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+.uploaded-preview-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx;
+  margin-top: 20rpx;
+  width: 100%;
+  max-width: 100%;
+}
+
+.image-container {
+  position: relative;
+  display: inline-block;
+}
+
+
+
+
+.uploaded-preview-image {
+  width: 200rpx;
+  height: 200rpx;
+  max-width: 100%;
+  border-radius: 24rpx;
+  object-fit: cover;
+  margin-bottom: 15rpx;
+  border: 2rpx solid #e5e7eb;
+  box-shadow: 0 6rpx 12rpx rgba(0,0,0,0.15);
+}
+
+
+.remove-upload {
+  position: absolute;
+  top: -18rpx;
+  right: -18rpx;
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  cursor: pointer;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
+  border: 2rpx solid white;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.remove-upload:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6rpx 16rpx rgba(220, 38, 38, 0.6);
+}
+
+.upload-area-large {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  border: 2rpx dashed #c7d2fe;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg,
+    rgba(240, 244, 255, 0.6) 0%,
+    rgba(230, 236, 255, 0.4) 100%);
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 8rpx rgba(139, 92, 246, 0.1);
+  cursor: pointer;
+}
+
+.upload-area-large:active {
+  background: linear-gradient(135deg,
+    rgba(240, 244, 255, 0.8) 0%,
+    rgba(230, 236, 255, 0.6) 100%);
+  border-color: #8b5cf6;
+  transform: scale(0.98);
+}
+
+.upload-icon-large {
+  font-size: 80rpx;
+  margin-bottom: 16rpx;
+  color: #8b5cf6;
+  animation: float 3s ease-in-out infinite;
+}
+
+.upload-text-large {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #5f6368;
+  margin-bottom: 8rpx;
+}
+
+.upload-desc-large {
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+/* 浮动动画 */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5rpx); }
+}
+
+
 /* 提交栏 - fixed 悬浮按钮 */
 .submit-bar {
   position: fixed;
@@ -418,6 +577,7 @@
 .form-group:nth-child(2) { animation-delay: 0.1s; }
 .form-group:nth-child(3) { animation-delay: 0.2s; }
 .form-group:nth-child(4) { animation-delay: 0.3s; }
+.form-group:nth-child(5) { animation-delay: 0.4s; }
 
 /* 光晕装饰 */
 .container::before {

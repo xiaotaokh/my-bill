@@ -1,5 +1,6 @@
-/* index.wxss - 蓝紫渐变主题设计 */
+/* index.wxss - 保留原始样式，只添加悬浮按钮的自然风格样式 */
 
+/* 原有的所有样式保持不变 */
 page {
   --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --accent-purple: #9b72e8;
@@ -16,7 +17,7 @@ page {
   position: relative;
 }
 
-/* 顶部背景 - 随内容滚动 */
+/* 顶部背景 */
 .header-bg {
   position: absolute;
   top: 0;
@@ -392,7 +393,7 @@ page {
 .asset-list {
   position: relative;
   z-index: 1;
-  padding: 10rpx 20rpx 120rpx;
+  padding: 10rpx 20rpx 200rpx;
   height: calc(100vh - 580rpx);
   width: 100%;
   box-sizing: border-box;
@@ -467,6 +468,12 @@ page {
   align-items: center;
   justify-content: center;
   font-size: 32rpx;
+  border: 2rpx solid #e5e7eb;
+}
+
+.avatar-icon {
+  font-size: inherit;
+  line-height: 1;
 }
 
 .card-content {
@@ -616,43 +623,304 @@ page {
   height: 40rpx;
 }
 
-/* 添加按钮 */
-.add-fab {
-  position: fixed;
-  right: 40rpx;
-  bottom: 60rpx;
-  z-index: 999;
+/* 设置视图样式 */
+.setting-content {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 200rpx; /* 为底部悬浮控件留出足够空间 */
+  padding-top: 20rpx;
 }
 
-.fab-inner {
-  width: 88rpx;
-  height: 88rpx;
+.setting-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40rpx 30rpx 40rpx;
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 20rpx;
+}
+
+.setting-back {
+  position: absolute;
+  left: 30rpx;
+  top: 40rpx;
+  z-index: 2;
+}
+
+.back-icon {
+  font-size: 48rpx;
+  line-height: 1;
+  color: #fff;
+}
+
+.setting-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #fff;
+  flex: 1;
+  text-align: center;
+  padding: 0 60rpx;
+}
+
+.setting-main {
+  padding: 20rpx;
+}
+
+.setting-section {
+  margin-bottom: 30rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  font-size: 24rpx;
+  color: #999;
+  padding: 0 30rpx 20rpx;
+  text-transform: uppercase;
+}
+
+.setting-item {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 16rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.item-label {
+  font-size: 30rpx;
+  color: #333;
+  flex: 1;
+}
+
+.item-value {
+  font-size: 24rpx;
+  color: #999;
+  margin-right: 20rpx;
+}
+
+.arrow {
+  font-size: 32rpx;
+  color: #ccc;
+  line-height: 1;
+}
+
+.item-switch {
+  transform: scale(0.7);
+}
+
+/* 分类管理页面样式 */
+.category-management-container {
+  padding: 20rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-top: 10rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.category-list {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.category-item:last-child {
+  border-bottom: none;
+}
+
+.category-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.category-avatar {
+  width: 60rpx;
+  height: 60rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  color: #fff;
+  font-size: 28rpx;
+}
+
+.category-name {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.category-actions {
+  display: flex;
+  gap: 20rpx;
+}
+
+.action-btn {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.add-category-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  margin-top: 20rpx;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #fff;
+}
+
+/* 底部控制按钮 - 首页/设置和新增资产分开 */
+.bottom-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 40rpx 40rpx;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  pointer-events: none;
+}
+
+.bottom-controls .mode-switch-fab,
+.bottom-controls .add-asset-fab {
+  pointer-events: auto;
+}
+
+/* 首页/设置切换悬浮按钮组 - 自然生态风格扁平化样式 */
+.mode-switch-fab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.fab-group {
+  display: flex;
+  gap: 16rpx;
+  /* 使用自然生态风格的透明渐变背景 */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(240, 248, 255, 0.4) 100%);
+  border-radius: 50rpx; /* 更加椭圆形 */
+  padding: 20rpx 30rpx; /* 增加内边距使整体更大更椭圆 */
+  box-shadow: 0 6rpx 16rpx rgba(76, 175, 80, 0.2);
+  border: 1rpx solid rgba(255, 255, 255, 0.4);
+}
+
+.fab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 70rpx;
+  padding: 14rpx 10rpx;
+  border-radius: 36rpx; /* 更大的圆角 */
+  transition: all 0.3s ease;
+  color: #4CAF50;
+  /* 半透明背景与整体风格一致 */
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2rpx 8rpx rgba(76, 175, 80, 0.15);
+  border: 1rpx solid rgba(76, 175, 80, 0.2);
+}
+
+.fab-item:active {
+  transform: scale(0.95);
+}
+
+.fab-item.active {
+  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+  color: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(76, 175, 80, 0.3);
+}
+
+.fab-item.active .fab-icon {
+  color: #fff;
+}
+
+.fab-item.active .fab-label {
+  color: #fff;
+}
+
+.fab-icon {
+  font-size: 32rpx;
+  color: #4CAF50;
+  line-height: 1;
+  margin-bottom: 4rpx;
+}
+
+.fab-label {
+  font-size: 18rpx;
+  color: #4CAF50;
+  line-height: 1;
+}
+
+/* 新增资产悬浮按钮 - 自然生态风格扁平化样式 */
+.add-asset-fab {
+  width: 90rpx;
+  height: 90rpx;
+  position: relative;
+}
+
+.add-asset-fab .fab-inner {
+  width: 100%;
+  height: 100%;
+  /* 使用自然生态风格的绿色渐变 */
+  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12rpx 32rpx rgba(102, 126, 234, 0.4);
+  /* 自然生态风格阴影 */
+  box-shadow: 0 6rpx 16rpx rgba(76, 175, 80, 0.25);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.fab-inner:active {
+.add-asset-fab .fab-inner:active {
   transform: scale(0.92);
 }
 
-.fab-icon {
-  font-size: 44rpx;
+.add-asset-fab .fab-icon {
+  font-size: 40rpx;
   color: #fff;
-  font-weight: 300;
+  font-weight: bold;
   line-height: 1;
-  margin-top: -4rpx;
 }
 
-.fab-glow {
+.add-asset-fab .fab-label {
+  font-size: 20rpx;
+  color: #fff;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.add-asset-fab .fab-glow {
   position: absolute;
   width: 160rpx;
   height: 160rpx;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(76, 175, 80, 0.15) 0%, transparent 70%);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);

@@ -9,7 +9,7 @@ const db = cloud.database();
 const _ = db.command;
 
 exports.main = async (event, context) => {
-  const { name } = event;
+  const { name, icon } = event;
 
   if (!name || name.trim() === '') {
     return {
@@ -48,6 +48,7 @@ exports.main = async (event, context) => {
       data: {
         _openid: wxContext.OPENID,
         name: name.trim(),
+        icon: icon || '', // 添加图标字段，默认为空
         createdAt: db.serverDate(),
         updatedAt: db.serverDate()
       }
@@ -56,7 +57,8 @@ exports.main = async (event, context) => {
     return {
       success: true,
       id: result._id,
-      name: name.trim()
+      name: name.trim(),
+      icon: icon || '' // 返回图标信息
     };
   } catch (err) {
     console.error('添加类别失败:', err);

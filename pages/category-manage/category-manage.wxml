@@ -1,0 +1,131 @@
+<!-- category-manage.wxml -->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="header-content">
+      <text class="header-title">分类管理</text>
+    </view>
+  </view>
+
+  <!-- 排序选项 -->
+  <view class="sort-section">
+    <picker mode="selector" range="{{sortOptions}}" value="{{currentSortIndex}}" bindchange="changeSort">
+      <view class="sort-btn">
+        <text>排序方式：{{sortOptions[currentSortIndex]}}</text>
+        <text class="sort-arrow {{sortOrder === 'desc' ? 'desc' : 'asc'}}">▼</text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 分类列表 -->
+  <view class="category-list-container">
+    <view class="section-title">资产分类</view>
+    <view class="category-list">
+      <view class="category-item" wx:for="{{categories}}" wx:key="_id">
+        <view class="category-info">
+          <view class="category-avatar">
+            <text>{{item.icon || item.computedIcon}}</text>
+          </view>
+          <text class="category-name">{{item.name}}</text>
+        </view>
+        <view class="category-actions">
+          <view class="action-btn edit" bindtap="editCategory" data-index="{{index}}" data-id="{{item._id}}">
+            ✏️
+          </view>
+          <view class="action-btn delete" bindtap="deleteCategory" data-index="{{index}}" data-id="{{item._id}}">
+            🗑️
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{categories.length === 0}}" class="empty-state">
+        <view class="empty-illustration">
+          <text class="empty-icon">📋</text>
+        </view>
+        <text class="empty-title">暂无分类</text>
+        <text class="empty-desc">点击下方按钮添加第一个分类</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 添加分类按钮 -->
+  <view class="add-category-section">
+    <view class="add-category-btn" bindtap="addCategory">
+      <text class="add-category-text">+ 添加新分类</text>
+    </view>
+  </view>
+</view>
+
+<!-- 自定义弹窗 -->
+<view class="dialog-mask {{dialogVisible ? 'show' : ''}}" bindtap="closeDialog"></view>
+<view class="dialog-container {{dialogVisible ? 'show' : ''}}">
+  <view class="dialog-content">
+    <!-- 标题 -->
+    <view class="dialog-header">
+      <text class="dialog-title">{{dialogTitle}}</text>
+      <view class="dialog-close" bindtap="closeDialog">✕</view>
+    </view>
+
+    <!-- 表单内容 -->
+    <view class="dialog-form">
+      <!-- 分类名称输入 -->
+      <view class="form-item">
+        <view class="item-label">
+          <text class="required">*</text>
+          <text>分类名称</text>
+        </view>
+        <t-input
+          class="item-input"
+          placeholder="请输入分类名称"
+          value="{{tempCategoryName}}"
+          bind:change="onCategoryNameInput"
+          maxlength="20"
+          borderless
+        />
+      </view>
+
+      <!-- 选择图标 -->
+      <view class="form-item">
+        <view class="item-label">
+          <text>选择图标</text>
+        </view>
+
+        <!-- 内置图标选择 -->
+        <view class="icon-selector">
+          <view class="builtin-icons-row">
+            <view
+              class="builtin-icon-item {{selectedIcon == item.icon && !uploadedImagePath ? 'selected' : ''}}"
+              wx:for="{{builtinIcons}}"
+              wx:key="index"
+              bindtap="selectBuiltinIcon"
+              data-icon="{{item}}">
+              <text class="builtin-icon">{{item.icon}}</text>
+              <text class="builtin-icon-name">{{item.name}}</text>
+            </view>
+          </view>
+
+          <!-- 上传自定义图标 -->
+          <view class="upload-area-large" bindtap="chooseImage">
+            <text class="upload-icon-large">📷</text>
+            <text class="upload-text-large">上传自定义图标</text>
+            <text class="upload-desc-large">支持jpg/png格式，不超过2M</text>
+          </view>
+
+          <!-- 已上传图片预览 -->
+          <view class="uploaded-preview-area" wx:if="{{uploadedImagePath}}">
+            <view class="image-container">
+              <image class="uploaded-preview-image" src="{{uploadedImagePath}}" mode="aspectFill"></image>
+              <view class="remove-upload" bindtap="removeUploadedImage">✕</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部按钮 -->
+    <view class="dialog-footer">
+      <button class="dialog-btn cancel" bindtap="closeDialog">取消</button>
+      <button class="dialog-btn confirm" bindtap="confirmCategoryOperation">保存</button>
+    </view>
+  </view>
+</view>
