@@ -48,8 +48,17 @@ Page({
     // 视图控制
     showSetting: false, // 控制显示设置视图
 
+    // 批量删除视图控制
+    showBatchDelete: false,
+    batchAssetList: [], // 批量删除时的资产列表
+    selectedAssets: [], // 已选择的资产ID列表
+    isAllSelected: false, // 是否全选
+
     // 加载状态标志
     isLoading: false,
+
+    // 页面导航标志
+    _fromSetting: false, // 从设置页面进入分类管理
 
     // 回到顶部按钮显示控制
     showBackToTop: false
@@ -64,6 +73,15 @@ Page({
   onShow: function () {
     // 每次进入页面重新加载数据，但如果正在加载中则跳过
     if (this.data.isLoading) return;
+
+    // 如果是从分类管理页面返回，恢复设置视图
+    if (this.data._fromSetting) {
+      this.setData({
+        showSetting: true,
+        _fromSetting: false
+      });
+    }
+
     this.loadCategories();
     this.loadAssets();
   },
@@ -605,6 +623,10 @@ Page({
 
   // 导航到分类管理页面
   navigateToCategoryManage() {
+    // 设置标志，表示从设置页面进入分类管理
+    this.setData({
+      _fromSetting: true
+    });
     wx.navigateTo({
       url: '/pages/category-manage/category-manage'
     });
@@ -885,5 +907,247 @@ Page({
   },
 
   // 阻止触摸穿透
-  preventTouchMove() {}
+  preventTouchMove() {},
+
+  // ============================================
+  // 批量删除功能
+  // ============================================
+
+  // 进入批量删除模式
+  enterBatchDelete() {
+    // 加载所有资产用于批量删除
+    this.loadAllAssetsForBatch();
+    this.setData({
+      showSetting: false,
+      showBatchDelete: true,
+      selectedAssets: [],
+      isAllSelected: false
+    });
+  },
+
+  // 退出批量删除模式
+  exitBatchDelete() {
+    this.setData({
+      showBatchDelete: false,
+      showSetting: true, // 返回设置页面
+      selectedAssets: [],
+      isAllSelected: false,
+      batchAssetList: []
+    });
+  },
+
+  // 判断资产是否被选中（用于模板）
+  isAssetSelected(assetId) {
+    return this.data.selectedAssets.includes(assetId);
+  },
+
+  // 加载所有资产用于批量删除
+  loadAllAssetsForBatch() {
+    const app = getApp();
+
+    wx.showLoading({ title: '加载中...' });
+
+    app.getOpenid()
+      .then(openid => {
+        const db = wx.cloud.database({
+          env: app.globalData.envId
+        });
+
+        db.collection('assets')
+          .where({ _openid: openid })
+          .orderBy('createdAt', 'desc')
+          .get()
+          .then(async res => {
+            // 处理图标，并初始化 _selected 为 false，计算日期范围
+            const assetsWithIcon = await Promise.all(res.data.map(async asset => {
+              let displayIcon = null;
+              if (asset.icon && asset.icon.startsWith('cloud://')) {
+                try {
+                  const fileRes = await wx.cloud.getTempFileURL({
+                    fileList: [asset.icon]
+                  });
+                  if (fileRes.fileList && fileRes.fileList[0]) {
+                    displayIcon = fileRes.fileList[0].tempFileURL;
+                  }
+                } catch (e) {}
+              } else if (asset.icon && asset.icon.startsWith('http')) {
+                displayIcon = asset.icon;
+              }
+
+              // 计算日期范围
+              const purchaseDate = this.formatDate(asset.purchaseDate);
+              let dateRange = purchaseDate;
+              if (asset.status === 'active') {
+                dateRange = `${purchaseDate} - 至今`;
+              } else {
+                const endDate = this.formatDate(asset.retiredDate || asset.soldDate);
+                if (endDate) {
+                  dateRange = `${purchaseDate} - ${endDate}`;
+                } else {
+                  dateRange = `${purchaseDate} - 至今`;
+                }
+              }
+
+              return { ...asset, displayIcon, _selected: false, dateRange };
+            }));
+
+            this.setData({
+              batchAssetList: assetsWithIcon,
+              isAllSelected: false
+            });
+            wx.hideLoading();
+          })
+          .catch(err => {
+            console.error('加载资产失败:', err);
+            wx.hideLoading();
+            wx.showToast({ title: '加载失败', icon: 'none' });
+          });
+      })
+      .catch(err => {
+        console.error('获取openid失败:', err);
+        wx.hideLoading();
+        wx.showToast({ title: '获取用户信息失败', icon: 'none' });
+      });
+  },
+
+  // 切换选择资产
+  toggleSelectAsset(e) {
+    const id = e.currentTarget.dataset.id;
+    const { batchAssetList, selectedAssets } = this.data;
+    const index = selectedAssets.indexOf(id);
+
+    let newSelectedAssets;
+    if (index > -1) {
+      // 取消选中
+      newSelectedAssets = selectedAssets.filter(item => item !== id);
+    } else {
+      // 选中
+      newSelectedAssets = [...selectedAssets, id];
+    }
+
+    // 更新资产列表中的选中状态
+    const newBatchAssetList = batchAssetList.map(item => ({
+      ...item,
+      _selected: newSelectedAssets.includes(item._id)
+    }));
+
+    // 检查是否全选
+    const isAllSelected = newSelectedAssets.length === batchAssetList.length &&
+                          batchAssetList.length > 0;
+
+    this.setData({
+      selectedAssets: newSelectedAssets,
+      batchAssetList: newBatchAssetList,
+      isAllSelected
+    });
+  },
+
+  // 全选/取消全选
+  toggleSelectAll() {
+    const { isAllSelected, batchAssetList } = this.data;
+
+    if (isAllSelected) {
+      // 取消全选
+      const newBatchAssetList = batchAssetList.map(item => ({
+        ...item,
+        _selected: false
+      }));
+      this.setData({
+        selectedAssets: [],
+        batchAssetList: newBatchAssetList,
+        isAllSelected: false
+      });
+    } else {
+      // 全选
+      const allIds = batchAssetList.map(item => item._id);
+      const newBatchAssetList = batchAssetList.map(item => ({
+        ...item,
+        _selected: true
+      }));
+      this.setData({
+        selectedAssets: allIds,
+        batchAssetList: newBatchAssetList,
+        isAllSelected: true
+      });
+    }
+  },
+
+  // 确认批量删除
+  confirmBatchDelete() {
+    const { selectedAssets } = this.data;
+
+    if (selectedAssets.length === 0) {
+      wx.showToast({ title: '请选择要删除的资产', icon: 'none' });
+      return;
+    }
+
+    wx.showModal({
+      title: '⚠️ 确认删除',
+      content: `确定要删除选中的 ${selectedAssets.length} 项资产吗？此操作不可撤销`,
+      confirmText: '删除',
+      confirmColor: '#FF7043',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) {
+          this.executeBatchDelete();
+        }
+      }
+    });
+  },
+
+  // 执行批量删除
+  executeBatchDelete() {
+    const { selectedAssets } = this.data;
+    const app = getApp();
+
+    wx.showLoading({ title: '删除中...', mask: true });
+
+    // 调用云函数批量删除
+    wx.cloud.callFunction({
+      name: 'batchDeleteAssets',
+      data: { assetIds: selectedAssets },
+      success: (res) => {
+        wx.hideLoading();
+        if (res.result && res.result.success) {
+          // 从本地列表中移除已删除的资产，并保持 _selected 字段
+          const remainingAssets = this.data.batchAssetList
+            .filter(item => !selectedAssets.includes(item._id))
+            .map(item => ({ ...item, _selected: false }));
+
+          this.setData({
+            batchAssetList: remainingAssets,
+            selectedAssets: [],
+            isAllSelected: false
+          });
+
+          wx.showToast({
+            title: `成功删除 ${selectedAssets.length} 项`,
+            icon: 'success'
+          });
+
+          // 如果没有资产了，退出批量删除模式并刷新首页
+          if (remainingAssets.length === 0) {
+            setTimeout(() => {
+              this.exitBatchDelete();
+              // 刷新首页数据
+              this.loadAssets();
+            }, 1500);
+          }
+        } else {
+          wx.showToast({
+            title: res.result?.error || '删除失败',
+            icon: 'none'
+          });
+        }
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        console.error('批量删除失败:', err);
+        wx.showToast({
+          title: '删除失败，请重试',
+          icon: 'none'
+        });
+      }
+    });
+  }
 });

@@ -1,10 +1,10 @@
 <!--index.wxml-->
 <view class="container">
   <!-- 顶部背景 - 仅首页显示 -->
-  <view class="header-bg" style="{{showSetting ? 'display: none;' : 'display: block;'}}"></view>
+  <view class="header-bg" style="{{showSetting || showBatchDelete ? 'display: none;' : 'display: block;'}}"></view>
 
   <!-- 主内容区域 -->
-  <view class="main-content" style="{{showSetting ? 'display: none;' : 'display: block;'}}">
+  <view class="main-content" style="{{showSetting || showBatchDelete ? 'display: none;' : 'display: block;'}}">
     <!-- 日期显示 -->
     <view class="date-section">
       <view class="date-display">
@@ -267,6 +267,20 @@
         </view>
       </view>
 
+      <!-- 批量删除资产 -->
+      <view class="setting-item-full warm-item" bindtap="enterBatchDelete">
+        <view class="setting-icon-box warm-icon">
+          <text>🗑️</text>
+        </view>
+        <view class="setting-info">
+          <text class="setting-title-text">批量删除资产</text>
+          <text class="setting-desc">选择多个资产一键删除</text>
+        </view>
+        <view class="setting-arrow warm-arrow">
+          <text class="arrow">›</text>
+        </view>
+      </view>
+
       <!-- 关于 -->
       <view class="setting-item-full" bindtap="showAboutInfo">
         <view class="setting-icon-box">
@@ -288,8 +302,118 @@
     </view>
   </view>
 
+  <!-- 批量删除视图 -->
+  <view class="batch-delete-content" style="{{showBatchDelete ? 'display: block;' : 'display: none;'}}">
+    <!-- 批量删除头部 -->
+    <view class="batch-header">
+      <view class="batch-back" bindtap="exitBatchDelete">
+        <text class="back-icon">←</text>
+      </view>
+      <view class="batch-header-center">
+        <text class="batch-title">选择要删除的资产</text>
+        <text class="batch-subtitle">已选择 {{selectedAssets.length}} 项</text>
+      </view>
+      <view class="batch-placeholder"></view>
+    </view>
+
+    <!-- 全选操作栏 -->
+    <view class="batch-action-bar">
+      <view class="select-all-btn {{isAllSelected ? 'selected' : ''}}" bindtap="toggleSelectAll">
+        <view class="checkbox {{isAllSelected ? 'checked' : ''}}">
+          <text wx:if="{{isAllSelected}}" class="check-icon">✓</text>
+        </view>
+        <text class="select-all-text">{{isAllSelected ? '取消全选' : '全选'}}</text>
+      </view>
+      <view class="filter-hint">
+        <text>共 {{batchAssetList.length}} 项资产</text>
+      </view>
+    </view>
+
+    <!-- 资产选择列表 -->
+    <scroll-view class="batch-asset-list" scroll-y="true">
+      <view class="batch-asset-grid">
+        <view
+          class="batch-asset-card {{item._selected ? 'selected' : ''}}"
+          wx:for="{{batchAssetList}}"
+          wx:key="_id"
+          bindtap="toggleSelectAsset"
+          data-id="{{item._id}}"
+        >
+          <!-- 资产图标 -->
+          <view class="batch-asset-icon">
+            <image wx:if="{{item.displayIcon}}" class="icon-img" src="{{item.displayIcon}}" mode="aspectFit"></image>
+            <text wx:else class="icon-emoji">{{item.icon || '📦'}}</text>
+          </view>
+
+          <!-- 资产信息 -->
+          <view class="batch-asset-info">
+            <view class="batch-asset-header">
+              <text class="batch-asset-name">{{item.name}}</text>
+              <view class="batch-status-badge {{item.status}}">
+                <text>{{item.status === 'active' ? '服役中' : item.status === 'retired' ? '已退役' : '已卖出'}}</text>
+              </view>
+            </view>
+            <view class="batch-asset-meta">
+              <text class="batch-asset-price">¥{{item.price}}</text>
+              <text class="batch-asset-divider">·</text>
+              <text class="batch-asset-date">{{item.dateRange}}</text>
+              <text class="batch-asset-divider">·</text>
+              <text class="batch-asset-category">{{item.category}}</text>
+            </view>
+          </view>
+
+          <!-- 选中状态指示器 -->
+          <view class="select-indicator">
+            <view class="select-circle {{item._selected ? 'checked' : ''}}">
+              <text wx:if="{{item._selected}}" class="select-check">✓</text>
+            </view>
+          </view>
+
+          <!-- 装饰元素 -->
+          <view class="card-decoration"></view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view wx:if="{{batchAssetList.length === 0}}" class="batch-empty">
+        <view class="empty-sun">
+          <view class="sun-face"></view>
+          <view class="sun-ray ray-1"></view>
+          <view class="sun-ray ray-2"></view>
+          <view class="sun-ray ray-3"></view>
+        </view>
+        <text class="empty-title">暂无资产可删除</text>
+        <text class="empty-desc">快去添加你的第一个资产吧~</text>
+      </view>
+
+      <!-- 底部留白 -->
+      <view class="batch-list-spacer"></view>
+    </scroll-view>
+
+    <!-- 底部删除按钮 -->
+    <view class="batch-delete-footer">
+      <view class="delete-summary">
+        <text class="summary-text">已选择</text>
+        <text class="summary-count">{{selectedAssets.length}}</text>
+        <text class="summary-text">项</text>
+      </view>
+      <view class="delete-btn-wrapper">
+        <view class="delete-btn {{selectedAssets.length > 0 ? 'active' : 'disabled'}}" bindtap="confirmBatchDelete">
+          <text class="delete-btn-text">删除选中</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 背景装饰 -->
+    <view class="batch-bg-decor">
+      <view class="decor-circle circle-1"></view>
+      <view class="decor-circle circle-2"></view>
+      <view class="decor-circle circle-3"></view>
+    </view>
+  </view>
+
   <!-- 底部悬浮：首页/设置切换 + 新增资产按钮 -->
-  <view class="bottom-controls">
+  <view class="bottom-controls" style="{{showBatchDelete ? 'display: none;' : 'display: flex;'}}">
     <!-- 首页/设置切换悬浮按钮 -->
     <view class="mode-switch-fab">
       <view class="fab-group">
@@ -314,7 +438,7 @@
   </view>
 
   <!-- 回到顶部悬浮按钮 -->
-  <view class="back-to-top-fab {{showBackToTop ? 'show' : ''}}" bindtap="scrollToTop" catchtouchmove="preventTouchMove">
+  <view class="back-to-top-fab {{showBackToTop && !showBatchDelete ? 'show' : ''}}" bindtap="scrollToTop" catchtouchmove="preventTouchMove">
     <text class="back-top-icon">↑</text>
   </view>
 </view>
