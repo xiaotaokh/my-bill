@@ -182,9 +182,10 @@
             </view>
             <view class="card-stats">
               <block wx:if="{{item.status === 'active'}}">
-                <view class="stat-item">
+                <view class="stat-item {{item.excludeDaily ? 'has-badge' : ''}}">
                   <text class="stat-label">日均成本</text>
-                  <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
+                  <text class="stat-value cost {{item.excludeDaily ? 'excluded' : 'included'}}">¥{{item.dailyCost}}/天</text>
+                  <text wx:if="{{item.excludeDaily}}" class="exclude-badge">不计入</text>
                 </view>
                 <view class="stat-divider"></view>
               </block>
@@ -194,9 +195,10 @@
                   <text class="stat-value cost">¥{{item.dailyEquivalent}}/天</text>
                 </view>
                 <view class="stat-divider"></view>
-                <view class="stat-item">
+                <view class="stat-item has-badge">
                   <text class="stat-label">日均成本</text>
-                  <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
+                  <text class="stat-value cost excluded">¥{{item.dailyCost}}/天</text>
+                  <text class="exclude-badge">不计入</text>
                 </view>
                 <view class="stat-divider"></view>
               </block>

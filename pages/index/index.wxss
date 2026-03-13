@@ -593,6 +593,10 @@ page {
   min-width: 0;
 }
 
+.card-stats .stat-item.has-badge {
+  position: relative;
+}
+
 .card-stats .stat-label {
   font-size: 14rpx;
   color: #999;
@@ -606,8 +610,28 @@ page {
   white-space: nowrap;
 }
 
-.card-stats .stat-value.cost {
-  color: #667eea;
+/* 计入总日均 - 加深颜色 */
+.card-stats .stat-value.cost.included {
+  color: #E11D48;
+}
+
+/* 不计入总日均 - 灰色 */
+.card-stats .stat-value.cost.excluded {
+  color: #9CA3AF;
+}
+
+/* 不计入标签 - 右上角 */
+.exclude-badge {
+  position: absolute;
+  top: -6rpx;
+  right: -6rpx;
+  font-size: 10rpx;
+  font-weight: 500;
+  color: #F472B6;
+  background: #FDF2F8;
+  padding: 2rpx 6rpx;
+  border-radius: 8rpx;
+  border: 1rpx solid #FBCFE8;
 }
 
 .card-stats .stat-value.price {
@@ -665,26 +689,26 @@ page {
   background: #d1fae5;
 }
 
-/* 资产名后面的分类标签 - 更大 */
+/* 资产名后面的分类标签 */
 .category-tag-inline {
   display: flex;
   align-items: center;
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: #667eea;
-  background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
-  padding: 4rpx 12rpx;
-  border-radius: 12rpx;
+  background: #e8eaf6;
+  padding: 4rpx 10rpx;
+  border-radius: 8rpx;
 }
 
 .tag-icon-inline {
-  width: 28rpx;
-  height: 28rpx;
-  margin-right: 6rpx;
+  width: 20rpx;
+  height: 20rpx;
+  margin-right: 4rpx;
 }
 
 .tag-icon-text-inline {
-  font-size: 24rpx;
-  margin-right: 6rpx;
+  font-size: 18rpx;
+  margin-right: 4rpx;
 }
 
 .tag-text-inline {
