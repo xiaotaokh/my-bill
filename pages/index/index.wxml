@@ -152,8 +152,8 @@
         >
           <view class="card-left">
             <view class="asset-avatar">
-              <image wx:if="{{item.categoryIconUrl}}" class="avatar-img" src="{{item.categoryIconUrl}}" mode="aspectFit"></image>
-              <text wx:else class="avatar-icon">{{item.categoryIcon || '📦'}}</text>
+              <image wx:if="{{item.displayIcon}}" class="avatar-img" src="{{item.displayIcon}}" mode="aspectFit"></image>
+              <text wx:else class="avatar-icon">{{item.icon || '📦'}}</text>
             </view>
           </view>
           <view class="card-content">

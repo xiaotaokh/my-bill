@@ -194,10 +194,37 @@ Page({
         }
 
         query.get()
-          .then(res => {
+          .then(async res => {
             console.log('获取资产成功:', res.data.length);
+
+            // 处理资产的 icon 字段，获取云存储临时 URL
+            const assetsWithDisplayIcon = await Promise.all(res.data.map(async asset => {
+              let displayIcon = null;
+
+              // 如果是云存储的 fileID，获取临时文件链接
+              if (asset.icon && asset.icon.startsWith('cloud://')) {
+                try {
+                  const fileRes = await wx.cloud.getTempFileURL({
+                    fileList: [asset.icon]
+                  });
+                  if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
+                    displayIcon = fileRes.fileList[0].tempFileURL;
+                  }
+                } catch (e) {
+                  // 获取失败时使用 null，显示 emoji icon
+                }
+              } else if (asset.icon && asset.icon.startsWith('http')) {
+                displayIcon = asset.icon;
+              }
+
+              return {
+                ...asset,
+                displayIcon
+              };
+            }));
+
             // 为每个资产添加计算字段
-            const assetsWithCalculated = res.data.map(asset => this.calculateAssetFields(asset));
+            const assetsWithCalculated = assetsWithDisplayIcon.map(asset => this.calculateAssetFields(asset));
             this.setData({
               assets: assetsWithCalculated,
               filteredAssets: assetsWithCalculated,

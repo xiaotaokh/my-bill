@@ -10,20 +10,6 @@
 
   <!-- 主卡片 -->
   <view class="detail-card">
-    <!-- 资产图标 -->
-    <view class="asset-icon-wrapper">
-      <view class="asset-icon-container">
-        <text class="asset-icon">{{asset.icon || categoryIcon}}</text>
-      </view>
-      <view class="icon-shine"></view>
-    </view>
-
-    <!-- 状态标签 -->
-    <view class="status-pill {{asset.status}}">
-      <text class="status-dot"></text>
-      {{asset.status === 'active' ? '💪 服役中' : asset.status === 'retired' ? '😴 已退役' : '💰 已卖出'}}
-    </view>
-
     <!-- 资产名称 -->
     <view class="asset-name">{{asset.name}}</view>
 
@@ -33,10 +19,33 @@
       <text class="asset-price">{{asset.price}}</text>
     </view>
 
-    <!-- 类别标签 -->
-    <view class="category-tag">
-      <text class="tag-icon">🏷️</text>
-      <text class="tag-text">{{asset.category}}</text>
+    <!-- 图标和状态/分类同行 -->
+    <view class="icon-status-row">
+      <!-- 资产图标 -->
+      <view class="asset-icon-wrapper">
+        <view class="asset-icon-container">
+          <image wx:if="{{displayIcon}}" class="asset-icon-img" src="{{displayIcon}}" mode="aspectFit"></image>
+          <text wx:else class="asset-icon">{{asset.icon || '📦'}}</text>
+        </view>
+        <view class="icon-shine"></view>
+      </view>
+
+      <!-- 右侧：状态和分类 -->
+      <view class="status-category-wrapper">
+        <!-- 状态标签 -->
+        <view class="status-pill {{asset.status}}">
+          <text class="status-dot"></text>
+          {{asset.status === 'active' ? '💪 服役中' : asset.status === 'retired' ? '😴 已退役' : '💰 已卖出'}}
+        </view>
+
+        <!-- 类别标签 -->
+        <view class="category-tag">
+          <image wx:if="{{categoryIcon}}" class="tag-icon-img" src="{{categoryIcon}}" mode="aspectFit"></image>
+          <text wx:elif="{{categoryIconEmoji}}" class="tag-icon">{{categoryIconEmoji}}</text>
+          <text wx:else class="tag-icon">🏷️</text>
+          <text class="tag-text">{{asset.category}}</text>
+        </view>
+      </view>
     </view>
 
     <!-- 信息卡片区域 -->

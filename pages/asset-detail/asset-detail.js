@@ -3,6 +3,9 @@ Page({
   data: {
     asset: {},
     assetId: '',
+    displayIcon: null, // 资产缩略图的临时URL
+    categoryIcon: null, // 分类图标的临时URL
+    categoryIconEmoji: '', // 分类图标 emoji
     // 计算后的显示字段
     displayInfo: {
       purchaseDateFormatted: '',
@@ -33,13 +36,35 @@ Page({
       env: getApp().globalData.envId
     });
     db.collection('assets').doc(id).get()
-      .then(res => {
+      .then(async res => {
         if (res.data) {
           const asset = res.data;
           const displayInfo = this.calculateDisplayInfo(asset);
+
+          // 处理资产缩略图 - 获取云存储临时URL
+          let displayIcon = null;
+          if (asset.icon && asset.icon.startsWith('cloud://')) {
+            try {
+              const fileRes = await wx.cloud.getTempFileURL({
+                fileList: [asset.icon]
+              });
+              if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
+                displayIcon = fileRes.fileList[0].tempFileURL;
+              }
+            } catch (e) {
+              // 获取失败时使用 null
+            }
+          } else if (asset.icon && asset.icon.startsWith('http')) {
+            displayIcon = asset.icon;
+          }
+
+          // 加载分类图标
+          this.loadCategoryIcon(asset.category);
+
           this.setData({
             asset: asset,
-            displayInfo: displayInfo
+            displayInfo: displayInfo,
+            displayIcon: displayIcon
           });
         } else {
           wx.showToast({
@@ -168,54 +193,44 @@ Page({
     };
   },
 
-  // 获取资产对应的默认图标
-  getAvatarIcon(category) {
-    if (!category) return '📦';
+  // 加载分类图标
+  loadCategoryIcon(categoryName) {
+    if (!categoryName) return;
 
-    const categoryIcons = {
-      '电子设备': '📱',
-      '家具': '🛋️',
-      '车子': '🚗',
-      '电脑': '💻',
-      '房产': '🏠',
-      '投资': '📈',
-      '餐饮': '🍔',
-      '衣服': '👕',
-      '书籍': '📚',
-      '运动': '⚽',
-      '游戏': '🎮'
-    };
-
-    if (categoryIcons[category]) {
-      return categoryIcons[category];
-    }
-
-    // 关键词匹配
-    if (category.includes('电子') || category.includes('手机') || category.includes('数码')) {
-      return '📱';
-    } else if (category.includes('车') || category.includes('汽车')) {
-      return '🚗';
-    } else if (category.includes('房') || category.includes('地产') || category.includes('房子')) {
-      return '🏠';
-    } else if (category.includes('电脑') || category.includes('笔记')) {
-      return '💻';
-    } else if (category.includes('家') || category.includes('具')) {
-      return '🛋️';
-    } else if (category.includes('投') || category.includes('资') || category.includes('基金') || category.includes('股票')) {
-      return '📈';
-    } else if (category.includes('餐') || category.includes('食')) {
-      return '🍔';
-    } else if (category.includes('衣') || category.includes('服')) {
-      return '👕';
-    } else if (category.includes('书') || category.includes('图书')) {
-      return '📚';
-    } else if (category.includes('运') || category.includes('动') || category.includes('球')) {
-      return '⚽';
-    } else if (category.includes('游') || category.includes('戏')) {
-      return '🎮';
-    }
-
-    return '📦';
+    wx.cloud.callFunction({
+      name: 'getCategories',
+      success: async (res) => {
+        if (res.result && res.result.data) {
+          const category = res.result.data.find(c => c.name === categoryName);
+          if (category && category.icon) {
+            // 处理云存储图标
+            if (category.icon.startsWith('cloud://')) {
+              try {
+                const fileRes = await wx.cloud.getTempFileURL({
+                  fileList: [category.icon]
+                });
+                if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
+                  this.setData({
+                    categoryIcon: fileRes.fileList[0].tempFileURL
+                  });
+                }
+              } catch (e) {
+                // 获取失败时使用空
+              }
+            } else if (category.icon.startsWith('http')) {
+              this.setData({
+                categoryIcon: category.icon
+              });
+            } else {
+              // emoji 图标
+              this.setData({
+                categoryIconEmoji: category.icon
+              });
+            }
+          }
+        }
+      }
+    });
   },
 
   // 编辑资产

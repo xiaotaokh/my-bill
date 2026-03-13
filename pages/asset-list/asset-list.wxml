@@ -52,7 +52,7 @@
         data-id="{{item._id}}"
       >
         <view class="asset-avatar">
-          <text class="avatar-icon">{{item.icon || getAvatarIcon(item)}}</text>
+          <text class="avatar-icon">{{item.icon}}</text>
         </view>
         <view class="asset-content">
           <view class="asset-header">
