@@ -9,8 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "antd-mini": "^3.4.3",
-    "tdesign-miniprogram": "^1.12.3",
-    "weui-miniprogram": "^1.5.6"
+    "tdesign-miniprogram": "^1.12.3"
   }
 }

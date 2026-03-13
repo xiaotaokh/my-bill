@@ -15,11 +15,36 @@
 
 ## 快速开始（5分钟上手）
 
+### 第0步：安装依赖
+
+**1. 根目录依赖（小程序端组件库）**
+```bash
+npm install
+```
+
+**2. 云函数依赖**
+```bash
+cd cloudfunctions/addAsset && npm install && cd ../..
+cd cloudfunctions/addCategory && npm install && cd ../..
+cd cloudfunctions/batchDeleteAssets && npm install && cd ../..
+cd cloudfunctions/deleteCategory && npm install && cd ../..
+cd cloudfunctions/getCategories && npm install && cd ../..
+cd cloudfunctions/getUserOpenid && npm install && cd ../..
+cd cloudfunctions/updateAsset && npm install && cd ../..
+cd cloudfunctions/updateCategory && npm install && cd ../..
+```
+
 ### 第1步：导入项目
 1. 打开微信开发者工具
 2. 点击「导入项目」
 3. 选择本项目目录
 4. AppID 已配置：`wxb1fb63721cb2da59`
+
+### 第1.5步：构建 npm
+
+在开发者工具中：
+1. 点击菜单 **工具 → 构建 npm**
+2. 等待构建完成，会生成 `miniprogram_npm` 目录
 
 ### 第2步：开通云开发
 1. 点击顶部菜单「云开发」
@@ -40,8 +65,11 @@
 ### 第4步：初始化数据库
 
 1. 在云开发控制台点击「数据库」
-2. 点击「+」创建集合，名称：`assets`
-3. 权限设置：「仅创建者可读写」
+2. 点击「+」创建集合
+3. 创建以下集合：
+   - `assets` - 资产数据
+   - `categories` - 分类数据
+4. 权限设置：「仅创建者可读写」
 
 ### 第5步：部署云函数
 
@@ -52,10 +80,13 @@
 
 **需要部署的云函数**：
 - `addAsset` - 添加资产
-- `getAssets` - 获取资产列表
-- `getStats` - 获取统计信息
+- `addCategory` - 添加分类
+- `batchDeleteAssets` - 批量删除资产
+- `deleteCategory` - 删除分类
+- `getCategories` - 获取分类列表
+- `getUserOpenid` - 获取用户openid
 - `updateAsset` - 更新资产
-- `deleteAsset` - 删除资产
+- `updateCategory` - 更新分类
 
 ### 第6步：运行项目
 
@@ -76,14 +107,18 @@ myBill/
 ├── README.md                   # 项目说明文档
 ├── pages/                      # 页面目录
 │   ├── index/                  # 首页 - 资产总览和列表
-│   ├── asset-add/              # 添加资产
-│   └── asset-detail/           # 资产详情
+│   ├── asset-add/              # 添加/编辑资产
+│   ├── asset-detail/           # 资产详情
+│   └── category-manage/        # 分类管理
 ├── cloudfunctions/             # 云函数
 │   ├── addAsset/               # 添加资产
-│   ├── getAssets/              # 获取资产列表
-│   ├── getStats/               # 获取统计信息
+│   ├── addCategory/            # 添加分类
+│   ├── batchDeleteAssets/      # 批量删除资产
+│   ├── deleteCategory/         # 删除分类
+│   ├── getCategories/          # 获取分类列表
+│   ├── getUserOpenid/          # 获取用户openid
 │   ├── updateAsset/            # 更新资产
-│   └── deleteAsset/            # 删除资产
+│   └── updateCategory/         # 更新分类
 ```
 
 ## 功能说明
@@ -171,8 +206,10 @@ myBill/
 ### 部署前检查
 - [ ] 已安装微信开发者工具
 - [ ] 已导入项目
+- [ ] 已安装依赖（根目录 + 云函数）
+- [ ] 已构建 npm
 - [ ] 已开通云开发环境
-- [ ] 已创建 `assets` 集合
+- [ ] 已创建 `assets` 和 `categories` 集合
 - [ ] 已设置数据库权限
 - [ ] 已部署所有云函数
 - [ ] `app.js` 中环境ID已配置
