@@ -6,6 +6,7 @@ miniprogram_npm/
 cloudfunctions/*/miniprogram_npm/
 
 # 云函数
+node_modules/
 cloudfunctions/*/node_modules/
 cloudfunctions/*/.gitignore
 cloudfunctions/*/npm-debug.log
