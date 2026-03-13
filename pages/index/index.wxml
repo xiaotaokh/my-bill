@@ -124,7 +124,7 @@
     </view>
 
     <!-- 资产列表 -->
-    <scroll-view class="asset-list" scroll-y>
+    <view class="asset-list">
       <view class="list-header">
         <view class="list-title-wrapper">
           <text class="list-title">我的资产</text>
@@ -207,9 +207,10 @@
                 <text class="stat-value">{{item.usedDays}}天</text>
               </view>
               <view class="stat-divider"></view>
-              <view class="stat-item">
+              <view class="stat-item {{item.excludeTotal ? 'has-badge' : ''}}">
                 <text class="stat-label">价格</text>
-                <text class="stat-value price">¥{{item.price}}</text>
+                <text class="stat-value price {{item.excludeTotal ? 'excluded' : ''}}">¥{{item.price}}</text>
+                <text wx:if="{{item.excludeTotal}}" class="exclude-badge">不计入</text>
               </view>
             </view>
           </view>
@@ -218,16 +219,29 @@
 
       <block wx:else>
         <view class="empty-state">
-          <view class="empty-illustration">
-            <text class="empty-icon">💎</text>
+          <view class="empty-bubble bubble-1"></view>
+          <view class="empty-bubble bubble-2"></view>
+          <view class="empty-bubble bubble-3"></view>
+          <view class="empty-content">
+            <view class="empty-face">
+              <view class="face-eyes">
+                <view class="eye eye-left">
+                  <view class="eye-pupil"></view>
+                </view>
+                <view class="eye eye-right">
+                  <view class="eye-pupil"></view>
+                </view>
+              </view>
+              <view class="face-mouth"></view>
+            </view>
+            <text class="empty-title">空空如也~</text>
+            <text class="empty-desc">快去添加你的第一笔资产吧</text>
           </view>
-          <text class="empty-title">还没有资产</text>
-          <text class="empty-desc">点击右下角按钮添加第一笔资产</text>
         </view>
       </block>
 
       <view class="list-bottom-spacer"></view>
-    </scroll-view>
+    </view>
   </view>
 
   <!-- 设置视图 -->
@@ -297,5 +311,10 @@
       </view>
       <view class="fab-glow"></view>
     </view>
+  </view>
+
+  <!-- 回到顶部悬浮按钮 -->
+  <view class="back-to-top-fab {{showBackToTop ? 'show' : ''}}" bindtap="scrollToTop" catchtouchmove="preventTouchMove">
+    <text class="back-top-icon">↑</text>
   </view>
 </view>

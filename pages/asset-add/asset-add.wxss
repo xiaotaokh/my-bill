@@ -136,8 +136,9 @@
 }
 
 .textarea-placeholder {
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #9ca3af;
+  line-height: 1.7;
 }
 
 .char-count {
@@ -218,11 +219,11 @@
   box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.2);
 }
 
-/* Checkbox - 方形带圆角 */
-.checkbox {
+/* 单选圆点样式 */
+.radio-dot {
   width: 48rpx;
   height: 48rpx;
-  border-radius: 10rpx;
+  border-radius: 50%;
   border: 3rpx solid #d1d5db;
   background: #fff;
   display: flex;
@@ -232,22 +233,25 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.category-item.selected .checkbox {
+.category-item.selected .radio-dot {
   border-color: #3b82f6;
+}
+
+.radio-dot.checked .radio-inner {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
   background: #3b82f6;
+  animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.check-mark {
-  font-size: 28rpx;
-  color: #fff;
-  opacity: 0;
-  transform: scale(0.3);
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.checkbox.checked .check-mark {
-  opacity: 1;
-  transform: scale(1);
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 .category-name {

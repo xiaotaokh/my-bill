@@ -49,7 +49,10 @@ Page({
     showSetting: false, // 控制显示设置视图
 
     // 加载状态标志
-    isLoading: false
+    isLoading: false,
+
+    // 回到顶部按钮显示控制
+    showBackToTop: false
   },
 
   onLoad: function () {
@@ -541,15 +544,9 @@ Page({
         break;
       case 3: // 服役时长
         sorted.sort((a, b) => {
-          if (a.status !== 'active' && b.status !== 'active') return 0;
-          if (a.status !== 'active') return 1;
-          if (b.status !== 'active') return -1;
-
-          const dateA = this.parseDate(a.purchaseDate).getTime();
-          const dateB = this.parseDate(b.purchaseDate).getTime();
-          const daysA = (Date.now() - dateA) / (1000 * 60 * 60 * 24);
-          const daysB = (Date.now() - dateB) / (1000 * 60 * 60 * 24);
-          return sortOrder === 'desc' ? daysB - daysA : daysA - daysA;
+          const daysA = a.usedDays || 0;
+          const daysB = b.usedDays || 0;
+          return sortOrder === 'desc' ? daysB - daysA : daysA - daysB;
         });
         break;
       case 4: // 日均成本
@@ -867,5 +864,26 @@ Page({
   onPullDownRefresh() {
     this.loadAssets();
     wx.stopPullDownRefresh();
-  }
+  },
+
+  // 页面滚动监听
+  onPageScroll(e) {
+    const scrollTop = e.scrollTop;
+    // 滚动超过 100px 显示回到顶部按钮
+    const showBackToTop = scrollTop > 100;
+    if (showBackToTop !== this.data.showBackToTop) {
+      this.setData({ showBackToTop });
+    }
+  },
+
+  // 回到顶部
+  scrollToTop() {
+    wx.pageScrollTo({
+      scrollTop: 0,
+      duration: 300
+    });
+  },
+
+  // 阻止触摸穿透
+  preventTouchMove() {}
 });

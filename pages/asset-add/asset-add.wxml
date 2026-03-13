@@ -102,8 +102,9 @@
           data-category="{{item.name}}"
           data-index="{{index}}"
         >
-          <view class="checkbox {{item.selected ? 'checked' : ''}}">
-            <text class="check-mark">✓</text>
+          <!-- 单选圆点样式 -->
+          <view class="radio-dot {{item.selected ? 'checked' : ''}}">
+            <view class="radio-inner" wx:if="{{item.selected}}"></view>
           </view>
           <!-- 显示类别图标：支持自定义图片和emoji -->
           <view class="category-icon-wrap">

@@ -213,15 +213,11 @@ Page({
                 displayIcon = category.icon;
               }
 
-              // 编辑模式下，根据资产类别选中对应的类别
+              // 编辑模式下，根据资产类别选中对应的类别（单选模式）
               let isSelected = false;
               if (this.data.isEdit && this.data.assetCategory) {
-                // 支持多类别（逗号分隔）
-                const assetCategories = this.data.assetCategory.split(',');
-                isSelected = assetCategories.includes(category.name);
-              } else {
-                // 添加模式下默认选中第一个
-                isSelected = false;
+                // 单选模式：只匹配第一个类别
+                isSelected = category.name === this.data.assetCategory;
               }
 
               return {
@@ -398,14 +394,17 @@ Page({
     });
   },
 
-  // 切换类别选择（支持多选）
+  // 切换类别选择（单选模式）
   toggleCategory(e) {
     const index = e.currentTarget.dataset.index;
-    const key = `categories[${index}].selected`;
 
-    this.setData({
-      [key]: !this.data.categories[index].selected
-    });
+    // 单选模式：取消其他所有选中，只选中当前点击的
+    const categories = this.data.categories.map((item, i) => ({
+      ...item,
+      selected: i === index
+    }));
+
+    this.setData({ categories });
   },
 
   // 已退役开关
@@ -498,9 +497,9 @@ Page({
       errors.purchaseDate = '请选择购买日期';
     }
 
-    // 验证类别（至少选择一个）
+    // 验证类别
     if (!formData.category || formData.category.trim() === '') {
-      errors.category = '请至少选择一个类别';
+      errors.category = '请选择类别';
     }
 
     // 验证退役日期（如果已退役）
@@ -529,13 +528,9 @@ Page({
       icon: this.data.uploadedImagePath || this.data.selectedIcon || '📦'
     };
 
-    // 获取选中的类别
-    const selectedCats = this.data.categories
-      .filter(item => item.selected)
-      .map(item => item.name);
-
-    // 将选中的类别用逗号连接（支持多选）
-    formData.category = selectedCats.join(',');
+    // 获取选中的类别（单选模式）
+    const selectedCat = this.data.categories.find(item => item.selected);
+    formData.category = selectedCat ? selectedCat.name : '';
 
     // 验证表单
     const errors = this.validateForm(formData);
