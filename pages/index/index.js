@@ -379,62 +379,7 @@ Page({
     });
   },
 
-  // 获取分类图标 - 供分类管理页面使用
-  getCategoryIcon(category) {
-    if (!category) return '📦';
-
-    // 根据类别返回相应图标
-    const categoryIcons = {
-      '电子设备': '📱',
-      '家具': ' uphol.',
-      '车辆': '🚗',
-      '车子': '🚗',
-      '电脑': '💻',
-      '房产': '🏠',
-      '投资': '📈',
-      '餐饮': '🍔',
-      '衣服': '👕',
-      '书籍': '📚',
-      '运动': '⚽',
-      '游戏': '🎮',
-      '其他': '📦'
-    };
-
-    // 检查是否存在于类别映射中
-    if (categoryIcons[category]) {
-      return categoryIcons[category];
-    }
-
-    // 对于更细分的类别，提取关键词进行匹配
-    const lowerCategory = category.toLowerCase();
-    if (lowerCategory.includes('电子') || lowerCategory.includes('手机') || lowerCategory.includes('数码')) {
-      return '📱';
-    } else if (lowerCategory.includes('车') || lowerCategory.includes('汽车')) {
-      return '🚗';
-    } else if (lowerCategory.includes('房') || lowerCategory.includes('地产') || lowerCategory.includes('房子')) {
-      return '🏠';
-    } else if (lowerCategory.includes('电脑') || lowerCategory.includes('笔记')) {
-      return '💻';
-    } else if (lowerCategory.includes('家') || lowerCategory.includes('具')) {
-      return '🛋️';
-    } else if (lowerCategory.includes('投') || lowerCategory.includes('资') || lowerCategory.includes('基金') || lowerCategory.includes('股票')) {
-      return '📈';
-    } else if (lowerCategory.includes('餐') || lowerCategory.includes('食')) {
-      return '🍔';
-    } else if (lowerCategory.includes('衣') || lowerCategory.includes('服')) {
-      return '👕';
-    } else if (lowerCategory.includes('书') || lowerCategory.includes('图书')) {
-      return '📚';
-    } else if (lowerCategory.includes('运') || lowerCategory.includes('动') || lowerCategory.includes('球')) {
-      return '⚽';
-    } else if (lowerCategory.includes('游') || lowerCategory.includes('戏')) {
-      return '🎮';
-    }
-
-    // 默认返回一个通用图标
-    return '📦';
-  },
-
+  
   // 计算统计数据
   calculateStats() {
     const { filteredAssets } = this.data;

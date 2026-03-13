@@ -1,6 +1,12 @@
 // asset-add.js
 Page({
   data: {
+    // 编辑模式
+    isEdit: false,
+    assetId: '',
+    assetName: '', // 用于编辑时显示标题
+    assetCategory: '', // 用于编辑时回显类别
+
     // 表单数据
     name: '',
     price: '',
@@ -52,21 +58,129 @@ Page({
     errors: {}
   },
 
-  onLoad: function () {
-    // 初始化购买日期为今天
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
+  onLoad: function (options) {
+    // 检查是否是编辑模式
+    if (options.id && options.edit === 'true') {
+      this.setData({
+        isEdit: true,
+        assetId: options.id
+      });
+      // 编辑模式：先加载资产详情，详情加载完成后再加载类别
+      // loadAssetDetail 会在完成后调用 loadCategories
+      this.loadAssetDetail(options.id);
+    } else {
+      // 添加模式：初始化购买日期为今天
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
 
-    this.setData({
-      purchaseDate: `${year}-${month}-${day}`,
-      selectedIcon: '📦', // 设置默认的通用emoji
-      selectedIconName: '默认'
+      this.setData({
+        purchaseDate: `${year}-${month}-${day}`,
+        selectedIcon: '📦', // 设置默认的通用emoji
+        selectedIconName: '默认'
+      });
+
+      // 添加模式下直接加载类别
+      this.loadCategories();
+    }
+  },
+
+  // 加载资产详情（编辑模式）
+  loadAssetDetail(id) {
+    wx.showLoading({ title: '加载中...' });
+
+    const db = wx.cloud.database({
+      env: getApp().globalData.envId
     });
 
-    // 加载类别
-    this.loadCategories();
+    db.collection('assets').doc(id).get()
+      .then(async res => {
+        if (res.data) {
+          const asset = res.data;
+
+          // 设置页面标题
+          wx.setNavigationBarTitle({
+            title: `编辑资产 - ${asset.name}`
+          });
+
+          // 处理缩略图
+          let uploadedImagePath = '';
+          let selectedIcon = '📦';
+          let selectedIconName = '默认';
+
+          if (asset.icon) {
+            if (asset.icon.startsWith('cloud://')) {
+              // 云存储路径，需要获取临时URL用于预览
+              try {
+                const fileRes = await wx.cloud.getTempFileURL({
+                  fileList: [asset.icon]
+                });
+                if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
+                  uploadedImagePath = asset.icon; // 保存原始云存储路径
+                  selectedIcon = ''; // 清空内置图标
+                }
+              } catch (e) {
+                console.error('获取临时文件链接失败:', e);
+              }
+            } else if (asset.icon.startsWith('http')) {
+              uploadedImagePath = asset.icon;
+              selectedIcon = '';
+            } else {
+              // emoji 图标
+              selectedIcon = asset.icon;
+              // 查找对应的图标名称
+              const builtinIcon = this.data.builtinIcons.find(item => item.icon === asset.icon);
+              if (builtinIcon) {
+                selectedIconName = builtinIcon.name;
+              }
+            }
+          }
+
+          this.setData({
+            assetName: asset.name,
+            name: asset.name,
+            price: String(asset.price),
+            purchaseDate: asset.purchaseDate,
+            remark: asset.remark || '',
+            isRetired: asset.status === 'retired',
+            isSold: asset.status === 'sold',
+            retiredDate: asset.retiredDate || '',
+            soldDate: asset.soldDate || '',
+            excludeTotal: asset.excludeTotal || false,
+            excludeDaily: asset.excludeDaily || false,
+            selectedIcon: selectedIcon,
+            selectedIconName: selectedIconName,
+            uploadedImagePath: uploadedImagePath,
+            assetCategory: asset.category || '' // 保存类别，等待类别加载后选中
+          });
+
+          wx.hideLoading();
+
+          // 编辑模式下，资产详情加载完成后再加载类别
+          this.loadCategories();
+        } else {
+          wx.hideLoading();
+          wx.showToast({
+            title: '资产不存在',
+            icon: 'none'
+          });
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 1500);
+        }
+      })
+      .catch(err => {
+        console.error('加载资产详情失败:', err);
+        wx.hideLoading();
+        wx.showToast({
+          title: '加载失败',
+          icon: 'none'
+        });
+        setTimeout(() => {
+          wx.navigateBack();
+        }, 1500);
+      });
   },
 
   // 加载类别
@@ -99,16 +213,27 @@ Page({
                 displayIcon = category.icon;
               }
 
+              // 编辑模式下，根据资产类别选中对应的类别
+              let isSelected = false;
+              if (this.data.isEdit && this.data.assetCategory) {
+                // 支持多类别（逗号分隔）
+                const assetCategories = this.data.assetCategory.split(',');
+                isSelected = assetCategories.includes(category.name);
+              } else {
+                // 添加模式下默认选中第一个
+                isSelected = false;
+              }
+
               return {
                 name: category.name,
                 icon: category.icon || '',
                 displayIcon: displayIcon, // 临时文件链接
-                selected: false // 默认不选中
+                selected: isSelected
               };
             }));
 
-            // 默认选中第一个类别
-            if (categoriesWithIcons.length > 0) {
+            // 添加模式下默认选中第一个类别
+            if (!this.data.isEdit && categoriesWithIcons.length > 0) {
               categoriesWithIcons[0].selected = true;
             }
 
@@ -434,41 +559,53 @@ Page({
       status = 'sold';
     }
 
+    // 构造请求数据
+    const requestData = {
+      name: formData.name.trim(),
+      price: parseFloat(formData.price),
+      purchaseDate: formData.purchaseDate,
+      category: formData.category,
+      icon: formData.icon, // 传递缩略图字段
+      remark: formData.remark || '',
+      status: status,
+      retiredDate: this.data.isRetired ? this.data.retiredDate : '',
+      soldDate: this.data.isSold ? this.data.soldDate : '',
+      excludeTotal: this.data.excludeTotal,
+      excludeDaily: this.data.excludeDaily
+    };
+
+    // 根据是否编辑模式调用不同的云函数
+    const cloudFunctionName = this.data.isEdit ? 'updateAsset' : 'addAsset';
+    if (this.data.isEdit) {
+      requestData.id = this.data.assetId;
+    }
+
     // 调用云函数保存资产
     wx.cloud.callFunction({
-      name: 'addAsset',
-      data: {
-        name: formData.name.trim(),
-        price: parseFloat(formData.price),
-        purchaseDate: formData.purchaseDate,
-        category: formData.category,
-        icon: formData.icon, // 传递缩略图字段
-        remark: formData.remark || '',
-        status: status,
-        retiredDate: this.data.isRetired ? this.data.retiredDate : '',
-        soldDate: this.data.isSold ? this.data.soldDate : '',
-        excludeTotal: this.data.excludeTotal,
-        excludeDaily: this.data.excludeDaily
-      },
+      name: cloudFunctionName,
+      data: requestData,
       success: (res) => {
         console.log('云函数调用成功:', res);
         if (res.result.success) {
           wx.hideLoading();
           wx.showToast({
-            title: '保存成功',
+            title: this.data.isEdit ? '更新成功' : '保存成功',
             icon: 'success'
           });
 
-          // 返回首页并刷新
+          // 返回并刷新上一页
           setTimeout(() => {
             wx.navigateBack({
               delta: 1,
               success: () => {
-                // 触发上一页的 onShow
+                // 触发上一页的刷新
                 const pages = getCurrentPages();
                 if (pages.length > 1) {
                   const prevPage = pages[pages.length - 2];
-                  if (prevPage.loadAssets) {
+                  // 资产详情页有 loadAssetDetail，首页有 loadAssets
+                  if (prevPage.loadAssetDetail) {
+                    prevPage.loadAssetDetail(this.data.assetId);
+                  } else if (prevPage.loadAssets) {
                     prevPage.loadAssets();
                   }
                 }

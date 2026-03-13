@@ -28,6 +28,13 @@ Page({
     }
   },
 
+  onShow: function () {
+    // 从编辑页返回时刷新数据
+    if (this.data.assetId) {
+      this.loadAssetDetail(this.data.assetId);
+    }
+  },
+
   // 加载资产详情
   loadAssetDetail(id) {
     wx.showLoading({ title: '加载中...' });
