@@ -84,7 +84,6 @@ myBill/
 │   ├── getStats/               # 获取统计信息
 │   ├── updateAsset/            # 更新资产
 │   └── deleteAsset/            # 删除资产
-└── components/                  # 组件目录
 ```
 
 ## 功能说明
