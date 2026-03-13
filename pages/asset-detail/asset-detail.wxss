@@ -123,6 +123,16 @@ page {
   animation: iconBounce 2s ease-in-out infinite;
 }
 
+/* 自定义图标时可点击 */
+.asset-icon-container:has(.asset-icon-img) {
+  cursor: pointer;
+}
+
+.asset-icon-container:active:has(.asset-icon-img) {
+  transform: scale(0.95);
+  opacity: 0.9;
+}
+
 .asset-icon {
   font-size: 90rpx;
   filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
@@ -131,6 +141,7 @@ page {
 .asset-icon-img {
   width: 110rpx;
   height: 110rpx;
+  cursor: pointer;
 }
 
 .icon-shine {

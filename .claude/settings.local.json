@@ -39,7 +39,14 @@
       "Bash(npm install tdesign-miniprogram --save)",
       "Bash(node -c pages/category-manage/category-manage.js 2>&1)",
       "Bash(node -c /Users/taohang/Documents/project/Demo/myBill/pages/category-manage/category-manage.js 2>&1)",
-      "Bash(git checkout pages/index/index.js pages/index/index.wxml pages/index/index.wxss)"
+      "Bash(git checkout pages/index/index.js pages/index/index.wxml pages/index/index.wxss)",
+      "Bash(npm install -g svgexport)",
+      "Bash(python3 -c \"import cairosvg\" 2>/dev/null && echo \"cairosvg可用\" || pip3 install cairosvg)",
+      "Bash(npm install sharp --save-dev 2>&1 | tail -20)",
+      "Bash(node -e \"\nconst sharp = require\\('sharp'\\);\nconst path = require\\('path'\\);\n\nasync function convert\\(svgPath, pngPath\\) {\n  try {\n    await sharp\\(svgPath\\)\n      .resize\\(512, 512\\)\n      .png\\(\\)\n      .toFile\\(pngPath\\);\n    console.log\\('转换成功:', pngPath\\);\n  } catch \\(err\\) {\n    console.error\\('转换失败:', err.message\\);\n  }\n}\n\n\\(async \\(\\) => {\n  await convert\\('logo.svg', 'logo.png'\\);\n  await convert\\('logo-white.svg', 'logo-white.png'\\);\n}\\)\\(\\);\n\")",
+      "Bash(npm install gifenc --save-dev)",
+      "Bash(npm install canvas --save-dev)",
+      "Bash(npm install puppeteer --save-dev)"
     ]
   },
   "enabledPlugins": {

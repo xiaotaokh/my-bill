@@ -247,6 +247,16 @@ Page({
     });
   },
 
+  // 预览资产图标原图
+  previewIcon() {
+    if (this.data.displayIcon) {
+      wx.previewImage({
+        current: this.data.displayIcon,
+        urls: [this.data.displayIcon]
+      });
+    }
+  },
+
   // 删除资产
   deleteAsset() {
     wx.showModal({

@@ -24,7 +24,7 @@
       <!-- 资产图标 -->
       <view class="asset-icon-wrapper">
         <view class="asset-icon-container">
-          <image wx:if="{{displayIcon}}" class="asset-icon-img" src="{{displayIcon}}" mode="aspectFit"></image>
+          <image wx:if="{{displayIcon}}" class="asset-icon-img" src="{{displayIcon}}" mode="aspectFit" bindtap="previewIcon"></image>
           <text wx:else class="asset-icon">{{asset.icon || '📦'}}</text>
         </view>
         <view class="icon-shine"></view>

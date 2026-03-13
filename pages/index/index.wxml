@@ -127,7 +127,7 @@
     <view class="asset-list">
       <view class="list-header">
         <view class="list-title-wrapper">
-          <text class="list-title">我的资产</text>
+          <text class="list-title">朝夕数计</text>
           <view class="list-count-badge">
             <text>{{filteredAssets.length}}</text>
           </view>
