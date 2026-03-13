@@ -149,6 +149,11 @@
       <view class="form-header">
         <text class="form-title">其他</text>
       </view>
+      <!-- 提示信息 -->
+      <view class="notice-tip" wx:if="{{isRetired || isSold}}">
+        <text class="notice-icon">💡</text>
+        <text class="notice-text">已退役或已卖出的资产不计入总日均成本统计</text>
+      </view>
       <view class="switch-list">
         <view class="switch-item">
           <text class="switch-label">已退役</text>
@@ -220,6 +225,7 @@
             checked="{{excludeDaily}}"
             bindchange="onExcludeDailyChange"
             color="#6366f1"
+            disabled="{{isRetired || isSold}}"
           />
         </view>
       </view>

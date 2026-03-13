@@ -137,18 +137,23 @@ Page({
             }
           }
 
+          // 已退役或已卖出状态，自动开启不计入总日均
+          const isRetired = asset.status === 'retired';
+          const isSold = asset.status === 'sold';
+
           this.setData({
             assetName: asset.name,
             name: asset.name,
             price: String(asset.price),
             purchaseDate: asset.purchaseDate,
             remark: asset.remark || '',
-            isRetired: asset.status === 'retired',
-            isSold: asset.status === 'sold',
+            isRetired: isRetired,
+            isSold: isSold,
             retiredDate: asset.retiredDate || '',
             soldDate: asset.soldDate || '',
             excludeTotal: asset.excludeTotal || false,
-            excludeDaily: asset.excludeDaily || false,
+            // 已退役或已卖出时，强制不计入总日均
+            excludeDaily: isRetired || isSold ? true : (asset.excludeDaily || false),
             selectedIcon: selectedIcon,
             selectedIconName: selectedIconName,
             uploadedImagePath: uploadedImagePath,
@@ -412,7 +417,7 @@ Page({
     const checked = e.detail.value;
     const updates = { isRetired: checked };
 
-    // 如果打开已退役，设置默认退役日期为今天，并取消已卖出
+    // 如果打开已退役，设置默认退役日期为今天，并取消已卖出，同时自动开启不计入总日均
     if (checked) {
       const today = new Date();
       const year = today.getFullYear();
@@ -420,6 +425,7 @@ Page({
       const day = String(today.getDate()).padStart(2, '0');
       updates.retiredDate = `${year}-${month}-${day}`;
       updates.isSold = false;
+      updates.excludeDaily = true; // 自动开启不计入总日均
     } else {
       // 关闭时清空退役日期
       updates.retiredDate = '';
@@ -433,7 +439,7 @@ Page({
     const checked = e.detail.value;
     const updates = { isSold: checked };
 
-    // 如果打开已卖出，设置默认卖出日期为今天，并取消已退役
+    // 如果打开已卖出，设置默认卖出日期为今天，并取消已退役，同时自动开启不计入总日均
     if (checked) {
       const today = new Date();
       const year = today.getFullYear();
@@ -442,6 +448,7 @@ Page({
       updates.soldDate = `${year}-${month}-${day}`;
       updates.isRetired = false;
       updates.retiredDate = '';
+      updates.excludeDaily = true; // 自动开启不计入总日均
     } else {
       // 关闭时清空卖出日期
       updates.soldDate = '';
