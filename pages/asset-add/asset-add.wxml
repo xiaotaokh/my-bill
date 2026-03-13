@@ -15,6 +15,7 @@
           class="item-input"
           name="name"
           placeholder="请输入物品名称"
+          placeholder-class="input-placeholder"
           maxlength="50"
           value="{{name}}"
           bindinput="onNameInput"
@@ -32,6 +33,7 @@
           type="number"
           name="price"
           placeholder="请输入价格"
+          placeholder-class="input-placeholder"
           value="{{price}}"
           bindinput="onPriceInput"
         />

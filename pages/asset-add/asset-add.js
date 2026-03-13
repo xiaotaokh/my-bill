@@ -615,7 +615,12 @@ Page({
             });
           }, 1500);
         } else {
-          throw new Error(res.result.error || '保存失败');
+          wx.hideLoading();
+          wx.showToast({
+            title: res.result.error || '保存失败',
+            icon: 'none',
+            duration: 2000
+          });
         }
       },
       fail: (err) => {

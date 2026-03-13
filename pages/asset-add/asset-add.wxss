@@ -115,6 +115,12 @@
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.input-placeholder {
+  font-size: 30rpx;
+  color: #9ca3af;
+  padding-left: 4rpx;
+}
+
 .item-input:focus,
 .item-textarea:focus {
   background: #fff;
@@ -132,13 +138,13 @@
 .item-textarea {
   min-height: 220rpx;
   resize: none;
-  line-height: 1.7;
+  text-indent: 8rpx;
 }
 
 .textarea-placeholder {
-  font-size: 24rpx;
+  font-size: 30rpx;
   color: #9ca3af;
-  line-height: 1.7;
+  padding-left: 4rpx;
 }
 
 .char-count {

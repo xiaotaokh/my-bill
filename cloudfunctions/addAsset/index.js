@@ -34,6 +34,21 @@ exports.main = async (event, context) => {
       };
     }
 
+    // 检查资产名称是否重复
+    const existingAsset = await db.collection('assets')
+      .where({
+        _openid: wxContext.OPENID,
+        name: name.trim()
+      })
+      .count();
+
+    if (existingAsset.total > 0) {
+      return {
+        success: false,
+        error: '资产名称已存在，请使用其他名称'
+      };
+    }
+
     // 添加资产到数据库
     const result = await db.collection('assets').add({
       data: {
