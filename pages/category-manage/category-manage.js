@@ -21,9 +21,6 @@ Page({
     selectedIconName: '',
     uploadedImagePath: '', // 用户上传的图片路径
 
-    // 保护的系统分类
-    protectedCategories: ['电子设备', '房产', '车辆', '投资', '其他'],
-
     // 内置图标列表（带中文名称）
     builtinIcons: [
       { name: '默认', icon: '📦' },
@@ -74,11 +71,6 @@ Page({
     });
   },
 
-  // 判断是否为受保护分类
-  isProtectedCategory: function(name) {
-    return this.data.protectedCategories.includes(name);
-  },
-
   // 加载类别列表
   loadCategories: function (callback) {
     if (this.data.loading) return;
@@ -94,9 +86,6 @@ Page({
         if (resultData && resultData.success) {
           const processCategories = async () => {
             const categoriesData = resultData.data || [];
-
-            // 计算分类总数
-            const totalCount = categoriesData.length;
 
             const categoriesWithIcons = await Promise.all(categoriesData.map(async category => {
               let displayIcon = null;
@@ -279,7 +268,6 @@ Page({
     return sorted;
   },
 
-  // 获取分类图标
   // ========== 添加/编辑分类相关方法 ==========
 
   // 显示分类添加/编辑弹窗
@@ -587,17 +575,6 @@ Page({
     const categoryId = dataset.id;
     const categoryIndex = dataset.index;
     const category = this.data.categories[categoryIndex];
-
-    // 检查是否为不可删除的默认分类
-    if (this.isProtectedCategory(category.name)) {
-      wx.showModal({
-        title: '提示',
-        content: '系统默认分类不能删除',
-        showCancel: false,
-        confirmText: '确定'
-      });
-      return;
-    }
 
     wx.showModal({
       title: '确认删除',

@@ -46,7 +46,12 @@
       "Bash(node -e \"\nconst sharp = require\\('sharp'\\);\nconst path = require\\('path'\\);\n\nasync function convert\\(svgPath, pngPath\\) {\n  try {\n    await sharp\\(svgPath\\)\n      .resize\\(512, 512\\)\n      .png\\(\\)\n      .toFile\\(pngPath\\);\n    console.log\\('转换成功:', pngPath\\);\n  } catch \\(err\\) {\n    console.error\\('转换失败:', err.message\\);\n  }\n}\n\n\\(async \\(\\) => {\n  await convert\\('logo.svg', 'logo.png'\\);\n  await convert\\('logo-white.svg', 'logo-white.png'\\);\n}\\)\\(\\);\n\")",
       "Bash(npm install gifenc --save-dev)",
       "Bash(npm install canvas --save-dev)",
-      "Bash(npm install puppeteer --save-dev)"
+      "Bash(npm install puppeteer --save-dev)",
+      "Bash(sudo rm -rf /Users/taohang/Documents/project/Demo/myBill/miniprogram_npm /Users/taohang/Documents/project/Demo/myBill/node_modules /Users/taohang/Documents/project/Demo/myBill/package-lock.json)",
+      "Bash(npm install)",
+      "Bash(chmod -R u+w miniprogram_npm 2>/dev/null; rm -rf miniprogram_npm)",
+      "Bash(find ./cloudfunctions -name \"miniprogram_npm\" -type d -exec rm -rf {} + 2>/dev/null; echo \"删除完成\")",
+      "Bash(git add .gitignore && git add -u && git status --short | wc -l)"
     ]
   },
   "enabledPlugins": {

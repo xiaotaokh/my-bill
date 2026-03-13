@@ -32,8 +32,7 @@ Page({
     // 分类筛选
     activeCategory: 'all',
     categories: [],
-    categoryList: [], // 包含图标信息的分类列表
-    allCategories: [], // 用于设置页面显示所有分类
+    categoryList: [], // 包含图标信息的分类列表,
 
     // 排序字段映射（索引对应关系）
     // 0:价格 1:购买时间 2:添加时间 3:服役时长 4:日均成本
@@ -127,8 +126,7 @@ Page({
 
             this.setData({
               categories: categoryNames,
-              categoryList: categoriesWithIcons,
-              allCategories: [...categoryNames]
+              categoryList: categoriesWithIcons
             }, () => {
               // 分类加载完成后，重新为已有资产添加图标
               this.updateAssetsCategoryIcon();
@@ -139,8 +137,7 @@ Page({
         } else {
           this.setData({
             categories: [],
-            categoryList: [],
-            allCategories: []
+            categoryList: []
           });
         }
       },
@@ -400,7 +397,6 @@ Page({
     });
   },
 
-  
   // 计算统计数据
   calculateStats() {
     const { filteredAssets } = this.data;
@@ -465,54 +461,7 @@ Page({
     this.loadAssets();
   },
 
-  // 新增类别
-  addCategory() {
-    wx.showModal({
-      title: '添加新类别',
-      editable: true,
-      placeholderText: '请输入新类别名称',
-      confirmButtonText: '确定',
-      success: (res) => {
-        if (res.confirm && res.content) {
-          const newCategory = res.content.trim();
-          if (newCategory) {
-            wx.showLoading({ title: '添加中...' });
-            // 调用云函数添加类别
-            wx.cloud.callFunction({
-              name: 'addCategory',
-              data: { name: newCategory },
-              success: (res) => {
-                wx.hideLoading();
-                if (res.result.success) {
-                  // 重新加载类别列表
-                  this.loadCategories();
-                  wx.showToast({
-                    title: '添加成功',
-                    icon: 'success'
-                  });
-                } else {
-                  wx.showToast({
-                    title: res.result.error || '添加失败',
-                    icon: 'none'
-                  });
-                }
-              },
-              fail: (err) => {
-                wx.hideLoading();
-                console.error('添加类别失败:', err);
-                wx.showToast({
-                  title: '添加失败，请重试',
-                  icon: 'none'
-                });
-              }
-            });
-          }
-        }
-      }
-    });
-  },
-
-  // 改变排序
+  // 跳转到添加页面
   changeSort(e) {
     const index = parseInt(e.detail.value);
     const { sortOrder, sortDbFields } = this.data;
@@ -598,26 +547,10 @@ Page({
     });
   },
 
-  // 切换模式（首页/设置）
-  toggleMode() {
-    this.setData({
-      showSetting: !this.data.showSetting,
-      showCategoryManagement: false // 确保分类管理关闭
-    });
-  },
-
   // 切换到首页视图
   switchToHome() {
     this.setData({
-      showSetting: false,
-      showCategoryManagement: false
-    });
-  },
-
-  // 切换到设置视图
-  switchToSetting() {
-    this.setData({
-      showSetting: true
+      showSetting: false
     });
   },
 
@@ -635,8 +568,7 @@ Page({
   // 切换到设置视图（本页切换，不跳转路由）
   navigateToSetting() {
     this.setData({
-      showSetting: true,
-      showCategoryManagement: false
+      showSetting: true
     });
   },
 
@@ -647,230 +579,6 @@ Page({
       content: '我的账本是一款个人资产管理小程序，帮助您记录和追踪个人资产情况。使用微信云开发技术构建，数据安全可靠。',
       showCancel: false,
       confirmText: '确定'
-    });
-  },
-
-  // 添加新分类
-  addNewCategory() {
-    wx.showModal({
-      title: '添加新类别',
-      editable: true,
-      placeholderText: '请输入新类别名称',
-      confirmButtonText: '确定',
-      success: (res) => {
-        if (res.confirm && res.content) {
-          const newCategory = res.content.trim();
-          if (newCategory) {
-            wx.showLoading({ title: '添加中...' });
-            // 调用云函数添加类别
-            wx.cloud.callFunction({
-              name: 'addCategory',
-              data: { name: newCategory },
-              success: (res) => {
-                wx.hideLoading();
-                if (res.result.success) {
-                  // 重新加载类别列表
-                  this.loadCategories();
-                  wx.showToast({
-                    title: '添加成功',
-                    icon: 'success'
-                  });
-                } else {
-                  wx.showToast({
-                    title: res.result.error || '添加失败',
-                    icon: 'none'
-                  });
-                }
-              },
-              fail: (err) => {
-                wx.hideLoading();
-                console.error('添加类别失败:', err);
-                wx.showToast({
-                  title: '添加失败，请重试',
-                  icon: 'none'
-                });
-              }
-            });
-          }
-        }
-      }
-    });
-  },
-
-  // 编辑分类
-  editCategory(e) {
-    const index = e.currentTarget.dataset.index;
-    const categoryList = [...this.data.allCategories];
-    const oldName = categoryList[index];
-
-    wx.showModal({
-      title: '编辑分类',
-      editable: true,
-      placeholderText: '请输入新的分类名称',
-      content: oldName,
-      success: (res) => {
-        if (res.confirm && res.content.trim() && res.content.trim() !== oldName) {
-          const newCategory = res.content.trim();
-
-          // 检查新名称是否已存在
-          if (categoryList.includes(newCategory)) {
-            wx.showToast({
-              title: '分类已存在',
-              icon: 'none'
-            });
-            return;
-          }
-
-          // 获取该分类的详细信息以便编辑
-          wx.cloud.callFunction({
-            name: 'getCategories',
-            success: (getRes) => {
-              if (getRes.result && getRes.result.data) {
-                const categories = getRes.result.data;
-                const categoryToEdit = categories.find(cat => cat.name === oldName);
-
-                if (categoryToEdit) {
-                  wx.showLoading({ title: '更新中...' });
-
-                  // 调用云函数更新类别
-                  wx.cloud.callFunction({
-                    name: 'updateCategory',
-                    data: {
-                      categoryId: categoryToEdit._id,
-                      name: newCategory,
-                      icon: categoryToEdit.icon || ''
-                    },
-                    success: (updateRes) => {
-                      wx.hideLoading();
-                      if (updateRes.result.success) {
-                        // 重新加载类别列表
-                        this.loadCategories();
-                        wx.showToast({
-                          title: '修改成功',
-                          icon: 'success'
-                        });
-                      } else {
-                        wx.showToast({
-                          title: updateRes.result.error || '更新失败',
-                          icon: 'none'
-                        });
-                      }
-                    },
-                    fail: (err) => {
-                      wx.hideLoading();
-                      console.error('更新类别失败:', err);
-                      wx.showToast({
-                        title: '更新失败，请重试',
-                        icon: 'none'
-                      });
-                    }
-                  });
-                } else {
-                  wx.showToast({
-                    title: '找不到对应分类',
-                    icon: 'none'
-                  });
-                }
-              }
-            },
-            fail: (err) => {
-              console.error('获取分类详情失败:', err);
-              wx.showToast({
-                title: '获取分类信息失败',
-                icon: 'none'
-              });
-            }
-          });
-        }
-      }
-    });
-  },
-
-  // 删除分类
-  deleteCategory(e) {
-    const index = e.currentTarget.dataset.index;
-    const categoryList = [...this.data.allCategories];
-    const categoryToDelete = categoryList[index];
-
-    // 检查是否为不可删除的默认分类
-    const protectedCategories = ['电子设备', '房产', '车辆', '投资', '其他'];
-    if (protectedCategories.includes(categoryToDelete)) {
-      wx.showModal({
-        title: '提示',
-        content: '系统默认分类不能删除',
-        showCancel: false,
-        confirmText: '确定'
-      });
-      return;
-    }
-
-    wx.showModal({
-      title: '确认删除',
-      content: `确定要删除分类 "${categoryToDelete}" 吗？此操作不可恢复`,
-      success: (res) => {
-        if (res.confirm) {
-          wx.showLoading({ title: '删除中...' });
-
-          // 首先获取该分类的详细信息
-          wx.cloud.callFunction({
-            name: 'getCategories',
-            success: (getRes) => {
-              if (getRes.result && getRes.result.data) {
-                const categories = getRes.result.data;
-                const categoryObj = categories.find(cat => cat.name === categoryToDelete);
-
-                if (categoryObj) {
-                  // 调用云函数删除类别
-                  wx.cloud.callFunction({
-                    name: 'deleteCategory', // 需要创建这个云函数
-                    data: {
-                      categoryId: categoryObj._id
-                    },
-                    success: (deleteRes) => {
-                      wx.hideLoading();
-                      if (deleteRes.result.success) {
-                        // 重新加载类别列表
-                        this.loadCategories();
-                        wx.showToast({
-                          title: '删除成功',
-                          icon: 'success'
-                        });
-                      } else {
-                        wx.showToast({
-                          title: deleteRes.result.error || '删除失败',
-                          icon: 'none'
-                        });
-                      }
-                    },
-                    fail: (err) => {
-                      wx.hideLoading();
-                      console.error('删除类别失败:', err);
-                      wx.showToast({
-                        title: '删除失败，请重试',
-                        icon: 'none'
-                      });
-                    }
-                  });
-                } else {
-                  wx.hideLoading();
-                  wx.showToast({
-                    title: '找不到对应分类',
-                    icon: 'none'
-                  });
-                }
-              }
-            },
-            fail: (err) => {
-              wx.hideLoading();
-              console.error('获取分类详情失败:', err);
-              wx.showToast({
-                title: '获取分类信息失败',
-                icon: 'none'
-              });
-            }
-          });
-        }
-      }
     });
   },
 

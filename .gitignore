@@ -2,6 +2,8 @@
 project.config.json
 project.private.config.json
 settings.json
+miniprogram_npm/
+cloudfunctions/*/miniprogram_npm/
 
 # 云函数
 cloudfunctions/*/node_modules/
