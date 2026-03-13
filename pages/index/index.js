@@ -247,12 +247,16 @@ Page({
       });
   },
 
-  // 辅助函数：安全解析日期（兼容 iOS）
+  // 辅助函数：安全解析日期（兼容 iOS，明确解析为本地时间午夜）
   parseDate(dateInput) {
     if (!dateInput) return new Date();
     if (dateInput instanceof Date) return dateInput;
     if (typeof dateInput === 'string') {
-      // iOS 不支持 2023-01-01 这种格式（有时支持但带时间就不行），统一替换为 /
+      // 解析 YYYY-MM-DD 格式为本地时间的午夜，避免时区问题
+      const parts = dateInput.split('-');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      }
       return new Date(dateInput.replace(/-/g, '/'));
     }
     return new Date(dateInput);
@@ -279,8 +283,9 @@ Page({
 
     if (asset.purchaseDate) {
       // 已退役/已卖出：计算到退役/卖出日期
-      if ((asset.status === 'retired' || asset.status === 'sold') && (asset.retireDate || asset.soldDate)) {
-        endDate = this.parseDate(asset.retireDate || asset.soldDate);
+      const retiredDateStr = asset.retiredDate || asset.soldDate;
+      if ((asset.status === 'retired' || asset.status === 'sold') && retiredDateStr) {
+        endDate = this.parseDate(retiredDateStr);
       }
 
       usedDays = Math.floor((endDate - purchaseDate) / (1000 * 60 * 60 * 24)) + 1;
@@ -290,8 +295,9 @@ Page({
     // 计算日期范围
     const startDate = this.formatDate(asset.purchaseDate);
     let dateRangeEnd = '至今';
-    if (asset.status === 'retired' || asset.status === 'sold') {
-      dateRangeEnd = this.formatDate(asset.retireDate || asset.soldDate || now);
+    const retiredDateStr = asset.retiredDate || asset.soldDate;
+    if ((asset.status === 'retired' || asset.status === 'sold') && retiredDateStr) {
+      dateRangeEnd = this.formatDate(retiredDateStr);
     }
 
     // 计算日均成本（仅服役中的资产计算）
@@ -635,10 +641,21 @@ Page({
     });
   },
 
-  // 导航到独立设置页面
+  // 切换到设置视图（本页切换，不跳转路由）
   navigateToSetting() {
-    wx.navigateTo({
-      url: '/pages/setting/setting'
+    this.setData({
+      showSetting: true,
+      showCategoryManagement: false
+    });
+  },
+
+  // 显示关于信息
+  showAboutInfo() {
+    wx.showModal({
+      title: '关于我的账本',
+      content: '我的账本是一款个人资产管理小程序，帮助您记录和追踪个人资产情况。使用微信云开发技术构建，数据安全可靠。',
+      showCancel: false,
+      confirmText: '确定'
     });
   },
 

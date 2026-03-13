@@ -1,68 +1,150 @@
 <!--asset-detail.wxml-->
 <view class="container">
+  <!-- 动态背景 -->
+  <view class="bg-decoration">
+    <view class="bubble bubble-1"></view>
+    <view class="bubble bubble-2"></view>
+    <view class="bubble bubble-3"></view>
+    <view class="bubble bubble-4"></view>
+  </view>
+
+  <!-- 主卡片 -->
   <view class="detail-card">
-    <!-- 图标 -->
-    <view class="asset-icon-container">
-      <text class="asset-icon">{{asset.icon || getAvatarIcon(asset.category)}}</text>
+    <!-- 资产图标 -->
+    <view class="asset-icon-wrapper">
+      <view class="asset-icon-container">
+        <text class="asset-icon">{{asset.icon || categoryIcon}}</text>
+      </view>
+      <view class="icon-shine"></view>
     </view>
 
-    <!-- 资产状态标签 -->
-    <view class="status-badge {{asset.status === 'active' ? 'status-active' : asset.status === 'retired' ? 'status-retired' : 'status-sold'}}">
-      {{asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出'}}
+    <!-- 状态标签 -->
+    <view class="status-pill {{asset.status}}">
+      <text class="status-dot"></text>
+      {{asset.status === 'active' ? '💪 服役中' : asset.status === 'retired' ? '😴 已退役' : '💰 已卖出'}}
     </view>
 
     <!-- 资产名称 -->
     <view class="asset-name">{{asset.name}}</view>
 
-    <!-- 价格 -->
-    <view class="asset-price">¥{{asset.price}}</view>
-
-    <!-- 类别 -->
-    <view class="asset-category">
-      <text>🏷️ {{asset.category}}</text>
+    <!-- 价格展示 -->
+    <view class="price-wrapper">
+      <text class="currency">¥</text>
+      <text class="asset-price">{{asset.price}}</text>
     </view>
 
-    <!-- 基本信息 -->
-    <view class="info-section">
-      <view class="info-item">
-        <view class="info-label">购买日期</view>
-        <view class="info-value">{{formatDate(asset.purchaseDate)}}</view>
-      </view>
+    <!-- 类别标签 -->
+    <view class="category-tag">
+      <text class="tag-icon">🏷️</text>
+      <text class="tag-text">{{asset.category}}</text>
+    </view>
 
-      <view class="info-item">
-        <view class="info-label">添加时间</view>
-        <view class="info-value">{{formatDateTime(asset.createdAt)}}</view>
-      </view>
-
-      <view class="info-item" wx:if="{{asset.status === 'active'}}">
-        <view class="info-label">服役时长</view>
-        <view class="info-value">{{getServedDays(asset.purchaseDate)}} 天</view>
-      </view>
-
-      <view class="info-item" wx:if="{{asset.status === 'active'}}">
-        <view class="info-label">日均成本</view>
-        <view class="info-value">¥{{getDailyCost(asset.price, asset.purchaseDate)}}</view>
-      </view>
-
-      <view class="info-item" wx:if="{{asset.excludeTotal || asset.excludeDaily}}">
-        <view class="info-label">特殊设置</view>
-        <view class="info-value">
-          <block wx:if="{{asset.excludeTotal}}">❌ 不计入总资产</block>
-          <block wx:if="{{asset.excludeDaily && asset.excludeTotal}}">，</block>
-          <block wx:if="{{asset.excludeDaily}}">❌ 不计入日均</block>
+    <!-- 信息卡片区域 -->
+    <view class="info-cards">
+      <!-- 购买日期 -->
+      <view class="info-card" wx:if="{{asset.purchaseDate}}">
+        <view class="card-icon">📅</view>
+        <view class="card-content">
+          <view class="card-label">购买日期</view>
+          <view class="card-value">{{displayInfo.purchaseDateFormatted}}</view>
         </view>
       </view>
 
-      <view class="info-item" wx:if="{{asset.remark}}">
-        <view class="info-label">备注</view>
-        <view class="info-value remark">{{asset.remark}}</view>
+      <!-- 添加时间 -->
+      <view class="info-card" wx:if="{{asset.createdAt}}">
+        <view class="card-icon">✨</view>
+        <view class="card-content">
+          <view class="card-label">添加时间</view>
+          <view class="card-value">{{displayInfo.createdAtFormatted}}</view>
+        </view>
       </view>
+
+      <!-- 退役日期 -->
+      <view class="info-card" wx:if="{{asset.status === 'retired' && asset.retiredDate}}">
+        <view class="card-icon">🏁</view>
+        <view class="card-content">
+          <view class="card-label">退役日期</view>
+          <view class="card-value">{{displayInfo.retiredDateFormatted}}</view>
+        </view>
+      </view>
+
+      <!-- 卖出日期 -->
+      <view class="info-card" wx:if="{{asset.status === 'sold' && asset.soldDate}}">
+        <view class="card-icon">💵</view>
+        <view class="card-content">
+          <view class="card-label">卖出日期</view>
+          <view class="card-value">{{displayInfo.soldDateFormatted}}</view>
+        </view>
+      </view>
+
+      <!-- 使用时长 (退役/卖出状态显示) -->
+      <view class="info-card" wx:if="{{(asset.status === 'retired' || asset.status === 'sold') && asset.purchaseDate}}">
+        <view class="card-icon">📆</view>
+        <view class="card-content">
+          <view class="card-label">使用时长</view>
+          <view class="card-value">{{displayInfo.usedDays}} 天</view>
+        </view>
+      </view>
+
+      <!-- 折合每日 (退役/卖出状态显示) -->
+      <view class="info-card" wx:if="{{(asset.status === 'retired' || asset.status === 'sold') && asset.price && asset.purchaseDate}}">
+        <view class="card-icon">📊</view>
+        <view class="card-content">
+          <view class="card-label">折合每日</view>
+          <view class="card-value">¥{{displayInfo.dailyEquivalent}}/天</view>
+        </view>
+      </view>
+
+      <!-- 服役时长 (服役中状态显示) -->
+      <view class="info-card highlight" wx:if="{{asset.status === 'active' && asset.purchaseDate}}">
+        <view class="card-icon">⏰</view>
+        <view class="card-content">
+          <view class="card-label">服役时长</view>
+          <view class="card-value highlight-value">{{displayInfo.usedDays}} 天</view>
+        </view>
+        <view class="card-decoration"></view>
+      </view>
+
+      <!-- 日均成本 (服役中状态显示) -->
+      <view class="info-card highlight" wx:if="{{asset.status === 'active' && asset.price && asset.purchaseDate}}">
+        <view class="card-icon">📊</view>
+        <view class="card-content">
+          <view class="card-label">日均成本</view>
+          <view class="card-value highlight-value">¥{{displayInfo.dailyCost}}/天</view>
+        </view>
+        <view class="card-decoration"></view>
+      </view>
+    </view>
+
+    <!-- 特殊设置 -->
+    <view class="special-tags" wx:if="{{asset.excludeTotal || asset.excludeDaily}}">
+      <view class="special-tag total" wx:if="{{asset.excludeTotal}}">
+        <text>🚫 不计入总资产</text>
+      </view>
+      <view class="special-tag daily" wx:if="{{asset.excludeDaily}}">
+        <text>🚫 不计入总日均</text>
+      </view>
+    </view>
+
+    <!-- 备注区域 -->
+    <view class="remark-section" wx:if="{{asset.remark}}">
+      <view class="remark-header">
+        <text class="remark-icon">📝</text>
+        <text class="remark-title">备注</text>
+      </view>
+      <view class="remark-content">{{asset.remark}}</view>
     </view>
 
     <!-- 操作按钮 -->
     <view class="action-buttons">
-      <button class="edit-btn" bindtap="editAsset">编辑</button>
-      <button class="delete-btn" bindtap="deleteAsset">删除</button>
+      <button class="btn edit-btn" bindtap="editAsset">
+        <text class="btn-icon">✏️</text>
+        <text class="btn-text">编辑</text>
+      </button>
+      <button class="btn delete-btn" bindtap="deleteAsset">
+        <text class="btn-icon">🗑️</text>
+        <text class="btn-text">删除</text>
+      </button>
     </view>
   </view>
 </view>

@@ -1,7 +1,7 @@
 <!--index.wxml-->
 <view class="container">
-  <!-- 顶部背景 -->
-  <view class="header-bg"></view>
+  <!-- 顶部背景 - 仅首页显示 -->
+  <view class="header-bg" style="{{showSetting ? 'display: none;' : 'display: block;'}}"></view>
 
   <!-- 主内容区域 -->
   <view class="main-content" style="{{showSetting ? 'display: none;' : 'display: block;'}}">
@@ -158,8 +158,14 @@
           </view>
           <view class="card-content">
             <view class="card-header">
-              <view class="name-with-category">
+              <view class="name-row">
                 <text class="asset-name">{{item.name}}</text>
+                <view class="asset-badge {{item.status}}">
+                  <text>{{item.status === 'active' ? '服役中' : item.status === 'retired' ? '已退役' : '已卖出'}}</text>
+                </view>
+              </view>
+              <!-- 名称下方的标签信息 -->
+              <view class="name-sub-info">
                 <view wx:if="{{item.excludeTotal || item.excludeDaily}}" class="exclude-tags">
                   <text wx:if="{{item.excludeTotal}}" class="exclude-tag total">不计入总资产</text>
                   <text wx:if="{{item.excludeDaily}}" class="exclude-tag daily">不计入总日均</text>
@@ -169,9 +175,6 @@
                   <text wx:else class="tag-icon-text-inline">{{item.categoryIcon || '📦'}}</text>
                   <text class="tag-text-inline">{{item.category}}</text>
                 </view>
-              </view>
-              <view class="asset-badge {{item.status}}">
-                <text>{{item.status === 'active' ? '服役中' : item.status === 'retired' ? '已退役' : '已卖出'}}</text>
               </view>
             </view>
             <view class="card-info">
@@ -229,45 +232,43 @@
   <view class="setting-content" style="{{showSetting ? 'display: block;' : 'display: none;'}}">
     <!-- 设置头部 -->
     <view class="setting-header">
-      <view class="setting-back" bindtap="switchToHome">
-        <text class="back-icon">‹</text>
-      </view>
       <text class="setting-title">设置</text>
     </view>
 
-    <!-- 设置主内容 -->
-    <view class="setting-main">
-      <!-- 功能设置 -->
-      <view class="setting-section">
-        <view class="section-title">功能设置</view>
-        <view class="setting-item" bindtap="navigateToCategoryManage">
-          <text class="item-label">分类管理</text>
-          <text class="arrow">›</text>
+    <!-- 功能列表 -->
+    <view class="setting-list">
+      <!-- 分类管理 -->
+      <view class="setting-item-full" bindtap="navigateToCategoryManage">
+        <view class="setting-icon-box">
+          <text>🏷️</text>
         </view>
-        <view class="setting-item">
-          <text class="item-label">数据备份</text>
-          <switch class="item-switch" checked />
+        <view class="setting-info">
+          <text class="setting-title-text">分类管理</text>
+          <text class="setting-desc">管理资产分类</text>
         </view>
-        <view class="setting-item">
-          <text class="item-label">隐私设置</text>
+        <view class="setting-arrow">
           <text class="arrow">›</text>
         </view>
       </view>
-
-      <!-- 分类管理展开内容 -->
 
       <!-- 关于 -->
-      <view class="setting-section">
-        <view class="section-title">关于</view>
-        <view class="setting-item">
-          <text class="item-label">版本信息</text>
-          <text class="item-value">v1.0.0</text>
+      <view class="setting-item-full" bindtap="showAboutInfo">
+        <view class="setting-icon-box">
+          <text>ℹ️</text>
         </view>
-        <view class="setting-item">
-          <text class="item-label">意见反馈</text>
+        <view class="setting-info">
+          <text class="setting-title-text">关于</text>
+          <text class="setting-desc">了解我的账本</text>
+        </view>
+        <view class="setting-arrow">
           <text class="arrow">›</text>
         </view>
       </view>
+    </view>
+
+    <!-- 版本信息 -->
+    <view class="version-info">
+      <text class="version-text">我的账本 v1.0.0</text>
     </view>
   </view>
 
@@ -280,7 +281,7 @@
           <text class="fab-icon">🏠</text>
           <text class="fab-label">首页</text>
         </view>
-        <view class="fab-item" bindtap="navigateToSetting">
+        <view class="fab-item {{showSetting ? 'active' : ''}}" bindtap="navigateToSetting">
           <text class="fab-icon">⚙️</text>
           <text class="fab-label">设置</text>
         </view>

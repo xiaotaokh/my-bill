@@ -2,7 +2,18 @@
 Page({
   data: {
     asset: {},
-    assetId: ''
+    assetId: '',
+    // 计算后的显示字段
+    displayInfo: {
+      purchaseDateFormatted: '',
+      createdAtFormatted: '',
+      retiredDateFormatted: '',
+      soldDateFormatted: '',
+      usedDays: 0,
+      dailyCost: '0.00',
+      dailyEquivalent: '0.00',
+      dateRange: ''
+    }
   },
 
   onLoad: function (options) {
@@ -24,8 +35,11 @@ Page({
     db.collection('assets').doc(id).get()
       .then(res => {
         if (res.data) {
+          const asset = res.data;
+          const displayInfo = this.calculateDisplayInfo(asset);
           this.setData({
-            asset: res.data
+            asset: asset,
+            displayInfo: displayInfo
           });
         } else {
           wx.showToast({
@@ -63,30 +77,37 @@ Page({
       });
   },
 
-  // 辅助函数：安全解析日期（兼容 iOS）
+  // 辅助函数：安全解析日期（兼容 iOS，明确解析为本地时间午夜）
   parseDate(dateInput) {
     if (!dateInput) return new Date();
     if (dateInput instanceof Date) return dateInput;
     if (typeof dateInput === 'string') {
+      // 解析 YYYY-MM-DD 格式为本地时间的午夜，避免时区问题
+      const parts = dateInput.split('-');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      }
       return new Date(dateInput.replace(/-/g, '/'));
     }
     return new Date(dateInput);
   },
 
-  // 格式化日期
+  // 格式化日期为 YYYY-MM-DD
   formatDate(dateStr) {
     if (!dateStr) return '';
     const date = this.parseDate(dateStr);
+    if (!date) return '';
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   },
 
-  // 格式化日期时间
+  // 格式化日期时间（添加时间专用）
   formatDateTime(dateStr) {
     if (!dateStr) return '';
     const date = this.parseDate(dateStr);
+    if (!date) return '';
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -95,28 +116,62 @@ Page({
     return `${year}-${month}-${day} ${hour}:${minute}`;
   },
 
-  // 计算服役天数
-  getServedDays(purchaseDate) {
-    if (!purchaseDate) return 0;
-    const purchase = this.parseDate(purchaseDate);
+  // 计算显示信息 - 和首页保持一致
+  calculateDisplayInfo(asset) {
+    const purchaseDate = this.parseDate(asset.purchaseDate);
     const now = new Date();
-    const diffTime = Math.abs(now - purchase);
-    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  },
 
-  // 计算日均成本
-  getDailyCost(price, purchaseDate) {
-    if (!price || !purchaseDate) return 0;
-    const days = this.getServedDays(purchaseDate);
-    if (days === 0) return price;
-    return (price / days).toFixed(2);
+    // 计算已使用天数
+    let usedDays = 0;
+    let endDate = now;
+
+    if (asset.purchaseDate) {
+      // 已退役/已卖出：计算到退役/卖出日期
+      const retiredDateStr = asset.retiredDate || asset.soldDate;
+      if ((asset.status === 'retired' || asset.status === 'sold') && retiredDateStr) {
+        endDate = this.parseDate(retiredDateStr);
+      }
+
+      usedDays = Math.floor((endDate - purchaseDate) / (1000 * 60 * 60 * 24)) + 1;
+      if (usedDays <= 0) usedDays = 1;
+    }
+
+    // 计算日均成本（服役中）
+    let dailyCost = '0.00';
+    // 折合每日（已退役/已卖出）
+    let dailyEquivalent = '0.00';
+
+    if (asset.status === 'active' && asset.price && usedDays >= 1) {
+      dailyCost = (asset.price / usedDays).toFixed(2);
+    } else if ((asset.status === 'retired' || asset.status === 'sold') && asset.price && usedDays >= 1) {
+      dailyEquivalent = (asset.price / usedDays).toFixed(2);
+      dailyCost = dailyEquivalent;
+    }
+
+    // 计算日期范围
+    const startDate = this.formatDate(asset.purchaseDate);
+    let dateRangeEnd = '至今';
+    const retiredDateStr = asset.retiredDate || asset.soldDate;
+    if ((asset.status === 'retired' || asset.status === 'sold') && retiredDateStr) {
+      dateRangeEnd = this.formatDate(retiredDateStr);
+    }
+
+    return {
+      purchaseDateFormatted: this.formatDate(asset.purchaseDate),
+      createdAtFormatted: this.formatDate(asset.createdAt),
+      retiredDateFormatted: this.formatDate(asset.retiredDate),
+      soldDateFormatted: this.formatDate(asset.soldDate),
+      usedDays: usedDays,
+      dailyCost: dailyCost,
+      dailyEquivalent: dailyEquivalent,
+      dateRange: asset.status === 'active' ? `${startDate} - 至今` : `${startDate} - ${dateRangeEnd}`
+    };
   },
 
   // 获取资产对应的默认图标
-  getAvatarIcon(asset) {
-    if (!asset.category) return '📦'; // 默认图标
+  getAvatarIcon(category) {
+    if (!category) return '📦';
 
-    // 根据类别返回相应图标
     const categoryIcons = {
       '电子设备': '📱',
       '家具': '🛋️',
@@ -131,38 +186,35 @@ Page({
       '游戏': '🎮'
     };
 
-    // 检查是否存在于类别映射中
-    if (categoryIcons[asset.category]) {
-      return categoryIcons[asset.category];
+    if (categoryIcons[category]) {
+      return categoryIcons[category];
     }
 
-    // 对于更细分的类别，提取关键词进行匹配
-    const lowerCategory = asset.category.toLowerCase();
-    if (lowerCategory.includes('电子') || lowerCategory.includes('手机') || lowerCategory.includes('数码')) {
+    // 关键词匹配
+    if (category.includes('电子') || category.includes('手机') || category.includes('数码')) {
       return '📱';
-    } else if (lowerCategory.includes('车') || lowerCategory.includes('汽车')) {
+    } else if (category.includes('车') || category.includes('汽车')) {
       return '🚗';
-    } else if (lowerCategory.includes('房') || lowerCategory.includes('地产') || lowerCategory.includes('房子')) {
+    } else if (category.includes('房') || category.includes('地产') || category.includes('房子')) {
       return '🏠';
-    } else if (lowerCategory.includes('电脑') || lowerCategory.includes('笔记')) {
+    } else if (category.includes('电脑') || category.includes('笔记')) {
       return '💻';
-    } else if (lowerCategory.includes('家') || lowerCategory.includes('具')) {
+    } else if (category.includes('家') || category.includes('具')) {
       return '🛋️';
-    } else if (lowerCategory.includes('投') || lowerCategory.includes('资') || lowerCategory.includes('基金') || lowerCategory.includes('股票')) {
+    } else if (category.includes('投') || category.includes('资') || category.includes('基金') || category.includes('股票')) {
       return '📈';
-    } else if (lowerCategory.includes('餐') || lowerCategory.includes('食')) {
+    } else if (category.includes('餐') || category.includes('食')) {
       return '🍔';
-    } else if (lowerCategory.includes('衣') || lowerCategory.includes('服')) {
+    } else if (category.includes('衣') || category.includes('服')) {
       return '👕';
-    } else if (lowerCategory.includes('书') || lowerCategory.includes('图书')) {
+    } else if (category.includes('书') || category.includes('图书')) {
       return '📚';
-    } else if (lowerCategory.includes('运') || lowerCategory.includes('动') || lowerCategory.includes('球')) {
+    } else if (category.includes('运') || category.includes('动') || category.includes('球')) {
       return '⚽';
-    } else if (lowerCategory.includes('游') || lowerCategory.includes('戏')) {
+    } else if (category.includes('游') || category.includes('戏')) {
       return '🎮';
     }
 
-    // 默认返回一个通用图标
     return '📦';
   },
 
