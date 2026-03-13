@@ -1,7 +1,4 @@
 # 小程序
-project.config.json
-project.private.config.json
-settings.json
 miniprogram_npm/
 cloudfunctions/*/miniprogram_npm/
 
