@@ -1,6 +1,9 @@
 // index.js
 const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
+// 引入 echarts
+import * as echarts from '../../components/ec-canvas/echarts';
+
 Page({
   data: {
     // 日期
@@ -32,53 +35,52 @@ Page({
     // 分类筛选
     activeCategory: 'all',
     categories: [],
-    categoryList: [], // 包含图标信息的分类列表,
-
-    // 排序字段映射（索引对应关系）
-    // 0:价格 1:购买时间 2:添加时间 3:服役时长 4:日均成本
-    // 前3个可在数据库层面排序，后2个需要前端排序
-    sortDbFields: ['price', 'purchaseDate', 'createdAt'],
+    categoryList: [],
 
     // 排序
+    sortDbFields: ['price', 'purchaseDate', 'createdAt'],
     sortOptions: ['价格', '购买时间', '添加时间', '服役时长', '日均成本'],
-    currentSortIndex: 2, // 默认按添加时间排序
-    sortOrder: 'desc', // asc 或 desc
+    currentSortIndex: 2,
+    sortOrder: 'desc',
 
     // 视图控制
-    showSetting: false, // 控制显示设置视图
+    showSetting: false,
+    showReport: false,
 
-    // 批量删除视图控制
+    // 报表数据
+    reportLoading: false,
+    reportEmpty: false,
+    reportTotalAssets: 0,
+    reportTotalPrice: 0,
+    reportCategoryStats: [],
+    reportColors: ['#667eea', '#764ba2', '#9b72e8', '#f472b6', '#fb923c', '#34d399', '#60a5fa', '#a78bfa', '#fbbf24', '#38bdf8'],
+
+    // 图表配置 - 使用延迟加载
+    pieEc: { lazyLoad: true },
+    lineEc: { lazyLoad: true },
+
+    // 批量删除
     showBatchDelete: false,
-    batchAssetList: [], // 批量删除时的资产列表
-    selectedAssets: [], // 已选择的资产ID列表
-    isAllSelected: false, // 是否全选
+    batchAssetList: [],
+    selectedAssets: [],
+    isAllSelected: false,
 
-    // 加载状态标志
+    // 状态
     isLoading: false,
-
-    // 页面导航标志
-    _fromSetting: false, // 从设置页面进入分类管理
-
-    // 回到顶部按钮显示控制
+    _fromSetting: false,
     showBackToTop: false
   },
 
-  onLoad: function () {
+  onLoad() {
     this.loadCategories();
-    // 直接调用 loadAssets，它内部会等待 openid
     this.loadAssets();
   },
 
-  onShow: function () {
-    // 每次进入页面重新加载数据，但如果正在加载中则跳过
+  onShow() {
     if (this.data.isLoading) return;
 
-    // 如果是从分类管理页面返回，恢复设置视图
     if (this.data._fromSetting) {
-      this.setData({
-        showSetting: true,
-        _fromSetting: false
-      });
+      this.setData({ showSetting: true, _fromSetting: false });
     }
 
     this.loadCategories();
@@ -90,276 +92,139 @@ Page({
     wx.cloud.callFunction({
       name: 'getCategories',
       success: (res) => {
-        const resultData = res.result;
-        if (resultData && resultData.success && resultData.data) {
-          const processCategories = async () => {
-            const categoriesData = resultData.data || [];
-
-            const categoriesWithIcons = await Promise.all(categoriesData.map(async category => {
-              let displayIcon = null;
-
-              // 如果是云存储的fileID，获取临时文件链接
-              if (category.icon && category.icon.startsWith('cloud://')) {
-                try {
-                  const fileRes = await wx.cloud.getTempFileURL({
-                    fileList: [category.icon]
-                  });
-                  if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
-                    displayIcon = fileRes.fileList[0].tempFileURL;
-                  }
-                } catch (e) {
-                  // 获取失败时使用 null，显示 icon
-                }
-              } else if (category.icon && category.icon.startsWith('http')) {
-                displayIcon = category.icon;
-              }
-
-              return {
-                name: category.name,
-                icon: category.icon || '',
-                displayIcon: displayIcon
-              };
-            }));
-
-            // 分类名称数组（用于筛选）
-            const categoryNames = categoriesWithIcons.map(c => c.name);
-
-            this.setData({
-              categories: categoryNames,
-              categoryList: categoriesWithIcons
-            }, () => {
-              // 分类加载完成后，重新为已有资产添加图标
-              this.updateAssetsCategoryIcon();
-            });
-          };
-
-          processCategories();
+        if (res.result?.success && res.result.data) {
+          this.processCategories(res.result.data);
         } else {
-          this.setData({
-            categories: [],
-            categoryList: []
-          });
+          this.setData({ categories: [], categoryList: [] });
         }
       },
       fail: () => {
-        this.setData({
-          categories: [],
-          categoryList: [],
-          allCategories: []
-        });
+        this.setData({ categories: [], categoryList: [] });
       }
     });
   },
 
-  // 加载资产数据
+  async processCategories(categoriesData) {
+    const categoriesWithIcons = await Promise.all(categoriesData.map(async category => {
+      let displayIcon = null;
+      if (category.icon?.startsWith('cloud://')) {
+        try {
+          const fileRes = await wx.cloud.getTempFileURL({ fileList: [category.icon] });
+          displayIcon = fileRes.fileList[0]?.tempFileURL || null;
+        } catch (e) {}
+      } else if (category.icon?.startsWith('http')) {
+        displayIcon = category.icon;
+      }
+      return { name: category.name, icon: category.icon || '', displayIcon };
+    }));
+
+    this.setData({
+      categories: categoriesWithIcons.map(c => c.name),
+      categoryList: categoriesWithIcons
+    }, () => this.updateAssetsCategoryIcon());
+  },
+
+  // 加载资产
   loadAssets() {
-    // 防止重复加载
     if (this.data.isLoading) return;
 
     this.setData({ isLoading: true });
     wx.showLoading({ title: '加载中...' });
 
-    // 检查云开发是否已初始化
-    if (!wx.cloud) {
-      console.log('云开发未初始化，显示空数据');
-      this.setData({
-        assets: [],
-        filteredAssets: [],
-        isLoading: false
-      });
-      wx.hideLoading();
-      return;
-    }
-
-    // 使用 app 的 getOpenid 方法获取 openid
     const app = getApp();
     const { currentSortIndex, sortOrder, sortDbFields, activeStatus, activeCategory } = this.data;
 
-    app.getOpenid()
-      .then(openid => {
-        // 从云数据库获取资产数据
-        // 显式指定环境 ID，防止真机环境丢失
-        const db = wx.cloud.database({
-          env: app.globalData.envId
-        });
+    app.getOpenid().then(openid => {
+      const db = wx.cloud.database({ env: app.globalData.envId });
+      const where = { _openid: openid };
 
-        // 构建查询条件
-        const whereCondition = {
-          _openid: openid
-        };
+      if (activeStatus !== 'all') where.status = activeStatus;
+      if (activeCategory !== 'all') where.category = activeCategory;
 
-        // 添加状态筛选条件
-        if (activeStatus && activeStatus !== 'all') {
-          whereCondition.status = activeStatus;
+      let query = db.collection('assets').where(where);
+      const sortField = sortDbFields[currentSortIndex];
+      query = query.orderBy(sortField || 'createdAt', sortField ? sortOrder : 'desc');
+
+      return query.get();
+    }).then(async res => {
+      const assetsWithIcon = await Promise.all(res.data.map(async asset => {
+        let displayIcon = null;
+        if (asset.icon?.startsWith('cloud://')) {
+          try {
+            const fileRes = await wx.cloud.getTempFileURL({ fileList: [asset.icon] });
+            displayIcon = fileRes.fileList[0]?.tempFileURL || null;
+          } catch (e) {}
+        } else if (asset.icon?.startsWith('http')) {
+          displayIcon = asset.icon;
         }
+        return { ...asset, displayIcon };
+      }));
 
-        // 添加分类筛选条件
-        if (activeCategory && activeCategory !== 'all') {
-          whereCondition.category = activeCategory;
-        }
+      const assets = assetsWithIcon.map(a => this.calculateAssetFields(a));
+      this.setData({ assets, filteredAssets: assets, isLoading: false });
 
-        // 构建查询
-        let query = db.collection('assets').where(whereCondition);
-
-        // 判断是否可以在数据库层面排序（价格、购买时间、添加时间）
-        const sortField = sortDbFields[currentSortIndex];
-        if (sortField) {
-          // 数据库层面排序
-          query = query.orderBy(sortField, sortOrder);
-        } else {
-          // 计算字段排序，使用默认排序
-          query = query.orderBy('createdAt', 'desc');
-        }
-
-        query.get()
-          .then(async res => {
-            console.log('获取资产成功:', res.data.length);
-
-            // 处理资产的 icon 字段，获取云存储临时 URL
-            const assetsWithDisplayIcon = await Promise.all(res.data.map(async asset => {
-              let displayIcon = null;
-
-              // 如果是云存储的 fileID，获取临时文件链接
-              if (asset.icon && asset.icon.startsWith('cloud://')) {
-                try {
-                  const fileRes = await wx.cloud.getTempFileURL({
-                    fileList: [asset.icon]
-                  });
-                  if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
-                    displayIcon = fileRes.fileList[0].tempFileURL;
-                  }
-                } catch (e) {
-                  // 获取失败时使用 null，显示 emoji icon
-                }
-              } else if (asset.icon && asset.icon.startsWith('http')) {
-                displayIcon = asset.icon;
-              }
-
-              return {
-                ...asset,
-                displayIcon
-              };
-            }));
-
-            // 为每个资产添加计算字段
-            const assetsWithCalculated = assetsWithDisplayIcon.map(asset => this.calculateAssetFields(asset));
-            this.setData({
-              assets: assetsWithCalculated,
-              filteredAssets: assetsWithCalculated,
-              isLoading: false
-            });
-
-            // 只有前端排序字段（服役时长、日均成本）需要额外处理
-            // 数据库排序的字段已经排好序了，不需要再排序
-            if (!sortField) {
-              this.applySort();
-            } else {
-              this.calculateStats();
-            }
-          })
-          .catch(err => {
-            console.error('加载资产失败:', err);
-            // 真机调试显示具体错误
-            wx.showModal({
-              title: '加载失败',
-              content: '错误信息：' + (err.message || JSON.stringify(err)),
-              showCancel: false
-            });
-
-            // 即使失败也显示空状态，不崩溃
-            this.setData({
-              assets: [],
-              filteredAssets: [],
-              isLoading: false
-            });
-          })
-          .finally(() => {
-            wx.hideLoading();
-          });
-      })
-      .catch(err => {
-        console.error('获取 openid 失败:', err);
-        this.setData({
-          assets: [],
-          filteredAssets: [],
-          isLoading: false
-        });
-        wx.hideLoading();
-        wx.showToast({
-          title: '获取用户信息失败',
-          icon: 'none'
-        });
-      });
+      if (!sortDbFields[currentSortIndex]) {
+        this.applySort();
+      } else {
+        this.calculateStats();
+      }
+    }).catch(err => {
+      console.error('加载失败:', err);
+      this.setData({ assets: [], filteredAssets: [], isLoading: false });
+      wx.hideLoading();
+      wx.showToast({ title: '加载失败', icon: 'none' });
+    }).finally(() => wx.hideLoading());
   },
 
-  // 辅助函数：安全解析日期（兼容 iOS，明确解析为本地时间午夜）
   parseDate(dateInput) {
     if (!dateInput) return new Date();
     if (dateInput instanceof Date) return dateInput;
     if (typeof dateInput === 'string') {
-      // 解析 YYYY-MM-DD 格式为本地时间的午夜，避免时区问题
       const parts = dateInput.split('-');
       if (parts.length === 3) {
         return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
       }
-      return new Date(dateInput.replace(/-/g, '/'));
     }
     return new Date(dateInput);
   },
 
-  // 格式化日期为 YYYY-MM-DD
   formatDate(dateStr) {
     if (!dateStr) return '';
     const date = this.parseDate(dateStr);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   },
 
-  // 为单个资产计算显示字段
   calculateAssetFields(asset) {
     const purchaseDate = this.parseDate(asset.purchaseDate);
     const now = new Date();
-
-    // 计算已使用天数
     let usedDays = 0;
-    let endDate = now; // 用于日期范围显示
+    let endDate = now;
 
     if (asset.purchaseDate) {
-      // 已退役/已卖出：计算到退役/卖出日期
       const retiredDateStr = asset.retiredDate || asset.soldDate;
       if ((asset.status === 'retired' || asset.status === 'sold') && retiredDateStr) {
         endDate = this.parseDate(retiredDateStr);
       }
-
       usedDays = Math.floor((endDate - purchaseDate) / (1000 * 60 * 60 * 24)) + 1;
       if (usedDays <= 0) usedDays = 1;
     }
 
-    // 计算日期范围
     const startDate = this.formatDate(asset.purchaseDate);
-    let dateRangeEnd = '至今';
     const retiredDateStr = asset.retiredDate || asset.soldDate;
-    if ((asset.status === 'retired' || asset.status === 'sold') && retiredDateStr) {
-      dateRangeEnd = this.formatDate(retiredDateStr);
-    }
+    const dateRangeEnd = (asset.status === 'retired' || asset.status === 'sold') && retiredDateStr
+      ? this.formatDate(retiredDateStr) : '至今';
 
-    // 计算日均成本（仅服役中的资产计算）
     let dailyCost = '0.00';
-    // 折合每日（已退役/已卖出）
     let dailyEquivalent = '0.00';
     if (asset.status === 'active' && asset.price && usedDays >= 1) {
-      // 无论是否排除日均，都计算日均成本用于显示
       dailyCost = (asset.price / usedDays).toFixed(2);
     } else if ((asset.status === 'retired' || asset.status === 'sold') && asset.price && usedDays >= 1) {
       dailyEquivalent = (asset.price / usedDays).toFixed(2);
     }
 
-    // 获取类别图标 - 优先使用云存储图片，否则使用emoji
-    const categoryItem = this.data.categoryList ? this.data.categoryList.find(c => c.name === asset.category) : null;
-    const categoryIcon = categoryItem ? (categoryItem.displayIcon || categoryItem.icon || '📦') : '';
-    const categoryIconUrl = categoryIcon && (categoryIcon.startsWith('http') || categoryIcon.startsWith('cloud://')) ? categoryIcon : '';
+    const categoryItem = this.data.categoryList?.find(c => c.name === asset.category);
+    const categoryIcon = categoryItem?.displayIcon || categoryItem?.icon || '';
+    const categoryIconUrl = categoryIcon?.startsWith('http') ? categoryIcon : '';
 
     return {
       ...asset,
@@ -372,490 +237,443 @@ Page({
     };
   },
 
-  // 为已有资产更新分类图标
   updateAssetsCategoryIcon() {
     const { assets, categoryList } = this.data;
-    if (!assets.length || !categoryList.length) return;
+    if (!assets.length || !categoryList?.length) return;
 
-    const updatedAssets = assets.map(asset => {
-      const categoryItem = categoryList.find(c => c.name === asset.category);
-      const categoryIcon = categoryItem ? (categoryItem.displayIcon || categoryItem.icon || '📦') : '';
-      const categoryIconUrl = categoryIcon && (categoryIcon.startsWith('http') || categoryIcon.startsWith('cloud://')) ? categoryIcon : '';
-      return { ...asset, categoryIcon, categoryIconUrl };
+    const update = list => list.map(asset => {
+      const item = categoryList.find(c => c.name === asset.category);
+      const icon = item?.displayIcon || item?.icon || '';
+      return { ...asset, categoryIcon: icon, categoryIconUrl: icon?.startsWith('http') ? icon : '' };
     });
 
-    const updatedFilteredAssets = this.data.filteredAssets.map(asset => {
-      const categoryItem = categoryList.find(c => c.name === asset.category);
-      const categoryIcon = categoryItem ? (categoryItem.displayIcon || categoryItem.icon || '📦') : '';
-      const categoryIconUrl = categoryIcon && (categoryIcon.startsWith('http') || categoryIcon.startsWith('cloud://')) ? categoryIcon : '';
-      return { ...asset, categoryIcon, categoryIconUrl };
-    });
-
-    this.setData({
-      assets: updatedAssets,
-      filteredAssets: updatedFilteredAssets
-    });
+    this.setData({ assets: update(assets), filteredAssets: update(this.data.filteredAssets) });
   },
 
-  // 计算统计数据
   calculateStats() {
     const { filteredAssets } = this.data;
-
-    let totalPrice = 0;
-    let dailyCostTotal = 0;
-    let activeCount = 0;
-    let retiredCount = 0;
-    let soldCount = 0;
+    let totalPrice = 0, dailyCostTotal = 0;
+    let activeCount = 0, retiredCount = 0, soldCount = 0;
 
     filteredAssets.forEach(asset => {
-      // 排除不计入总资产的项（字符串 "true" 也需要排除）
       if (asset.excludeTotal === true || asset.excludeTotal === 'true') return;
-
       totalPrice += asset.price || 0;
 
-      // 累加日均成本（仅服役中且未排除日均计算的资产）
       if (asset.status === 'active' && asset.excludeDaily !== true && asset.excludeDaily !== 'true' && asset.dailyCost) {
         dailyCostTotal += parseFloat(asset.dailyCost);
       }
 
-      // 计算状态数量
-      if (asset.status === 'active') {
-        activeCount++;
-      } else if (asset.status === 'retired') {
-        retiredCount++;
-      } else if (asset.status === 'sold') {
-        soldCount++;
-      }
+      if (asset.status === 'active') activeCount++;
+      else if (asset.status === 'retired') retiredCount++;
+      else if (asset.status === 'sold') soldCount++;
     });
 
     this.setData({
       totalPrice: totalPrice.toFixed(2),
       dailyCost: dailyCostTotal.toFixed(2),
-      activeCount,
-      retiredCount,
-      soldCount
+      activeCount, retiredCount, soldCount
     });
   },
 
-  // 按状态筛选
   filterByStatus(e) {
-    const status = e.currentTarget.dataset.status;
-
-    this.setData({
-      activeStatus: status
-    });
-
-    // 重新加载数据（带筛选条件）
+    this.setData({ activeStatus: e.currentTarget.dataset.status });
     this.loadAssets();
   },
 
-  // 按分类筛选
   filterByCategory(e) {
-    const category = e.currentTarget.dataset.category;
-
-    this.setData({
-      activeCategory: category
-    });
-
-    // 重新加载数据（带筛选条件）
+    this.setData({ activeCategory: e.currentTarget.dataset.category });
     this.loadAssets();
   },
 
-  // 跳转到添加页面
   changeSort(e) {
     const index = parseInt(e.detail.value);
-    const { sortOrder, sortDbFields } = this.data;
-
     this.setData({
       currentSortIndex: index,
-      sortOrder: sortOrder === 'desc' ? 'asc' : 'desc'
+      sortOrder: this.data.sortOrder === 'desc' ? 'asc' : 'desc'
     });
 
-    console.log('排序切换:', index, sortDbFields[index]);
-
-    // 如果是数据库支持的排序字段，重新从数据库查询
-    // 否则使用前端排序
-    if (sortDbFields[index]) {
+    if (this.data.sortDbFields[index]) {
       this.loadAssets();
     } else {
       this.applySort();
     }
   },
 
-  // 应用排序
   applySort() {
     const { filteredAssets, currentSortIndex, sortOrder } = this.data;
-    let sorted = [...filteredAssets];
+    const sorted = [...filteredAssets];
 
-    switch (currentSortIndex) {
-      case 0: // 价格
-        sorted.sort((a, b) => {
-          const priceA = Number(a.price) || 0;
-          const priceB = Number(b.price) || 0;
-          return sortOrder === 'desc' ? priceB - priceA : priceA - priceB;
-        });
-        break;
-      case 1: // 购买时间
-        sorted.sort((a, b) => {
-          const dateA = this.parseDate(a.purchaseDate).getTime();
-          const dateB = this.parseDate(b.purchaseDate).getTime();
-          return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
-        });
-        break;
-      case 2: // 添加时间
-        sorted.sort((a, b) => {
-          const dateA = this.parseDate(a.createdAt).getTime();
-          const dateB = this.parseDate(b.createdAt).getTime();
-          return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
-        });
-        break;
-      case 3: // 服役时长
-        sorted.sort((a, b) => {
-          const daysA = a.usedDays || 0;
-          const daysB = b.usedDays || 0;
-          return sortOrder === 'desc' ? daysB - daysA : daysA - daysB;
-        });
-        break;
-      case 4: // 日均成本
-        sorted.sort((a, b) => {
-          if (a.status !== 'active') return 1;
-          if (b.status !== 'active') return -1;
+    const getVal = (a, key) => {
+      if (key === 'price') return Number(a.price) || 0;
+      if (key === 'purchaseDate' || key === 'createdAt') return this.parseDate(a[key]).getTime();
+      if (key === 'usedDays') return a.usedDays || 0;
+      if (key === 'dailyCost') {
+        if (a.status !== 'active') return 0;
+        const days = (Date.now() - this.parseDate(a.purchaseDate).getTime()) / 86400000;
+        return days > 0 ? a.price / days : 0;
+      }
+      return 0;
+    };
 
-          const dateA = this.parseDate(a.purchaseDate).getTime();
-          const dateB = this.parseDate(b.purchaseDate).getTime();
-          const daysA = (Date.now() - dateA) / (1000 * 60 * 60 * 24);
-          const daysB = (Date.now() - dateB) / (1000 * 60 * 60 * 24);
-          const costA = daysA > 0 ? a.price / daysA : 0;
-          const costB = daysB > 0 ? b.price / daysB : 0;
-          return sortOrder === 'desc' ? costB - costA : costA - costB;
-        });
-        break;
-    }
+    const fields = ['price', 'purchaseDate', 'createdAt', 'usedDays', 'dailyCost'];
+    const field = fields[currentSortIndex];
+    sorted.sort((a, b) => sortOrder === 'desc' ? getVal(b, field) - getVal(a, field) : getVal(a, field) - getVal(b, field));
 
-    this.setData({
-      filteredAssets: sorted
-    }, () => {
-      // 排序后重新计算统计数据
-      this.calculateStats();
-    });
+    this.setData({ filteredAssets: sorted }, () => this.calculateStats());
   },
 
-  // 跳转到添加页面
   goToAdd() {
-    wx.navigateTo({
-      url: '/pages/asset-add/asset-add'
-    });
+    wx.navigateTo({ url: '/pages/asset-add/asset-add' });
   },
 
-  // 切换到首页视图
   switchToHome() {
-    this.setData({
-      showSetting: false
-    });
+    this.setData({ showSetting: false, showReport: false });
   },
 
-  // 导航到分类管理页面
+  switchToReport() {
+    this.setData({ showReport: true, showSetting: false });
+    setTimeout(() => this.loadReportData(), 100);
+  },
+
   navigateToCategoryManage() {
-    // 设置标志，表示从设置页面进入分类管理
-    this.setData({
-      _fromSetting: true
-    });
-    wx.navigateTo({
-      url: '/pages/category-manage/category-manage'
-    });
+    this.setData({ _fromSetting: true });
+    wx.navigateTo({ url: '/pages/category-manage/category-manage' });
   },
 
-  // 切换到设置视图（本页切换，不跳转路由）
   navigateToSetting() {
-    this.setData({
-      showSetting: true
-    });
+    this.setData({ showSetting: true, showReport: false });
   },
 
-  // 显示关于信息
   showAboutInfo() {
     wx.showModal({
       title: '关于我的账本',
-      content: '我的账本是一款个人资产管理小程序，帮助您记录和追踪个人资产情况。使用微信云开发技术构建，数据安全可靠。',
-      showCancel: false,
-      confirmText: '确定'
+      content: '我的账本是一款个人资产管理小程序，帮助您记录和追踪个人资产情况。',
+      showCancel: false
     });
   },
 
-  // 跳转到详情页面
   goToDetail(e) {
-    const id = e.currentTarget.dataset.id;
-    wx.navigateTo({
-      url: `/pages/asset-detail/asset-detail?id=${id}`
-    });
+    wx.navigateTo({ url: `/pages/asset-detail/asset-detail?id=${e.currentTarget.dataset.id}` });
   },
 
-  // 下拉刷新
   onPullDownRefresh() {
     this.loadAssets();
     wx.stopPullDownRefresh();
   },
 
-  // 页面滚动监听
   onPageScroll(e) {
-    const scrollTop = e.scrollTop;
-    // 滚动超过 100px 显示回到顶部按钮
-    const showBackToTop = scrollTop > 100;
+    const showBackToTop = e.scrollTop > 100;
     if (showBackToTop !== this.data.showBackToTop) {
       this.setData({ showBackToTop });
     }
   },
 
-  // 回到顶部
   scrollToTop() {
-    wx.pageScrollTo({
-      scrollTop: 0,
-      duration: 300
-    });
+    wx.pageScrollTo({ scrollTop: 0, duration: 300 });
   },
 
-  // 阻止触摸穿透
   preventTouchMove() {},
 
   // ============================================
-  // 批量删除功能
+  // 批量删除
   // ============================================
 
-  // 进入批量删除模式
   enterBatchDelete() {
-    // 加载所有资产用于批量删除
     this.loadAllAssetsForBatch();
-    this.setData({
-      showSetting: false,
-      showBatchDelete: true,
-      selectedAssets: [],
-      isAllSelected: false
-    });
+    this.setData({ showSetting: false, showBatchDelete: true, selectedAssets: [], isAllSelected: false });
   },
 
-  // 退出批量删除模式
   exitBatchDelete() {
-    this.setData({
-      showBatchDelete: false,
-      showSetting: true, // 返回设置页面
-      selectedAssets: [],
-      isAllSelected: false,
-      batchAssetList: []
-    });
+    this.setData({ showBatchDelete: false, showSetting: true, selectedAssets: [], isAllSelected: false, batchAssetList: [] });
   },
 
-  // 判断资产是否被选中（用于模板）
-  isAssetSelected(assetId) {
-    return this.data.selectedAssets.includes(assetId);
-  },
-
-  // 加载所有资产用于批量删除
   loadAllAssetsForBatch() {
     const app = getApp();
-
     wx.showLoading({ title: '加载中...' });
 
-    app.getOpenid()
-      .then(openid => {
-        const db = wx.cloud.database({
-          env: app.globalData.envId
-        });
+    app.getOpenid().then(openid => {
+      const db = wx.cloud.database({ env: app.globalData.envId });
+      return db.collection('assets').where({ _openid: openid }).orderBy('createdAt', 'desc').get();
+    }).then(async res => {
+      const list = await Promise.all(res.data.map(async asset => {
+        let displayIcon = null;
+        if (asset.icon?.startsWith('cloud://')) {
+          try {
+            const fileRes = await wx.cloud.getTempFileURL({ fileList: [asset.icon] });
+            displayIcon = fileRes.fileList[0]?.tempFileURL;
+          } catch (e) {}
+        } else if (asset.icon?.startsWith('http')) {
+          displayIcon = asset.icon;
+        }
 
-        db.collection('assets')
-          .where({ _openid: openid })
-          .orderBy('createdAt', 'desc')
-          .get()
-          .then(async res => {
-            // 处理图标，并初始化 _selected 为 false，计算日期范围
-            const assetsWithIcon = await Promise.all(res.data.map(async asset => {
-              let displayIcon = null;
-              if (asset.icon && asset.icon.startsWith('cloud://')) {
-                try {
-                  const fileRes = await wx.cloud.getTempFileURL({
-                    fileList: [asset.icon]
-                  });
-                  if (fileRes.fileList && fileRes.fileList[0]) {
-                    displayIcon = fileRes.fileList[0].tempFileURL;
-                  }
-                } catch (e) {}
-              } else if (asset.icon && asset.icon.startsWith('http')) {
-                displayIcon = asset.icon;
-              }
+        const purchaseDate = this.formatDate(asset.purchaseDate);
+        const endDate = this.formatDate(asset.retiredDate || asset.soldDate);
+        const dateRange = asset.status === 'active' ? `${purchaseDate} - 至今` : `${purchaseDate} - ${endDate || '至今'}`;
 
-              // 计算日期范围
-              const purchaseDate = this.formatDate(asset.purchaseDate);
-              let dateRange = purchaseDate;
-              if (asset.status === 'active') {
-                dateRange = `${purchaseDate} - 至今`;
-              } else {
-                const endDate = this.formatDate(asset.retiredDate || asset.soldDate);
-                if (endDate) {
-                  dateRange = `${purchaseDate} - ${endDate}`;
-                } else {
-                  dateRange = `${purchaseDate} - 至今`;
-                }
-              }
+        return { ...asset, displayIcon, _selected: false, dateRange };
+      }));
 
-              return { ...asset, displayIcon, _selected: false, dateRange };
-            }));
-
-            this.setData({
-              batchAssetList: assetsWithIcon,
-              isAllSelected: false
-            });
-            wx.hideLoading();
-          })
-          .catch(err => {
-            console.error('加载资产失败:', err);
-            wx.hideLoading();
-            wx.showToast({ title: '加载失败', icon: 'none' });
-          });
-      })
-      .catch(err => {
-        console.error('获取openid失败:', err);
-        wx.hideLoading();
-        wx.showToast({ title: '获取用户信息失败', icon: 'none' });
-      });
+      this.setData({ batchAssetList: list, isAllSelected: false });
+      wx.hideLoading();
+    }).catch(err => {
+      console.error(err);
+      wx.hideLoading();
+      wx.showToast({ title: '加载失败', icon: 'none' });
+    });
   },
 
-  // 切换选择资产
   toggleSelectAsset(e) {
     const id = e.currentTarget.dataset.id;
     const { batchAssetList, selectedAssets } = this.data;
-    const index = selectedAssets.indexOf(id);
-
-    let newSelectedAssets;
-    if (index > -1) {
-      // 取消选中
-      newSelectedAssets = selectedAssets.filter(item => item !== id);
-    } else {
-      // 选中
-      newSelectedAssets = [...selectedAssets, id];
-    }
-
-    // 更新资产列表中的选中状态
-    const newBatchAssetList = batchAssetList.map(item => ({
-      ...item,
-      _selected: newSelectedAssets.includes(item._id)
-    }));
-
-    // 检查是否全选
-    const isAllSelected = newSelectedAssets.length === batchAssetList.length &&
-                          batchAssetList.length > 0;
+    const newSelected = selectedAssets.includes(id)
+      ? selectedAssets.filter(x => x !== id)
+      : [...selectedAssets, id];
 
     this.setData({
-      selectedAssets: newSelectedAssets,
-      batchAssetList: newBatchAssetList,
-      isAllSelected
+      selectedAssets: newSelected,
+      batchAssetList: batchAssetList.map(a => ({ ...a, _selected: newSelected.includes(a._id) })),
+      isAllSelected: newSelected.length === batchAssetList.length && batchAssetList.length > 0
     });
   },
 
-  // 全选/取消全选
   toggleSelectAll() {
     const { isAllSelected, batchAssetList } = this.data;
-
     if (isAllSelected) {
-      // 取消全选
-      const newBatchAssetList = batchAssetList.map(item => ({
-        ...item,
-        _selected: false
-      }));
-      this.setData({
-        selectedAssets: [],
-        batchAssetList: newBatchAssetList,
-        isAllSelected: false
-      });
+      this.setData({ selectedAssets: [], batchAssetList: batchAssetList.map(a => ({ ...a, _selected: false })), isAllSelected: false });
     } else {
-      // 全选
-      const allIds = batchAssetList.map(item => item._id);
-      const newBatchAssetList = batchAssetList.map(item => ({
-        ...item,
-        _selected: true
-      }));
-      this.setData({
-        selectedAssets: allIds,
-        batchAssetList: newBatchAssetList,
-        isAllSelected: true
-      });
+      this.setData({ selectedAssets: batchAssetList.map(a => a._id), batchAssetList: batchAssetList.map(a => ({ ...a, _selected: true })), isAllSelected: true });
     }
   },
 
-  // 确认批量删除
   confirmBatchDelete() {
     const { selectedAssets } = this.data;
-
     if (selectedAssets.length === 0) {
       wx.showToast({ title: '请选择要删除的资产', icon: 'none' });
       return;
     }
 
     wx.showModal({
-      title: '⚠️ 确认删除',
-      content: `确定要删除选中的 ${selectedAssets.length} 项资产吗？此操作不可撤销`,
-      confirmText: '删除',
+      title: '确认删除',
+      content: `确定删除选中的 ${selectedAssets.length} 项资产吗？`,
       confirmColor: '#FF7043',
-      cancelText: '取消',
-      success: (res) => {
-        if (res.confirm) {
-          this.executeBatchDelete();
+      success: res => { if (res.confirm) this.executeBatchDelete(); }
+    });
+  },
+
+  executeBatchDelete() {
+    const { selectedAssets } = this.data;
+    wx.showLoading({ title: '删除中...', mask: true });
+
+    wx.cloud.callFunction({
+      name: 'batchDeleteAssets',
+      data: { assetIds: selectedAssets },
+      success: res => {
+        wx.hideLoading();
+        if (res.result?.success) {
+          const remaining = this.data.batchAssetList.filter(a => !selectedAssets.includes(a._id));
+          this.setData({ batchAssetList: remaining, selectedAssets: [], isAllSelected: false });
+          wx.showToast({ title: `已删除 ${selectedAssets.length} 项`, icon: 'success' });
+
+          if (remaining.length === 0) {
+            setTimeout(() => { this.exitBatchDelete(); this.loadAssets(); }, 1500);
+          }
+        } else {
+          wx.showToast({ title: res.result?.error || '删除失败', icon: 'none' });
         }
+      },
+      fail: () => {
+        wx.hideLoading();
+        wx.showToast({ title: '删除失败', icon: 'none' });
       }
     });
   },
 
-  // 执行批量删除
-  executeBatchDelete() {
-    const { selectedAssets } = this.data;
+  // ============================================
+  // 报表功能
+  // ============================================
+
+  loadReportData() {
+    this.setData({ reportLoading: true });
+
     const app = getApp();
+    app.getOpenid().then(openid => {
+      const db = wx.cloud.database({ env: app.globalData.envId });
+      return db.collection('assets').where({ _openid: openid }).orderBy('purchaseDate', 'asc').get();
+    }).then(res => {
+      const assets = res.data;
 
-    wx.showLoading({ title: '删除中...', mask: true });
+      // 计算分类统计
+      const categoryMap = {};
+      let totalPrice = 0;
+      assets.forEach(a => {
+        const cat = a.category || '未分类';
+        const price = Number(a.price) || 0;
+        if (!categoryMap[cat]) categoryMap[cat] = { name: cat, total: 0, count: 0 };
+        categoryMap[cat].total += price;
+        categoryMap[cat].count++;
+        totalPrice += price;
+      });
 
-    // 调用云函数批量删除
-    wx.cloud.callFunction({
-      name: 'batchDeleteAssets',
-      data: { assetIds: selectedAssets },
-      success: (res) => {
-        wx.hideLoading();
-        if (res.result && res.result.success) {
-          // 从本地列表中移除已删除的资产，并保持 _selected 字段
-          const remainingAssets = this.data.batchAssetList
-            .filter(item => !selectedAssets.includes(item._id))
-            .map(item => ({ ...item, _selected: false }));
+      const reportCategoryStats = Object.values(categoryMap).sort((a, b) => b.total - a.total);
 
-          this.setData({
-            batchAssetList: remainingAssets,
-            selectedAssets: [],
-            isAllSelected: false
-          });
+      this.setData({
+        reportLoading: false,
+        reportEmpty: assets.length === 0,
+        reportAssets: assets,
+        reportTotalAssets: assets.length,
+        reportTotalPrice: totalPrice.toFixed(2),
+        reportCategoryStats
+      });
 
-          wx.showToast({
-            title: `成功删除 ${selectedAssets.length} 项`,
-            icon: 'success'
-          });
-
-          // 如果没有资产了，退出批量删除模式并刷新首页
-          if (remainingAssets.length === 0) {
-            setTimeout(() => {
-              this.exitBatchDelete();
-              // 刷新首页数据
-              this.loadAssets();
-            }, 1500);
-          }
-        } else {
-          wx.showToast({
-            title: res.result?.error || '删除失败',
-            icon: 'none'
-          });
-        }
-      },
-      fail: (err) => {
-        wx.hideLoading();
-        console.error('批量删除失败:', err);
-        wx.showToast({
-          title: '删除失败，请重试',
-          icon: 'none'
-        });
+      if (assets.length > 0) {
+        setTimeout(() => {
+          this.initPieChart();
+          this.initLineChart();
+        }, 200);
       }
+    }).catch(err => {
+      console.error(err);
+      this.setData({ reportLoading: false, reportEmpty: true });
+    });
+  },
+
+  initPieChart() {
+    const { reportCategoryStats, reportColors } = this.data;
+    if (!reportCategoryStats.length) return;
+
+    const component = this.selectComponent('#pie-chart');
+    if (!component) return;
+
+    component.init((canvas, width, height, dpr) => {
+      const chart = echarts.init(canvas, null, {
+        width: width,
+        height: height,
+        devicePixelRatio: dpr
+      });
+      canvas.setChart(chart);
+
+      const total = reportCategoryStats.reduce((sum, i) => sum + i.total, 0);
+      const pieData = reportCategoryStats.map((item, i) => ({
+        name: item.name,
+        value: item.total
+      }));
+
+      chart.setOption({
+        color: reportColors,
+        tooltip: {
+          trigger: 'item',
+          confine: true,
+          formatter: p => `${p.name}\n¥${p.value} (${((p.value / total) * 100).toFixed(1)}%)`
+        },
+        legend: {
+          type: 'scroll',
+          orient: 'horizontal',
+          bottom: 0,
+          left: 'center'
+        },
+        series: [{
+          type: 'pie',
+          radius: ['40%', '60%'],
+          center: ['50%', '40%'],
+          itemStyle: {
+            borderRadius: 6,
+            borderColor: '#fff',
+            borderWidth: 2
+          },
+          label: { show: false },
+          emphasis: {
+            scale: true,
+            label: { show: true, fontWeight: 'bold' }
+          },
+          data: pieData
+        }]
+      });
+
+      return chart;
+    });
+  },
+
+  initLineChart() {
+    const { reportAssets } = this.data;
+    if (!reportAssets.length) return;
+
+    const component = this.selectComponent('#line-chart');
+    if (!component) return;
+
+    const sorted = [...reportAssets].sort((a, b) => new Date(a.purchaseDate) - new Date(b.purchaseDate));
+
+    component.init((canvas, width, height, dpr) => {
+      const chart = echarts.init(canvas, null, {
+        width: width,
+        height: height,
+        devicePixelRatio: dpr
+      });
+      canvas.setChart(chart);
+
+      let cumulative = 0;
+      const dates = [];
+      const prices = [];
+      const cumulativePrices = [];
+
+      sorted.forEach(a => {
+        const d = new Date(a.purchaseDate);
+        dates.push(`${d.getMonth() + 1}/${d.getDate()}`);
+        const price = Number(a.price) || 0;
+        prices.push(price);
+        cumulative += price;
+        cumulativePrices.push(cumulative);
+      });
+
+      chart.setOption({
+        color: ['#667eea', '#764ba2'],
+        tooltip: {
+          trigger: 'axis',
+          confine: true
+        },
+        legend: {
+          data: ['单笔价格', '累计资产'],
+          top: 0
+        },
+        grid: {
+          left: '3%',
+          right: '3%',
+          bottom: '8%',
+          top: '15%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          data: dates,
+          axisLabel: {
+            fontSize: 10,
+            rotate: dates.length > 6 ? 30 : 0
+          },
+          axisTick: { show: false }
+        },
+        yAxis: {
+          type: 'value',
+          axisLabel: { formatter: '¥{value}' },
+          splitLine: { lineStyle: { type: 'dashed' } }
+        },
+        series: [
+          {
+            name: '单笔价格',
+            type: 'bar',
+            data: prices,
+            barWidth: '40%',
+            itemStyle: { borderRadius: [4, 4, 0, 0] }
+          },
+          {
+            name: '累计资产',
+            type: 'line',
+            data: cumulativePrices,
+            smooth: true,
+            areaStyle: { opacity: 0.1 }
+          }
+        ]
+      });
+
+      return chart;
     });
   }
 });

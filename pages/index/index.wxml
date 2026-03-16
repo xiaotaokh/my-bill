@@ -4,7 +4,7 @@
   <view class="header-bg" style="{{showSetting || showBatchDelete ? 'display: none;' : 'display: block;'}}"></view>
 
   <!-- 主内容区域 -->
-  <view class="main-content" style="{{showSetting || showBatchDelete ? 'display: none;' : 'display: block;'}}">
+  <view class="main-content" style="{{showSetting || showReport || showBatchDelete ? 'display: none;' : 'display: block;'}}">
     <!-- 日期显示 -->
     <view class="date-section">
       <view class="date-display">
@@ -412,14 +412,18 @@
     </view>
   </view>
 
-  <!-- 底部悬浮：首页/设置切换 + 新增资产按钮 -->
+  <!-- 底部悬浮：首页/报表/设置切换 + 新增资产按钮 -->
   <view class="bottom-controls" style="{{showBatchDelete ? 'display: none;' : 'display: flex;'}}">
-    <!-- 首页/设置切换悬浮按钮 -->
+    <!-- 首页/报表/设置切换悬浮按钮组 -->
     <view class="mode-switch-fab">
       <view class="fab-group">
-        <view class="fab-item {{!showSetting ? 'active' : ''}}" bindtap="switchToHome">
+        <view class="fab-item {{!showSetting && !showReport ? 'active' : ''}}" bindtap="switchToHome">
           <text class="fab-icon">🏠</text>
           <text class="fab-label">首页</text>
+        </view>
+        <view class="fab-item {{showReport ? 'active' : ''}}" bindtap="switchToReport">
+          <text class="fab-icon">📊</text>
+          <text class="fab-label">报表</text>
         </view>
         <view class="fab-item {{showSetting ? 'active' : ''}}" bindtap="navigateToSetting">
           <text class="fab-icon">⚙️</text>
@@ -434,6 +438,92 @@
         <text class="fab-icon">+</text>
       </view>
       <view class="fab-glow"></view>
+    </view>
+  </view>
+
+  <!-- 报表视图 -->
+  <view class="report-view" wx:if="{{showReport}}">
+    <!-- 加载状态 -->
+    <view wx:if="{{reportLoading}}" class="report-loading">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:elif="{{reportEmpty}}" class="report-empty">
+      <view class="empty-face">
+        <view class="face-eyes">
+          <view class="eye eye-left"><view class="eye-pupil"></view></view>
+          <view class="eye eye-right"><view class="eye-pupil"></view></view>
+        </view>
+        <view class="face-mouth"></view>
+      </view>
+      <text class="empty-title">暂无数据</text>
+      <text class="empty-desc">添加资产后即可查看报表统计</text>
+    </view>
+
+    <!-- 报表内容 -->
+    <view wx:else class="report-content">
+      <!-- 统计概览 -->
+      <view class="report-stats-card">
+        <view class="stats-header">
+          <text class="stats-title">资产总览</text>
+          <text class="stats-badge">{{reportTotalAssets}}项</text>
+        </view>
+        <view class="stats-row">
+          <view class="stat-card">
+            <text class="stat-value">¥{{reportTotalPrice}}</text>
+            <text class="stat-label">总资产价值</text>
+          </view>
+          <view class="stat-card">
+            <text class="stat-value">{{reportCategoryStats.length}}</text>
+            <text class="stat-label">资产分类</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 环形图 -->
+      <view class="report-chart-section">
+        <view class="section-header">
+          <text class="section-title">分类资产分布</text>
+          <text class="section-icon">📊</text>
+        </view>
+        <view class="chart-wrapper" style="height: 450rpx;">
+          <ec-canvas id="pie-chart" canvas-id="pie-chart" ec="{{ pieEc }}"></ec-canvas>
+        </view>
+        <view class="category-list" wx:if="{{reportCategoryStats.length > 0}}">
+          <view class="category-item" wx:for="{{reportCategoryStats}}" wx:key="name">
+            <view class="category-left">
+              <view class="category-dot" style="background: {{reportColors[index % reportColors.length]}}"></view>
+              <text class="category-name">{{item.name}}</text>
+            </view>
+            <view class="category-right">
+              <text class="category-count">{{item.count}}件</text>
+              <text class="category-price">¥{{item.total}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 折线图 -->
+      <view class="report-chart-section">
+        <view class="section-header">
+          <text class="section-title">资产购买趋势</text>
+          <text class="section-icon">📈</text>
+        </view>
+        <view class="chart-wrapper" style="height: 500rpx;">
+          <ec-canvas id="line-chart" canvas-id="line-chart" ec="{{ lineEc }}"></ec-canvas>
+        </view>
+      </view>
+
+      <view class="report-bottom-spacer"></view>
+    </view>
+
+    <!-- 背景装饰 -->
+    <view class="report-bg-decor">
+      <view class="decor-circle decor-1"></view>
+      <view class="decor-circle decor-2"></view>
+      <view class="decor-circle decor-3"></view>
     </view>
   </view>
 
