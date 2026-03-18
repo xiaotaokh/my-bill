@@ -608,12 +608,12 @@ Page({
           bottom: 0,
           left: 'center'
         },
-        // 中间文字
+        // 中间文字 - z: -1 确保 tooltip 层级更高
         graphic: [{
           type: 'group',
           left: 'center',
           top: '32%',
-          z: 0,
+          z: -1,
           children: [
             {
               type: 'text',
@@ -684,10 +684,10 @@ Page({
         type: 'group',
         left: 'center',
         top: '32%',
+        z: -1,
         children: [
           {
             type: 'text',
-            z: 100,
             left: 'center',
             top: '0',
             style: {
@@ -699,7 +699,6 @@ Page({
           },
           {
             type: 'text',
-            z: 100,
             left: 'center',
             top: '24',
             style: {
