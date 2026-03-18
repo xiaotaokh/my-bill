@@ -524,6 +524,63 @@
         </view>
       </view>
 
+      <!-- 时间段资产统计 -->
+      <view class="report-chart-section">
+        <view class="section-header">
+          <text class="section-title">资产时间段</text>
+          <text class="section-icon">📊</text>
+        </view>
+
+        <!-- 时间段选择器 -->
+        <view class="time-period-selector">
+          <view
+            wx:for="{{['week', 'month', 'quarter', 'year', 'all']}}"
+            wx:key="*this"
+            class="period-pill {{activeTimePeriod === item ? 'active' : ''}}"
+            bindtap="selectTimePeriod"
+            data-period="{{item}}"
+          >
+            {{item === 'week' ? '本周' : item === 'month' ? '本月' : item === 'quarter' ? '本季度' : item === 'year' ? '本年' : '全部'}}
+          </view>
+        </view>
+
+        <!-- 时间线粒度选择器 (仅"全部"时显示) -->
+        <view wx:if="{{activeTimePeriod === 'all'}}" class="granularity-selector">
+          <text class="granularity-label">时间线:</text>
+          <view
+            wx:for="{{['year', 'quarter', 'month']}}"
+            wx:key="*this"
+            class="granularity-pill {{activeGranularity === item ? 'active' : ''}}"
+            bindtap="selectGranularity"
+            data-granularity="{{item}}"
+          >
+            {{item === 'year' ? '按年' : item === 'quarter' ? '按季度' : '按月'}}
+          </view>
+        </view>
+
+        <!-- 统计概览 -->
+        <view wx:if="{{timePeriodStats}}" class="time-stats-summary">
+          <view class="summary-item">
+            <text class="summary-label">总金额</text>
+            <text class="summary-value">¥{{timePeriodStats.summary.totalAmount}}</text>
+          </view>
+          <view class="summary-item">
+            <text class="summary-label">资产数</text>
+            <text class="summary-value">{{timePeriodStats.summary.totalCount}}件</text>
+          </view>
+        </view>
+
+        <!-- 柱状图 -->
+        <view wx:if="{{timePeriodStats && timePeriodStats.data.length > 0}}" class="chart-wrapper" style="height: 400rpx;">
+          <ec-canvas id="time-chart" canvas-id="time-chart" ec="{{ timePeriodEc }}"></ec-canvas>
+        </view>
+
+        <!-- 空状态提示 -->
+        <view wx:if="{{timePeriodStats && timePeriodStats.data.length === 0}}" class="time-empty-state">
+          <text class="empty-text">该时间段内暂无资产记录</text>
+        </view>
+      </view>
+
       <view class="report-bottom-spacer"></view>
     </view>
 

@@ -58,6 +58,12 @@ Page({
     // 图表配置 - 使用延迟加载
     pieEc: { lazyLoad: true },
     lineEc: { lazyLoad: true },
+    timePeriodEc: { lazyLoad: true },
+
+    // 时间段统计
+    activeTimePeriod: 'all',
+    activeGranularity: 'year',
+    timePeriodStats: null,
 
     // 环形图中间文字
     pieCenterText: '',
@@ -549,6 +555,7 @@ Page({
         setTimeout(() => {
           this.initPieChart();
           this.initLineChart();
+          this.calculateTimePeriodStats();
         }, 200);
       }
     }).catch(err => {
@@ -835,6 +842,240 @@ Page({
         ]
       });
 
+      return chart;
+    });
+  },
+
+  // ============================================
+  // 时间段统计功能
+  // ============================================
+
+  // 获取时间范围
+  getTimeRange(period) {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    let startDate;
+
+    switch (period) {
+      case 'week':
+        const dayOfWeek = today.getDay() || 7;
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() - dayOfWeek + 1);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'month':
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        break;
+      case 'quarter':
+        const quarter = Math.floor(today.getMonth() / 3);
+        startDate = new Date(today.getFullYear(), quarter * 3, 1);
+        break;
+      case 'year':
+        startDate = new Date(today.getFullYear(), 0, 1);
+        break;
+      case 'all':
+        startDate = new Date(0); // 最早时间
+        break;
+    }
+
+    return { startDate, endDate: today };
+  },
+
+  // 按粒度分组统计
+  groupAssetsByGranularity(assets, granularity) {
+    if (!assets || assets.length === 0) {
+      return {
+        data: [],
+        summary: { totalAmount: 0, totalCount: 0 }
+      };
+    }
+
+    const groupMap = {};
+
+    assets.forEach(asset => {
+      const purchaseDate = new Date(asset.purchaseDate);
+      let label;
+
+      if (granularity === 'year') {
+        label = purchaseDate.getFullYear().toString();
+      } else if (granularity === 'quarter') {
+        const year = purchaseDate.getFullYear();
+        const quarter = Math.floor(purchaseDate.getMonth() / 3) + 1;
+        label = `${year}Q${quarter}`;
+      } else if (granularity === 'month') {
+        const year = purchaseDate.getFullYear();
+        const month = purchaseDate.getMonth() + 1;
+        label = `${year}-${String(month).padStart(2, '0')}`;
+      } else {
+        // 非全部时间段，使用单组
+        label = this.getTimePeriodLabel(this.data.activeTimePeriod);
+      }
+
+      if (!groupMap[label]) {
+        groupMap[label] = { label, totalAmount: 0, count: 0, assets: [] };
+      }
+      groupMap[label].totalAmount += Number(asset.price) || 0;
+      groupMap[label].count++;
+      groupMap[label].assets.push({ name: asset.name, price: Number(asset.price) || 0 });
+    });
+
+    // 按时间排序
+    const data = Object.values(groupMap).sort((a, b) => a.label.localeCompare(b.label));
+    const summary = {
+      totalAmount: data.reduce((sum, d) => sum + d.totalAmount, 0),
+      totalCount: data.reduce((sum, d) => sum + d.count, 0)
+    };
+
+    return { data, summary };
+  },
+
+  // 获取时间段显示名称
+  getTimePeriodLabel(period) {
+    const labels = {
+      week: '本周',
+      month: '本月',
+      quarter: '本季度',
+      year: '本年',
+      all: '全部'
+    };
+    return labels[period] || period;
+  },
+
+  // 计算时间段统计数据
+  calculateTimePeriodStats() {
+    const { reportAssets, activeTimePeriod, activeGranularity } = this.data;
+    if (!reportAssets || reportAssets.length === 0) {
+      this.setData({ timePeriodStats: null });
+      return;
+    }
+
+    // 计算时间范围
+    const { startDate, endDate } = this.getTimeRange(activeTimePeriod);
+
+    // 筛选资产
+    const filteredAssets = reportAssets.filter(a => {
+      if (!a.purchaseDate) return false;
+      const pd = new Date(a.purchaseDate);
+      return pd >= startDate && pd <= endDate;
+    });
+
+    // 分组统计
+    const granularity = activeTimePeriod === 'all' ? activeGranularity : null;
+    const stats = this.groupAssetsByGranularity(filteredAssets, granularity);
+
+    this.setData({ timePeriodStats: stats });
+
+    // 更新图表
+    setTimeout(() => this.initTimeChart(), 100);
+  },
+
+  // 选择时间段
+  selectTimePeriod(e) {
+    const period = e.currentTarget.dataset.period;
+    this.setData({ activeTimePeriod: period });
+    this.calculateTimePeriodStats();
+  },
+
+  // 选择时间线粒度
+  selectGranularity(e) {
+    const granularity = e.currentTarget.dataset.granularity;
+    this.setData({ activeGranularity: granularity });
+    this.calculateTimePeriodStats();
+  },
+
+  // 初始化时间段柱状图
+  initTimeChart() {
+    const { timePeriodStats } = this.data;
+    if (!timePeriodStats || timePeriodStats.data.length === 0) return;
+
+    const component = this.selectComponent('#time-chart');
+    if (!component) return;
+
+    component.init((canvas, width, height, dpr) => {
+      const chart = echarts.init(canvas, null, {
+        width: width,
+        height: height,
+        devicePixelRatio: dpr
+      });
+      canvas.setChart(chart);
+
+      chart.setOption({
+        color: ['#667eea'],
+        tooltip: {
+          trigger: 'axis',
+          confine: true,
+          backgroundColor: '#fff',
+          borderColor: '#eee',
+          borderWidth: 1,
+          padding: [8, 12],
+          textStyle: {
+            color: '#333',
+            fontSize: 12
+          },
+          formatter: params => {
+            if (!params || !params.length) return '';
+            const d = params[0];
+            const dataItem = timePeriodStats.data[d.dataIndex];
+            // 构建资产列表（最多显示5项）
+            let assetList = dataItem.assets.slice(0, 5).map(a => `${a.name}: ¥${a.price.toFixed(2)}`).join('\n');
+            if (dataItem.assets.length > 5) {
+              assetList += `\n... 等${dataItem.assets.length}项`;
+            }
+            return `${d.name}\n金额: ¥${dataItem.totalAmount.toFixed(2)}\n数量: ${dataItem.count}件\n${assetList}`;
+          }
+        },
+        grid: {
+          left: '12%',
+          right: '12%',
+          bottom: '15%',
+          top: '18%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          data: timePeriodStats.data.map(d => d.label),
+          axisLabel: {
+            fontSize: 10,
+            rotate: timePeriodStats.data.length > 6 ? 30 : 0
+          },
+          axisTick: { show: false }
+        },
+        yAxis: [
+          {
+            type: 'value',
+            name: '金额(元)',
+            axisLabel: { formatter: '¥{value}' },
+            splitLine: { lineStyle: { type: 'dashed' } }
+          },
+          {
+            type: 'value',
+            name: '数量(件)',
+            axisLabel: { formatter: '{value}件' },
+            splitLine: { show: false }
+          }
+        ],
+        series: [{
+          type: 'bar',
+          yAxisIndex: 0,
+          data: timePeriodStats.data.map(d => d.totalAmount),
+          barMaxWidth: 40,
+          itemStyle: {
+            borderRadius: [4, 4, 0, 0]
+          },
+          label: {
+            show: true,
+            position: 'top',
+            formatter: params => {
+              const dataItem = timePeriodStats.data[params.dataIndex];
+              return dataItem.count + '件';
+            },
+            fontSize: 10,
+            color: '#666'
+          }
+        }]
+      });
+
+      this.timeChart = chart;
       return chart;
     });
   }

@@ -2195,3 +2195,98 @@ page {
 .report-bottom-spacer {
   height: 200rpx;
 }
+
+/* ============================================
+   时间段统计样式
+   ============================================ */
+
+/* 时间段选择器 */
+.time-period-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  padding: 20rpx;
+}
+
+.period-pill {
+  padding: 12rpx 24rpx;
+  background: #f5f5f5;
+  border-radius: 24rpx;
+  font-size: 24rpx;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.period-pill.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(102, 126, 234, 0.3);
+}
+
+/* 粒度选择器 */
+.granularity-selector {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 0 20rpx 20rpx;
+}
+
+.granularity-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.granularity-pill {
+  padding: 8rpx 20rpx;
+  background: #f5f5f5;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.granularity-pill.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+/* 统计概览 */
+.time-stats-summary {
+  display: flex;
+  justify-content: space-around;
+  padding: 24rpx;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  border-radius: 16rpx;
+  margin: 0 20rpx 20rpx;
+}
+
+.summary-item {
+  text-align: center;
+}
+
+.summary-label {
+  font-size: 24rpx;
+  color: #999;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.summary-value {
+  font-size: 36rpx;
+  font-weight: bold;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 时间段空状态 */
+.time-empty-state {
+  padding: 40rpx 20rpx;
+  text-align: center;
+}
+
+.time-empty-state .empty-text {
+  font-size: 26rpx;
+  color: #999;
+}
