@@ -510,11 +510,19 @@ Page({
       const categoryMap = {};
       const categoryAssetsMap = {}; // 分类资产映射
       let totalPrice = 0;
+
+      // 先初始化所有分类
+      const categoryList = this.data.categoryList || [];
+      categoryList.forEach(c => {
+        categoryMap[c.name] = { name: c.name, total: 0, count: 0, icon: c.icon || '', displayIcon: c.displayIcon || '' };
+        categoryAssetsMap[c.name] = [];
+      });
+
       assets.forEach(a => {
         const cat = a.category || '未分类';
         const price = Number(a.price) || 0;
         if (!categoryMap[cat]) {
-          categoryMap[cat] = { name: cat, total: 0, count: 0 };
+          categoryMap[cat] = { name: cat, total: 0, count: 0, icon: '', displayIcon: '' };
           categoryAssetsMap[cat] = [];
         }
         categoryMap[cat].total += price;
@@ -727,6 +735,17 @@ Page({
 
     const sorted = [...reportAssets].sort((a, b) => new Date(a.purchaseDate) - new Date(b.purchaseDate));
 
+    // 日期到资产的映射（同一天可能有多笔资产）
+    const dateAssetsMap = {};
+    sorted.forEach(a => {
+      const d = new Date(a.purchaseDate);
+      const dateKey = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+      if (!dateAssetsMap[dateKey]) {
+        dateAssetsMap[dateKey] = [];
+      }
+      dateAssetsMap[dateKey].push(a);
+    });
+
     component.init((canvas, width, height, dpr) => {
       const chart = echarts.init(canvas, null, {
         width: width,
@@ -735,28 +754,51 @@ Page({
       });
       canvas.setChart(chart);
 
-      let cumulative = 0;
       const dates = [];
-      const prices = [];
-      const cumulativePrices = [];
+      const dayPrices = [];
 
-      sorted.forEach(a => {
+      // 按日期聚合
+      const uniqueDates = [...new Set(sorted.map(a => {
         const d = new Date(a.purchaseDate);
-        dates.push(`${d.getMonth() + 1}/${d.getDate()}`);
-        const price = Number(a.price) || 0;
-        prices.push(price);
-        cumulative += price;
-        cumulativePrices.push(cumulative);
+        return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+      }))];
+
+      uniqueDates.forEach(dateKey => {
+        dates.push(dateKey);
+        const dayAssets = dateAssetsMap[dateKey] || [];
+        const dayTotal = dayAssets.reduce((sum, a) => sum + (Number(a.price) || 0), 0);
+        dayPrices.push(dayTotal);
       });
 
+      // 保存映射供tooltip使用
+      this.lineDateAssetsMap = dateAssetsMap;
+
       chart.setOption({
-        color: ['#667eea', '#764ba2'],
+        color: ['#667eea'],
         tooltip: {
           trigger: 'axis',
-          confine: true
+          confine: true,
+          backgroundColor: '#fff',
+          borderColor: '#eee',
+          borderWidth: 1,
+          padding: [8, 12],
+          textStyle: {
+            color: '#333',
+            fontSize: 12
+          },
+          formatter: params => {
+            if (!params || !params.length) return '';
+            const dateKey = params[0].axisValue;
+            const dayTotal = params[0].value;
+            const dayAssets = this.lineDateAssetsMap[dateKey] || [];
+
+            let assetList = dayAssets.map(asset => `${asset.name}: ¥${Number(asset.price || 0).toFixed(2)}`).join('\n');
+
+            return `${dateKey}\n当日资产: ¥${dayTotal.toFixed(2)}\n${assetList}`;
+          }
         },
         legend: {
-          data: ['单笔价格', '累计资产'],
+          data: ['当日资产'],
           top: 0
         },
         grid: {
@@ -782,18 +824,13 @@ Page({
         },
         series: [
           {
-            name: '单笔价格',
-            type: 'bar',
-            data: prices,
-            barWidth: '40%',
-            itemStyle: { borderRadius: [4, 4, 0, 0] }
-          },
-          {
-            name: '累计资产',
+            name: '当日资产',
             type: 'line',
-            data: cumulativePrices,
+            data: dayPrices,
             smooth: true,
-            areaStyle: { opacity: 0.1 }
+            areaStyle: { opacity: 0.1 },
+            symbol: 'circle',
+            symbolSize: 6
           }
         ]
       });

@@ -2137,6 +2137,15 @@ page {
   gap: 12rpx;
 }
 
+.category-icon {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.category-emoji {
+  font-size: 28rpx;
+}
+
 .category-dot {
   width: 14rpx;
   height: 14rpx;
