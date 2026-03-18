@@ -2158,7 +2158,7 @@ page {
   position: relative;
 }
 
-/* 底部留白 */
+/* 底部留白 - 为底部固定按钮留出空间 */
 .report-bottom-spacer {
-  height: 80rpx;
+  height: 200rpx;
 }

@@ -59,6 +59,10 @@ Page({
     pieEc: { lazyLoad: true },
     lineEc: { lazyLoad: true },
 
+    // 环形图中间文字
+    pieCenterText: '',
+    pieCenterSubText: '总资产',
+
     // 批量删除
     showBatchDelete: false,
     batchAssetList: [],
@@ -502,15 +506,20 @@ Page({
     }).then(res => {
       const assets = res.data;
 
-      // 计算分类统计
+      // 计算分类统计和资产映射
       const categoryMap = {};
+      const categoryAssetsMap = {}; // 分类资产映射
       let totalPrice = 0;
       assets.forEach(a => {
         const cat = a.category || '未分类';
         const price = Number(a.price) || 0;
-        if (!categoryMap[cat]) categoryMap[cat] = { name: cat, total: 0, count: 0 };
+        if (!categoryMap[cat]) {
+          categoryMap[cat] = { name: cat, total: 0, count: 0 };
+          categoryAssetsMap[cat] = [];
+        }
         categoryMap[cat].total += price;
         categoryMap[cat].count++;
+        categoryAssetsMap[cat].push({ name: a.name, price: price });
         totalPrice += price;
       });
 
@@ -522,7 +531,10 @@ Page({
         reportAssets: assets,
         reportTotalAssets: assets.length,
         reportTotalPrice: totalPrice.toFixed(2),
-        reportCategoryStats
+        reportCategoryStats,
+        reportCategoryAssetsMap: categoryAssetsMap,
+        pieCenterText: '¥' + totalPrice.toFixed(2),
+        pieCenterSubText: '总资产'
       });
 
       if (assets.length > 0) {
@@ -538,7 +550,7 @@ Page({
   },
 
   initPieChart() {
-    const { reportCategoryStats, reportColors } = this.data;
+    const { reportCategoryStats, reportColors, pieCenterText, pieCenterSubText } = this.data;
     if (!reportCategoryStats.length) return;
 
     const component = this.selectComponent('#pie-chart');
@@ -558,12 +570,37 @@ Page({
         value: item.total
       }));
 
+      // 保存 chart 实例以便后续更新
+      this.pieChart = chart;
+      this.pieTotal = total;
+
       chart.setOption({
         color: reportColors,
         tooltip: {
           trigger: 'item',
           confine: true,
-          formatter: p => `${p.name}\n¥${p.value} (${((p.value / total) * 100).toFixed(1)}%)`
+          backgroundColor: '#fff',
+          borderColor: '#eee',
+          borderWidth: 1,
+          padding: [8, 12],
+          textStyle: {
+            color: '#333',
+            fontSize: 12
+          },
+          formatter: params => {
+            const catName = params.name;
+            const catValue = params.value;
+            const catAssets = this.data.reportCategoryAssetsMap[catName] || [];
+            const percent = ((catValue / total) * 100).toFixed(1);
+
+            // 构建资产列表（纯文本格式）
+            let assetList = catAssets.slice(0, 5).map(asset => `${asset.name}: ¥${asset.price}`).join('\n');
+            if (catAssets.length > 5) {
+              assetList += `\n... 等${catAssets.length}项`;
+            }
+
+            return `${catName}\n总计: ¥${catValue} (${percent}%)\n${assetList}`;
+          }
         },
         legend: {
           type: 'scroll',
@@ -571,6 +608,37 @@ Page({
           bottom: 0,
           left: 'center'
         },
+        // 中间文字
+        graphic: [{
+          type: 'group',
+          left: 'center',
+          top: '32%',
+          z: 0,
+          children: [
+            {
+              type: 'text',
+              left: 'center',
+              top: '0',
+              style: {
+                fill: '#333',
+                text: pieCenterText,
+                font: 'bold 18px sans-serif',
+                textAlign: 'center'
+              }
+            },
+            {
+              type: 'text',
+              left: 'center',
+              top: '24',
+              style: {
+                fill: '#999',
+                text: pieCenterSubText,
+                font: '12px sans-serif',
+                textAlign: 'center'
+              }
+            }
+          ]
+        }],
         series: [{
           type: 'pie',
           radius: ['40%', '60%'],
@@ -589,7 +657,65 @@ Page({
         }]
       });
 
+      // 点击事件
+      chart.on('click', params => {
+        if (params.componentType === 'series') {
+          const value = params.value;
+          const name = params.name;
+          this.updatePieCenterText('¥' + value.toFixed(2), name);
+        }
+      });
+
+      // 图例点击事件 - 重置为总金额
+      chart.on('legendselectchanged', () => {
+        this.updatePieCenterText('¥' + this.pieTotal.toFixed(2), '总资产');
+      });
+
       return chart;
+    });
+  },
+
+  // 更新环形图中间文字
+  updatePieCenterText(text, subText) {
+    if (!this.pieChart) return;
+
+    this.pieChart.setOption({
+      graphic: [{
+        type: 'group',
+        left: 'center',
+        top: '32%',
+        children: [
+          {
+            type: 'text',
+            z: 100,
+            left: 'center',
+            top: '0',
+            style: {
+              fill: '#333',
+              text: text,
+              font: 'bold 18px sans-serif',
+              textAlign: 'center'
+            }
+          },
+          {
+            type: 'text',
+            z: 100,
+            left: 'center',
+            top: '24',
+            style: {
+              fill: '#999',
+              text: subText,
+              font: '12px sans-serif',
+              textAlign: 'center'
+            }
+          }
+        ]
+      }]
+    });
+
+    this.setData({
+      pieCenterText: text,
+      pieCenterSubText: subText
     });
   },
 
