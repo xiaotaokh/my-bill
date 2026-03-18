@@ -472,12 +472,18 @@
         </view>
         <view class="stats-row">
           <view class="stat-card">
-            <text class="stat-value">¥{{reportTotalPrice}}</text>
-            <text class="stat-label">总资产价值</text>
+            <view class="stat-value-wrapper">
+              <text class="stat-value">¥{{reportTotalPrice}}</text>
+              <text class="stat-unit">元</text>
+            </view>
+            <text class="stat-label">总资产</text>
           </view>
           <view class="stat-card">
-            <text class="stat-value">{{reportCategoryStats.length}}</text>
-            <text class="stat-label">资产分类</text>
+            <view class="stat-value-wrapper">
+              <text class="stat-value">{{reportCategoryStats.length}}</text>
+              <text class="stat-unit">个</text>
+            </view>
+            <text class="stat-label">分类</text>
           </view>
         </view>
       </view>
@@ -485,7 +491,7 @@
       <!-- 环形图 -->
       <view class="report-chart-section">
         <view class="section-header">
-          <text class="section-title">分类资产分布</text>
+          <text class="section-title">资产分类</text>
           <text class="section-icon">📊</text>
         </view>
         <view class="chart-wrapper" style="height: 450rpx;">

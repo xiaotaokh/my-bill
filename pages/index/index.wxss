@@ -2055,6 +2055,20 @@ page {
   font-weight: 500;
 }
 
+.stat-value-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 4rpx;
+  white-space: nowrap;
+}
+
+.stat-unit {
+  font-size: 22rpx;
+  color: #999;
+  font-weight: 500;
+  margin-bottom: 4rpx;
+}
+
 /* 图表区域 */
 .report-chart-section {
   background: rgba(255, 255, 255, 0.95);
