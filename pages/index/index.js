@@ -47,7 +47,7 @@ Page({
     showSetting: false,
     showReport: false,
 
-    // 报表数据
+    // 统计数据
     reportLoading: false,
     reportEmpty: false,
     reportTotalAssets: 0,
@@ -493,7 +493,7 @@ Page({
   },
 
   // ============================================
-  // 报表功能
+  // 统计功能
   // ============================================
 
   loadReportData() {

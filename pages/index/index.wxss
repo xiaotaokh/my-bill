@@ -1058,7 +1058,7 @@ page {
   pointer-events: auto;
 }
 
-/* 首页/报表/设置切换悬浮按钮组 - 自然生态风格扁平化样式 */
+/* 首页/统计/设置切换悬浮按钮组 - 自然生态风格扁平化样式 */
 .mode-switch-fab {
   display: flex;
   flex-direction: column;
@@ -1108,6 +1108,10 @@ page {
   color: #fff;
 }
 
+.fab-item.active .fab-icon-svg {
+  /* 保持原色 */
+}
+
 .fab-item.active .fab-label {
   color: #fff;
 }
@@ -1116,6 +1120,12 @@ page {
   font-size: 28rpx;
   color: #667eea;
   line-height: 1;
+  margin-bottom: 4rpx;
+}
+
+.fab-icon-svg {
+  width: 28rpx;
+  height: 28rpx;
   margin-bottom: 4rpx;
 }
 
@@ -1794,10 +1804,10 @@ page {
 }
 
 /* ============================================
-   报表视图样式
+   统计视图样式
    ============================================ */
 
-/* 报表视图容器 */
+/* 统计视图容器 */
 .report-view {
   min-height: 100vh;
   background: linear-gradient(180deg, #f0f2f5 0%, #e8eaf6 100%);
@@ -1979,7 +1989,7 @@ page {
   margin-bottom: 48rpx;
 }
 
-/* 报表内容 */
+/* 统计内容 */
 .report-content {
   padding: 24rpx;
   position: relative;
@@ -2109,7 +2119,7 @@ page {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16rpx 0;
+  padding: 16rpx 20rpx;
   transition: all 0.2s ease;
 }
 

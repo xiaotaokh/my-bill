@@ -412,9 +412,9 @@
     </view>
   </view>
 
-  <!-- 底部悬浮：首页/报表/设置切换 + 新增资产按钮 -->
+  <!-- 底部悬浮：首页/统计/设置切换 + 新增资产按钮 -->
   <view class="bottom-controls" style="{{showBatchDelete ? 'display: none;' : 'display: flex;'}}">
-    <!-- 首页/报表/设置切换悬浮按钮组 -->
+    <!-- 首页/统计/设置切换悬浮按钮组 -->
     <view class="mode-switch-fab">
       <view class="fab-group">
         <view class="fab-item {{!showSetting && !showReport ? 'active' : ''}}" bindtap="switchToHome">
@@ -422,8 +422,8 @@
           <text class="fab-label">首页</text>
         </view>
         <view class="fab-item {{showReport ? 'active' : ''}}" bindtap="switchToReport">
-          <text class="fab-icon">📊</text>
-          <text class="fab-label">报表</text>
+          <image class="fab-icon-svg" src="/images/pie-chart.svg" mode="aspectFit"></image>
+          <text class="fab-label">统计</text>
         </view>
         <view class="fab-item {{showSetting ? 'active' : ''}}" bindtap="navigateToSetting">
           <text class="fab-icon">⚙️</text>
@@ -441,7 +441,7 @@
     </view>
   </view>
 
-  <!-- 报表视图 -->
+  <!-- 统计视图 -->
   <view class="report-view" wx:if="{{showReport}}">
     <!-- 加载状态 -->
     <view wx:if="{{reportLoading}}" class="report-loading">
@@ -459,10 +459,10 @@
         <view class="face-mouth"></view>
       </view>
       <text class="empty-title">暂无数据</text>
-      <text class="empty-desc">添加资产后即可查看报表统计</text>
+      <text class="empty-desc">添加资产后即可查看统计数据</text>
     </view>
 
-    <!-- 报表内容 -->
+    <!-- 统计内容 -->
     <view wx:else class="report-content">
       <!-- 统计概览 -->
       <view class="report-stats-card">
