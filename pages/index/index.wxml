@@ -492,7 +492,7 @@
       <view class="report-chart-section">
         <view class="section-header">
           <text class="section-title">资产分类</text>
-          <text class="section-icon">📊</text>
+          <image class="section-icon-svg" src="/images/pie-chart.svg" mode="aspectFit"></image>
         </view>
         <view class="chart-wrapper" style="height: 450rpx;">
           <ec-canvas id="pie-chart" canvas-id="pie-chart" ec="{{ pieEc }}"></ec-canvas>
@@ -517,7 +517,7 @@
       <view class="report-chart-section">
         <view class="section-header">
           <text class="section-title">资产时间线</text>
-          <text class="section-icon">📈</text>
+          <image class="section-icon-svg" src="/images/line-chart.svg" mode="aspectFit"></image>
         </view>
         <view class="chart-wrapper" style="height: 500rpx;">
           <ec-canvas id="line-chart" canvas-id="line-chart" ec="{{ lineEc }}"></ec-canvas>
@@ -528,7 +528,7 @@
       <view class="report-chart-section">
         <view class="section-header">
           <text class="section-title">资产时间段</text>
-          <text class="section-icon">📊</text>
+          <image class="section-icon-svg" src="/images/bar-chart.svg" mode="aspectFit"></image>
         </view>
 
         <!-- 时间段选择器 -->

@@ -2173,6 +2173,11 @@ page {
   font-size: 32rpx;
 }
 
+.section-icon-svg {
+  width: 36rpx;
+  height: 36rpx;
+}
+
 /* 分类列表 - 更灵动 */
 .category-list {
   margin-top: 20rpx;
