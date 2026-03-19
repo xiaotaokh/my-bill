@@ -15,6 +15,8 @@ Page({
     // 统计数据
     totalPrice: 0,
     dailyCost: 0,
+    totalPriceSize: 64,
+    dailyCostSize: 32,
     activeCount: 0,
     retiredCount: 0,
     soldCount: 0,
@@ -40,7 +42,7 @@ Page({
     // 排序
     sortDbFields: ['price', 'purchaseDate', 'createdAt'],
     sortOptions: ['价格', '购买时间', '添加时间', '服役时长', '日均成本'],
-    currentSortIndex: 2,
+    currentSortIndex: 1,
     sortOrder: 'desc',
 
     // 视图控制
@@ -278,9 +280,24 @@ Page({
       else if (asset.status === 'sold') soldCount++;
     });
 
+    const totalPriceStr = totalPrice.toFixed(2);
+    const dailyCostStr = dailyCostTotal.toFixed(2);
+
+    // 根据数字长度计算字体大小
+    const calcFontSize = (numStr, baseSize, minSize) => {
+      const len = numStr.length;
+      if (len <= 6) return baseSize;
+      if (len <= 8) return baseSize - 4;
+      if (len <= 10) return baseSize - 8;
+      if (len <= 12) return baseSize - 14;
+      return Math.max(minSize, baseSize - 20);
+    };
+
     this.setData({
-      totalPrice: totalPrice.toFixed(2),
-      dailyCost: dailyCostTotal.toFixed(2),
+      totalPrice: totalPriceStr,
+      dailyCost: dailyCostStr,
+      totalPriceSize: calcFontSize(totalPriceStr, 48, 26),
+      dailyCostSize: calcFontSize(dailyCostStr, 28, 20),
       activeCount, retiredCount, soldCount
     });
   },

@@ -20,12 +20,12 @@
     <view class="total-card">
       <view class="total-card-left">
         <view class="total-label">总资产</view>
-        <view class="total-value">¥{{totalPrice}}</view>
+        <view class="total-value" style="font-size: {{totalPriceSize}}rpx;">¥{{totalPrice}}</view>
       </view>
       <view class="total-divider"></view>
       <view class="total-card-right">
         <view class="daily-label">总日均成本</view>
-        <view class="daily-value">¥{{dailyCost}}</view>
+        <view class="daily-value" style="font-size: {{dailyCostSize}}rpx;">¥{{dailyCost}}</view>
       </view>
       <view class="total-glow"></view>
     </view>
@@ -127,7 +127,7 @@
     <view class="asset-list">
       <view class="list-header">
         <view class="list-title-wrapper">
-          <text class="list-title">朝夕数计</text>
+          <text class="list-title">我的资产</text>
           <view class="list-count-badge">
             <text>{{filteredAssets.length}}</text>
           </view>
@@ -534,7 +534,7 @@
         <!-- 时间段选择器 -->
         <view class="time-period-selector">
           <view
-            wx:for="{{['week', 'month', 'quarter', 'year', 'all']}}"
+            wx:for="{{['all', 'year', 'quarter', 'month', 'week']}}"
             wx:key="*this"
             class="period-pill {{activeTimePeriod === item ? 'active' : ''}}"
             bindtap="selectTimePeriod"
