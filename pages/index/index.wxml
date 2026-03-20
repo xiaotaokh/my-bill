@@ -477,41 +477,40 @@
 
     <!-- 统计内容 -->
     <view wx:else class="report-content">
-      <!-- 统计概览 -->
+      <!-- 统计概览 - 主打大数字设计 -->
       <view class="report-stats-card">
-        <view class="stats-header">
-          <text class="stats-title">资产总览</text>
+        <!-- 主资产卡片 - 视觉焦点 -->
+        <view class="main-asset-card">
+          <view class="main-asset-header">
+            <text class="main-asset-label">总资产</text>
+            <view class="main-asset-badge">{{reportTotalAssets}}件</view>
+          </view>
+          <view class="main-asset-value">¥{{reportTotalPrice}}</view>
+          <view class="main-asset-glow"></view>
         </view>
-        <view class="stats-row">
-          <view class="stat-card">
-            <view class="stat-value-wrapper">
-              <text class="stat-value">{{reportTotalAssets}}</text>
-              <text class="stat-unit">件</text>
+
+        <!-- 次要数据网格 -->
+        <view class="sub-stats-grid">
+          <view class="sub-stat-item">
+            <view class="sub-stat-icon">📦</view>
+            <view class="sub-stat-info">
+              <text class="sub-stat-value">{{reportTotalAssets}}<text class="sub-stat-unit">件</text></text>
+              <text class="sub-stat-label">资产总数</text>
             </view>
-            <text class="stat-label">资产总数</text>
           </view>
-          <view class="stat-card">
-            <view class="stat-value-wrapper">
-              <text class="stat-value">¥{{reportTotalPrice}}</text>
+          <view class="sub-stat-item">
+            <view class="sub-stat-icon">🏷️</view>
+            <view class="sub-stat-info">
+              <text class="sub-stat-value">{{reportCategoryStats.length}}<text class="sub-stat-unit">个</text></text>
+              <text class="sub-stat-label">分类</text>
             </view>
-            <text class="stat-sub">{{reportIncludedCount}}件资产</text>
-            <text class="stat-label">总资产</text>
           </view>
-        </view>
-        <view class="stats-row">
-          <view class="stat-card">
-            <view class="stat-value-wrapper">
-              <text class="stat-value">{{reportCategoryStats.length}}</text>
-              <text class="stat-unit">个</text>
+          <view class="sub-stat-item excluded">
+            <view class="sub-stat-icon">🔒</view>
+            <view class="sub-stat-info">
+              <text class="sub-stat-value">¥{{reportExcludedPrice}}</text>
+              <text class="sub-stat-label">不计入 ({{reportExcludedCount}}件)</text>
             </view>
-            <text class="stat-label">分类</text>
-          </view>
-          <view class="stat-card excluded">
-            <view class="stat-value-wrapper">
-              <text class="stat-value">¥{{reportExcludedPrice}}</text>
-            </view>
-            <text class="stat-sub">{{reportExcludedCount}}件资产</text>
-            <text class="stat-label">不计入总资产</text>
           </view>
         </view>
       </view>

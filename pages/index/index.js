@@ -645,12 +645,14 @@ Page({
         categoryMap[cat].count++;
         categoryAssetsMap[cat].push({ name: a.name, price: price });
 
-        // 计算不计入总资产的金额
+        // 总资产 = 所有资产金额总和
+        totalPrice += price;
+
+        // 统计不计入总资产的金额
         if (a.excludeTotal === true || a.excludeTotal === 'true') {
           excludedPrice += price;
           excludedCount++;
         } else {
-          totalPrice += price;
           includedCount++;
         }
       });
@@ -924,11 +926,11 @@ Page({
 
             let assetList = dayAssets.map(asset => `${asset.name}: ¥${Number(asset.price || 0).toFixed(2)}`).join('\n');
 
-            return `${dateKey}\n当日资产: ¥${dayTotal.toFixed(2)}\n${assetList}`;
+            return `${dateKey}\n金额: ¥${dayTotal.toFixed(2)}\n${assetList}`;
           }
         },
         legend: {
-          data: ['当日资产'],
+          data: ['每日资产'],
           top: 0
         },
         grid: {
@@ -954,7 +956,7 @@ Page({
         },
         series: [
           {
-            name: '当日资产',
+            name: '每日资产',
             type: 'line',
             data: dayPrices,
             smooth: true,
@@ -1149,8 +1151,8 @@ Page({
           }
         },
         grid: {
-          left: '12%',
-          right: '12%',
+          left: '3%',
+          right: '6%',
           bottom: '15%',
           top: '18%',
           containLabel: true
