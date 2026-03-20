@@ -30,7 +30,7 @@
         </view>
         <input
           class="item-input"
-          type="number"
+          type="digit"
           name="price"
           placeholder="请输入价格"
           placeholder-class="input-placeholder"
