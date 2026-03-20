@@ -441,9 +441,10 @@ Page({
 
   showAboutInfo() {
     wx.showModal({
-      title: '关于我的账本',
-      content: '我的账本是一款个人资产管理小程序，帮助您记录和追踪个人资产情况。',
-      showCancel: false
+      title: '关于朝夕数计365',
+      content: '朝夕数计365 —— 您的智能资产管理助手\n\n在这里，每一笔资产都有它的故事。记录购买价格、追踪服役时长、计算日均成本，让消费更透明，决策更智慧。\n\n愿您朝夕相伴，数计有方。',
+      showCancel: false,
+      confirmText: '知道了'
     });
   },
 

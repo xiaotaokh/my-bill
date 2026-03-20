@@ -300,7 +300,7 @@
         </view>
         <view class="setting-info">
           <text class="setting-title-text">关于</text>
-          <text class="setting-desc">了解我的账本</text>
+          <text class="setting-desc">了解朝夕数计365</text>
         </view>
         <view class="setting-arrow">
           <text class="arrow">›</text>
@@ -310,7 +310,7 @@
 
     <!-- 版本信息 -->
     <view class="version-info">
-      <text class="version-text">我的账本 v1.0.0</text>
+      <text class="version-text">朝夕数计365 v1.0.0</text>
     </view>
   </view>
 

@@ -16,7 +16,7 @@
 - Follow-up TODOs: None
 -->
 
-# 朝夕数计 (myBill) Constitution
+# 朝夕数计365 (myBill) Constitution
 
 ## Core Principles
 
