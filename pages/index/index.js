@@ -24,6 +24,8 @@ Page({
     // 资产列表
     assets: [],
     filteredAssets: [],
+    filteredTotalPrice: '0.00',
+    filteredDailyCost: '0.00',
 
     // 筛选状态
     activeStatus: 'all',
@@ -295,9 +297,20 @@ Page({
   calculateStats() {
     const { filteredAssets } = this.data;
     let totalPrice = 0, dailyCostTotal = 0;
+    let filteredTotal = 0; // 当前筛选条件下所有资产总金额
+    let filteredDailyTotal = 0; // 当前筛选条件下所有资产的日均总和
     let activeCount = 0, retiredCount = 0, soldCount = 0;
 
     filteredAssets.forEach(asset => {
+      filteredTotal += asset.price || 0; // 计算所有资产金额
+
+      // 计算所有资产的日均（active用dailyCost，retired/sold用dailyEquivalent）
+      if (asset.status === 'active' && asset.dailyCost) {
+        filteredDailyTotal += parseFloat(asset.dailyCost);
+      } else if ((asset.status === 'retired' || asset.status === 'sold') && asset.dailyEquivalent) {
+        filteredDailyTotal += parseFloat(asset.dailyEquivalent);
+      }
+
       if (asset.excludeTotal === true || asset.excludeTotal === 'true') return;
       totalPrice += asset.price || 0;
 
@@ -325,6 +338,8 @@ Page({
 
     this.setData({
       totalPrice: totalPriceStr,
+      filteredTotalPrice: filteredTotal.toFixed(2),
+      filteredDailyCost: filteredDailyTotal.toFixed(2),
       dailyCost: dailyCostStr,
       totalPriceSize: calcFontSize(totalPriceStr, 48, 26),
       dailyCostSize: calcFontSize(dailyCostStr, 28, 20),

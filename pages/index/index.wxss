@@ -437,8 +437,14 @@ page {
 
 .list-title-wrapper {
   display: flex;
+  align-items: center;
+  gap: 34rpx;
+}
+
+.list-title-box {
+  position: relative;
+  display: flex;
   align-items: flex-start;
-  gap: 12rpx;
 }
 
 .list-title {
@@ -448,17 +454,45 @@ page {
 }
 
 .list-count-badge {
-  padding: 6rpx 14rpx;
+  position: absolute;
+  top: -8rpx;
+  right: -30rpx;
+  padding: 4rpx 10rpx;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20rpx;
-  font-size: 20rpx;
+  border-radius: 16rpx;
+  font-size: 18rpx;
   font-weight: 600;
   color: #fff;
-  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2rpx 8rpx rgba(102, 126, 234, 0.3);
 }
 
 .list-count-badge text {
   line-height: 1;
+}
+
+.list-total-price {
+  display: flex;
+  align-items: flex-end;
+}
+
+.list-price-group {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.list-total-price .price-value {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #667eea;
+}
+
+.list-total-price .price-label {
+  font-size: 18rpx;
+  font-weight: 500;
+  color: #999;
+  margin-left: 2rpx;
+  margin-bottom: 1rpx;
 }
 
 /* 资产卡片 */

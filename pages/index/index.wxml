@@ -127,9 +127,21 @@
     <view class="asset-list">
       <view class="list-header">
         <view class="list-title-wrapper">
-          <text class="list-title">我的资产</text>
-          <view class="list-count-badge">
-            <text>{{filteredAssets.length}}</text>
+          <view class="list-title-box">
+            <text class="list-title">我的资产</text>
+            <view class="list-count-badge">
+              <text>{{filteredAssets.length}}</text>
+            </view>
+          </view>
+          <view wx:if="{{filteredAssets.length > 0}}" class="list-price-group">
+            <view class="list-total-price">
+              <text class="price-value">¥{{filteredTotalPrice}}</text>
+              <text class="price-label">/总</text>
+            </view>
+            <view class="list-total-price">
+              <text class="price-value">¥{{filteredDailyCost}}</text>
+              <text class="price-label">/日</text>
+            </view>
           </view>
         </view>
         <view class="sort-wrapper">
