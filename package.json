@@ -7,8 +7,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "tdesign-miniprogram": "^1.12.3"
-  }
+  "license": "ISC"
 }
