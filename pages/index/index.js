@@ -418,6 +418,21 @@ Page({
   },
 
   goToAdd() {
+    // 检查是否有分类,没有分类则提示用户先去添加
+    if (!this.data.categoryList || this.data.categoryList.length === 0) {
+      wx.showModal({
+        title: '提示',
+        content: '请先在设置中添加资产分类',
+        confirmText: '去添加',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            wx.navigateTo({ url: '/pages/category-manage/category-manage' });
+          }
+        }
+      });
+      return;
+    }
     wx.navigateTo({ url: '/pages/asset-add/asset-add' });
   },
 
