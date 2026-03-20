@@ -1765,6 +1765,13 @@ page {
   text-align: center;
 }
 
+.summary-price {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #FF8A65;
+  margin-left: 16rpx;
+}
+
 .delete-btn-wrapper {
   flex: 1;
   display: flex;
@@ -2085,6 +2092,11 @@ page {
 .stats-row {
   display: flex;
   gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.stats-row:last-child {
+  margin-bottom: 0;
 }
 
 .stat-card {
@@ -2120,6 +2132,16 @@ page {
   font-weight: 500;
 }
 
+.stat-sub {
+  font-size: 20rpx;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.stat-card.excluded .stat-sub {
+  color: #fca5a5;
+}
+
 .stat-value-wrapper {
   display: flex;
   align-items: flex-end;
@@ -2132,6 +2154,22 @@ page {
   color: #9ca3af;
   font-weight: 500;
   margin-bottom: 2rpx;
+}
+
+.stat-card.excluded {
+  background: linear-gradient(135deg, #fef3f2 0%, #fee2e2 100%);
+  border-color: rgba(239, 68, 68, 0.1);
+}
+
+.stat-card.excluded .stat-value {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-card.excluded .stat-label {
+  color: #f87171;
 }
 
 /* 图表区域 - 简洁清爽 */

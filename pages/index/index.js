@@ -54,6 +54,9 @@ Page({
     reportEmpty: false,
     reportTotalAssets: 0,
     reportTotalPrice: 0,
+    reportExcludedPrice: 0,
+    reportIncludedCount: 0,
+    reportExcludedCount: 0,
     reportCategoryStats: [],
     reportColors: ['#667eea', '#764ba2', '#9b72e8', '#f472b6', '#fb923c', '#34d399', '#60a5fa', '#a78bfa', '#fbbf24', '#38bdf8'],
 
@@ -75,6 +78,7 @@ Page({
     showBatchDelete: false,
     batchAssetList: [],
     selectedAssets: [],
+    selectedTotalPrice: '0.00',
     isAllSelected: false,
 
     // 状态
@@ -153,11 +157,12 @@ Page({
       if (activeStatus !== 'all') where.status = activeStatus;
       if (activeCategory !== 'all') where.category = activeCategory;
 
-      let query = db.collection('assets').where(where);
       const sortField = sortDbFields[currentSortIndex];
-      query = query.orderBy(sortField || 'createdAt', sortField ? sortOrder : 'desc');
+      const orderField = sortField || 'createdAt';
+      const orderDir = sortField ? sortOrder : 'desc';
 
-      return query.get();
+      // 分页获取所有数据
+      return this.getAllAssetsWithPaging(db, where, orderField, orderDir);
     }).then(async res => {
       const assetsWithIcon = await Promise.all(res.data.map(async asset => {
         let displayIcon = null;
@@ -186,6 +191,31 @@ Page({
       wx.hideLoading();
       wx.showToast({ title: '加载失败', icon: 'none' });
     }).finally(() => wx.hideLoading());
+  },
+
+  // 分页获取所有资产
+  async getAllAssetsWithPaging(db, where, orderBy, orderDir) {
+    const MAX_LIMIT = 20;
+    let allData = [];
+    let count = 0;
+
+    // 先获取总数
+    const countRes = await db.collection('assets').where(where).count();
+    const total = countRes.total;
+
+    // 分批获取
+    const batchTimes = Math.ceil(total / MAX_LIMIT);
+    for (let i = 0; i < batchTimes; i++) {
+      const res = await db.collection('assets')
+        .where(where)
+        .orderBy(orderBy, orderDir)
+        .skip(i * MAX_LIMIT)
+        .limit(MAX_LIMIT)
+        .get();
+      allData = allData.concat(res.data);
+    }
+
+    return { data: allData };
   },
 
   parseDate(dateInput) {
@@ -407,21 +437,22 @@ Page({
 
   enterBatchDelete() {
     this.loadAllAssetsForBatch();
-    this.setData({ showSetting: false, showBatchDelete: true, selectedAssets: [], isAllSelected: false });
+    this.setData({ showSetting: false, showBatchDelete: true, selectedAssets: [], selectedTotalPrice: '0.00', isAllSelected: false });
   },
 
   exitBatchDelete() {
-    this.setData({ showBatchDelete: false, showSetting: true, selectedAssets: [], isAllSelected: false, batchAssetList: [] });
+    this.setData({ showBatchDelete: false, showSetting: true, selectedAssets: [], selectedTotalPrice: '0.00', isAllSelected: false, batchAssetList: [] });
   },
 
-  loadAllAssetsForBatch() {
+  async loadAllAssetsForBatch() {
     const app = getApp();
     wx.showLoading({ title: '加载中...' });
 
-    app.getOpenid().then(openid => {
+    try {
+      const openid = await app.getOpenid();
       const db = wx.cloud.database({ env: app.globalData.envId });
-      return db.collection('assets').where({ _openid: openid }).orderBy('createdAt', 'desc').get();
-    }).then(async res => {
+      const res = await this.getAllAssetsWithPaging(db, { _openid: openid }, 'purchaseDate', 'desc');
+
       const list = await Promise.all(res.data.map(async asset => {
         let displayIcon = null;
         if (asset.icon?.startsWith('cloud://')) {
@@ -442,11 +473,11 @@ Page({
 
       this.setData({ batchAssetList: list, isAllSelected: false });
       wx.hideLoading();
-    }).catch(err => {
+    } catch (err) {
       console.error(err);
       wx.hideLoading();
       wx.showToast({ title: '加载失败', icon: 'none' });
-    });
+    }
   },
 
   toggleSelectAsset(e) {
@@ -456,8 +487,15 @@ Page({
       ? selectedAssets.filter(x => x !== id)
       : [...selectedAssets, id];
 
+    // 计算选中资产总金额
+    const selectedTotalPrice = batchAssetList
+      .filter(a => newSelected.includes(a._id))
+      .reduce((sum, a) => sum + (Number(a.price) || 0), 0)
+      .toFixed(2);
+
     this.setData({
       selectedAssets: newSelected,
+      selectedTotalPrice,
       batchAssetList: batchAssetList.map(a => ({ ...a, _selected: newSelected.includes(a._id) })),
       isAllSelected: newSelected.length === batchAssetList.length && batchAssetList.length > 0
     });
@@ -466,9 +504,22 @@ Page({
   toggleSelectAll() {
     const { isAllSelected, batchAssetList } = this.data;
     if (isAllSelected) {
-      this.setData({ selectedAssets: [], batchAssetList: batchAssetList.map(a => ({ ...a, _selected: false })), isAllSelected: false });
+      this.setData({
+        selectedAssets: [],
+        selectedTotalPrice: '0.00',
+        batchAssetList: batchAssetList.map(a => ({ ...a, _selected: false })),
+        isAllSelected: false
+      });
     } else {
-      this.setData({ selectedAssets: batchAssetList.map(a => a._id), batchAssetList: batchAssetList.map(a => ({ ...a, _selected: true })), isAllSelected: true });
+      const selectedTotalPrice = batchAssetList
+        .reduce((sum, a) => sum + (Number(a.price) || 0), 0)
+        .toFixed(2);
+      this.setData({
+        selectedAssets: batchAssetList.map(a => a._id),
+        selectedTotalPrice,
+        batchAssetList: batchAssetList.map(a => ({ ...a, _selected: true })),
+        isAllSelected: true
+      });
     }
   },
 
@@ -498,7 +549,7 @@ Page({
         wx.hideLoading();
         if (res.result?.success) {
           const remaining = this.data.batchAssetList.filter(a => !selectedAssets.includes(a._id));
-          this.setData({ batchAssetList: remaining, selectedAssets: [], isAllSelected: false });
+          this.setData({ batchAssetList: remaining, selectedAssets: [], selectedTotalPrice: '0.00', isAllSelected: false });
           wx.showToast({ title: `已删除 ${selectedAssets.length} 项`, icon: 'success' });
 
           if (remaining.length === 0) {
@@ -519,20 +570,24 @@ Page({
   // 统计功能
   // ============================================
 
-  loadReportData() {
+  async loadReportData() {
     this.setData({ reportLoading: true });
 
     const app = getApp();
-    app.getOpenid().then(openid => {
+    try {
+      const openid = await app.getOpenid();
       const db = wx.cloud.database({ env: app.globalData.envId });
-      return db.collection('assets').where({ _openid: openid }).orderBy('purchaseDate', 'asc').get();
-    }).then(res => {
+      const res = await this.getAllAssetsWithPaging(db, { _openid: openid }, 'purchaseDate', 'asc');
+
       const assets = res.data;
 
       // 计算分类统计和资产映射
       const categoryMap = {};
       const categoryAssetsMap = {}; // 分类资产映射
       let totalPrice = 0;
+      let excludedPrice = 0; // 不计入总资产的金额
+      let includedCount = 0; // 计入总资产的资产数
+      let excludedCount = 0; // 不计入总资产的资产数
 
       // 先初始化所有分类
       const categoryList = this.data.categoryList || [];
@@ -551,10 +606,20 @@ Page({
         categoryMap[cat].total += price;
         categoryMap[cat].count++;
         categoryAssetsMap[cat].push({ name: a.name, price: price });
-        totalPrice += price;
+
+        // 计算不计入总资产的金额
+        if (a.excludeTotal === true || a.excludeTotal === 'true') {
+          excludedPrice += price;
+          excludedCount++;
+        } else {
+          totalPrice += price;
+          includedCount++;
+        }
       });
 
-      const reportCategoryStats = Object.values(categoryMap).sort((a, b) => b.total - a.total);
+      const reportCategoryStats = Object.values(categoryMap)
+        .sort((a, b) => b.total - a.total)
+        .map(item => ({ ...item, totalFixed: item.total.toFixed(2) }));
 
       this.setData({
         reportLoading: false,
@@ -562,6 +627,9 @@ Page({
         reportAssets: assets,
         reportTotalAssets: assets.length,
         reportTotalPrice: totalPrice.toFixed(2),
+        reportExcludedPrice: excludedPrice.toFixed(2),
+        reportIncludedCount: includedCount,
+        reportExcludedCount: excludedCount,
         reportCategoryStats,
         reportCategoryAssetsMap: categoryAssetsMap,
         pieCenterText: '¥' + totalPrice.toFixed(2),
@@ -575,10 +643,10 @@ Page({
           this.calculateTimePeriodStats();
         }, 200);
       }
-    }).catch(err => {
+    } catch (err) {
       console.error(err);
       this.setData({ reportLoading: false, reportEmpty: true });
-    });
+    }
   },
 
   initPieChart() {
@@ -938,8 +1006,9 @@ Page({
 
     // 按时间排序
     const data = Object.values(groupMap).sort((a, b) => a.label.localeCompare(b.label));
+    const totalAmount = data.reduce((sum, d) => sum + d.totalAmount, 0);
     const summary = {
-      totalAmount: data.reduce((sum, d) => sum + d.totalAmount, 0),
+      totalAmount: totalAmount.toFixed(2),
       totalCount: data.reduce((sum, d) => sum + d.count, 0)
     };
 

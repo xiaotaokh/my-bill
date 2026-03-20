@@ -396,6 +396,7 @@
         <text class="summary-text">已选择</text>
         <text class="summary-count">{{selectedAssets.length}}</text>
         <text class="summary-text">项</text>
+        <text wx:if="{{selectedTotalPrice > 0}}" class="summary-price">¥{{selectedTotalPrice}}</text>
       </view>
       <view class="delete-btn-wrapper">
         <view class="delete-btn {{selectedAssets.length > 0 ? 'active' : 'disabled'}}" bindtap="confirmBatchDelete">
@@ -468,22 +469,37 @@
       <view class="report-stats-card">
         <view class="stats-header">
           <text class="stats-title">资产总览</text>
-          <text class="stats-badge">{{reportTotalAssets}}项</text>
         </view>
         <view class="stats-row">
           <view class="stat-card">
             <view class="stat-value-wrapper">
-              <text class="stat-value">¥{{reportTotalPrice}}</text>
-              <text class="stat-unit">元</text>
+              <text class="stat-value">{{reportTotalAssets}}</text>
+              <text class="stat-unit">件</text>
             </view>
+            <text class="stat-label">资产总数</text>
+          </view>
+          <view class="stat-card">
+            <view class="stat-value-wrapper">
+              <text class="stat-value">¥{{reportTotalPrice}}</text>
+            </view>
+            <text class="stat-sub">{{reportIncludedCount}}件资产</text>
             <text class="stat-label">总资产</text>
           </view>
+        </view>
+        <view class="stats-row">
           <view class="stat-card">
             <view class="stat-value-wrapper">
               <text class="stat-value">{{reportCategoryStats.length}}</text>
               <text class="stat-unit">个</text>
             </view>
             <text class="stat-label">分类</text>
+          </view>
+          <view class="stat-card excluded">
+            <view class="stat-value-wrapper">
+              <text class="stat-value">¥{{reportExcludedPrice}}</text>
+            </view>
+            <text class="stat-sub">{{reportExcludedCount}}件资产</text>
+            <text class="stat-label">不计入总资产</text>
           </view>
         </view>
       </view>
@@ -507,7 +523,7 @@
             </view>
             <view class="category-right">
               <text class="category-count">{{item.count}}件</text>
-              <text class="category-price">¥{{item.total}}</text>
+              <text class="category-price">¥{{item.totalFixed}}</text>
             </view>
           </view>
         </view>
