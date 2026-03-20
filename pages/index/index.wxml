@@ -35,7 +35,7 @@
       <view class="stat-row">
         <view class="stat-item">
           <view class="stat-icon active-icon">
-            <text class="iconfont">📦</text>
+            <text class="iconfont">🚀</text>
           </view>
           <view class="stat-content">
             <text class="stat-number">{{activeCount}}</text>
@@ -62,7 +62,7 @@
         </view>
         <view class="stat-item">
           <view class="stat-icon total-icon">
-            <text class="iconfont">📊</text>
+            <text class="iconfont">🗂️</text>
           </view>
           <view class="stat-content">
             <text class="stat-number">{{statsTotalCount}}</text>
