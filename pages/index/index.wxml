@@ -65,7 +65,7 @@
             <text class="iconfont">📊</text>
           </view>
           <view class="stat-content">
-            <text class="stat-number">{{assets.length}}</text>
+            <text class="stat-number">{{statsTotalCount}}</text>
             <text class="stat-name">资产总数</text>
           </view>
         </view>

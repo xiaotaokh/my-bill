@@ -20,6 +20,7 @@ Page({
     activeCount: 0,
     retiredCount: 0,
     soldCount: 0,
+    statsTotalCount: 0,
 
     // 资产列表
     assets: [],
@@ -150,20 +151,17 @@ Page({
     wx.showLoading({ title: '加载中...' });
 
     const app = getApp();
-    const { currentSortIndex, sortOrder, sortDbFields, activeStatus, activeCategory } = this.data;
+    const { currentSortIndex, sortOrder, sortDbFields } = this.data;
 
     app.getOpenid().then(openid => {
       const db = wx.cloud.database({ env: app.globalData.envId });
       const where = { _openid: openid };
 
-      if (activeStatus !== 'all') where.status = activeStatus;
-      if (activeCategory !== 'all') where.category = activeCategory;
-
       const sortField = sortDbFields[currentSortIndex];
       const orderField = sortField || 'createdAt';
       const orderDir = sortField ? sortOrder : 'desc';
 
-      // 分页获取所有数据
+      // 获取所有资产（不做筛选，用于统计和列表）
       return this.getAllAssetsWithPaging(db, where, orderField, orderDir);
     }).then(async res => {
       const assetsWithIcon = await Promise.all(res.data.map(async asset => {
@@ -180,12 +178,13 @@ Page({
       }));
 
       const assets = assetsWithIcon.map(a => this.calculateAssetFields(a));
-      this.setData({ assets, filteredAssets: assets, isLoading: false });
+      this.setData({ assets, isLoading: false });
+
+      // 应用筛选
+      this.applyFilters();
 
       if (!sortDbFields[currentSortIndex]) {
         this.applySort();
-      } else {
-        this.calculateStats();
       }
     }).catch(err => {
       console.error('加载失败:', err);
@@ -294,13 +293,40 @@ Page({
     this.setData({ assets: update(assets), filteredAssets: update(this.data.filteredAssets) });
   },
 
+  // 应用筛选
+  applyFilters() {
+    const { assets, activeStatus, activeCategory } = this.data;
+    let filtered = [...assets];
+
+    // 按状态筛选
+    if (activeStatus !== 'all') {
+      filtered = filtered.filter(a => a.status === activeStatus);
+    }
+
+    // 按分类筛选
+    if (activeCategory !== 'all') {
+      filtered = filtered.filter(a => a.category === activeCategory);
+    }
+
+    this.setData({ filteredAssets: filtered }, () => this.calculateStats());
+  },
+
   calculateStats() {
-    const { filteredAssets } = this.data;
+    const { filteredAssets, assets, activeCategory } = this.data;
     let totalPrice = 0, dailyCostTotal = 0;
     let filteredTotal = 0; // 当前筛选条件下所有资产总金额
     let filteredDailyTotal = 0; // 当前筛选条件下所有资产的日均总和
     let activeCount = 0, retiredCount = 0, soldCount = 0;
 
+    // 根据分类筛选计算统计数量（服役中/已退役/已卖出/资产总数）
+    const statsAssets = activeCategory === 'all' ? assets : assets.filter(a => a.category === activeCategory);
+    statsAssets.forEach(asset => {
+      if (asset.status === 'active') activeCount++;
+      else if (asset.status === 'retired') retiredCount++;
+      else if (asset.status === 'sold') soldCount++;
+    });
+
+    // 从筛选后的资产计算金额统计
     filteredAssets.forEach(asset => {
       filteredTotal += asset.price || 0; // 计算所有资产金额
 
@@ -317,10 +343,6 @@ Page({
       if (asset.status === 'active' && asset.excludeDaily !== true && asset.excludeDaily !== 'true' && asset.dailyCost) {
         dailyCostTotal += parseFloat(asset.dailyCost);
       }
-
-      if (asset.status === 'active') activeCount++;
-      else if (asset.status === 'retired') retiredCount++;
-      else if (asset.status === 'sold') soldCount++;
     });
 
     const totalPriceStr = totalPrice.toFixed(2);
@@ -343,18 +365,19 @@ Page({
       dailyCost: dailyCostStr,
       totalPriceSize: calcFontSize(totalPriceStr, 48, 26),
       dailyCostSize: calcFontSize(dailyCostStr, 28, 20),
-      activeCount, retiredCount, soldCount
+      activeCount, retiredCount, soldCount,
+      statsTotalCount: statsAssets.length
     });
   },
 
   filterByStatus(e) {
     this.setData({ activeStatus: e.currentTarget.dataset.status });
-    this.loadAssets();
+    this.applyFilters();
   },
 
   filterByCategory(e) {
     this.setData({ activeCategory: e.currentTarget.dataset.category });
-    this.loadAssets();
+    this.applyFilters();
   },
 
   changeSort(e) {
