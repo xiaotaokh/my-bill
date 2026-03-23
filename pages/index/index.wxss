@@ -1139,7 +1139,7 @@ page {
 .bottom-controls {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   padding: 0 40rpx 40rpx;
   position: fixed;
   bottom: 0;
@@ -1257,7 +1257,7 @@ page {
 }
 
 .add-asset-fab .fab-icon {
-  font-size: 40rpx;
+  font-size: 52rpx;
   color: #fff;
   font-weight: bold;
   line-height: 1;
