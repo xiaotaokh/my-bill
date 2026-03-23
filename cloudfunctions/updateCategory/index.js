@@ -22,6 +22,10 @@ exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext();
 
   try {
+    // 先获取原分类信息
+    const categoryDoc = await db.collection('categories').doc(categoryId).get();
+    const oldCategory = categoryDoc.data;
+
     // 准备更新数据
     const updateData = {
       updatedAt: db.serverDate()
@@ -36,9 +40,26 @@ exports.main = async (event, context) => {
     }
 
     // 更新类别
-    const result = await db.collection('categories').doc(categoryId).update({
+    await db.collection('categories').doc(categoryId).update({
       data: updateData
     });
+
+    // 如果分类名称有变化，同步更新所有关联资产的分类名称
+    if (name && oldCategory.name !== name.trim()) {
+      const newName = name.trim();
+      const oldName = oldCategory.name;
+
+      // 更新所有该分类下的资产
+      await db.collection('assets').where({
+        _openid: wxContext.OPENID,
+        category: oldName
+      }).update({
+        data: {
+          category: newName,
+          updatedAt: db.serverDate()
+        }
+      });
+    }
 
     return {
       success: true,
