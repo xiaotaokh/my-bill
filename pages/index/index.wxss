@@ -23,9 +23,9 @@ page {
   top: 0;
   left: 0;
   right: 0;
-  height: 500rpx;
+  height: 340rpx;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #9b72e8 100%);
-  border-radius: 0 0 50% 50% / 0 0 100rpx 100rpx;
+  border-radius: 0 0 50% 50% / 0 0 80rpx 80rpx;
   z-index: 0;
 }
 
