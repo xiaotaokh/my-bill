@@ -17,8 +17,15 @@
         <view class="weather-info" wx:if="{{!weatherLoading && weatherText}}">
           <text class="weather-icon">{{weatherIcon}}</text>
           <view class="weather-detail">
-            <text class="weather-temp">{{weatherTemp}}°C</text>
-            <text class="weather-text">{{weatherText}}</text>
+            <view class="weather-main">
+              <text class="weather-temp">{{weatherTemp}}°</text>
+              <text class="weather-text">{{weatherText}}</text>
+            </view>
+            <view class="weather-range" wx:if="{{weatherTempMax || weatherTempMin}}">
+              <text class="temp-max">{{weatherTempMax}}°</text>
+              <text class="temp-divider">/</text>
+              <text class="temp-min">{{weatherTempMin}}°</text>
+            </view>
           </view>
         </view>
       </view>

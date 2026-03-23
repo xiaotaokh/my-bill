@@ -20,6 +20,8 @@ Page({
     weatherText: '',
     weatherTemp: '',
     weatherIcon: '',
+    weatherTempMax: '',
+    weatherTempMin: '',
     weatherLoading: true,
 
     // 统计数据
@@ -144,11 +146,16 @@ Page({
 
   // 获取天气数据
   fetchWeather(latitude, longitude) {
-    // 和风天气免费API - 根据经纬度获取天气
-    const url = `https://nf2vhfmeu7.re.qweatherapi.com/v7/weather/now?location=${longitude},${latitude}&key=${WEATHER_API_KEY}`;
+    const location = `${longitude},${latitude}`;
+    const baseUrl = 'https://nf2vhfmeu7.re.qweatherapi.com';
 
+    // 同时请求实时天气和3天预报
+    const nowUrl = `${baseUrl}/v7/weather/now?location=${location}&key=${WEATHER_API_KEY}`;
+    const forecastUrl = `${baseUrl}/v7/weather/3d?location=${location}&key=${WEATHER_API_KEY}`;
+
+    // 请求实时天气
     wx.request({
-      url: url,
+      url: nowUrl,
       method: 'GET',
       success: (res) => {
         if (res.data && res.data.code === '200' && res.data.now) {
@@ -156,16 +163,36 @@ Page({
           this.setData({
             weatherText: now.text || '',
             weatherTemp: now.temp || '',
-            weatherIcon: this.getWeatherIcon(now.text),
+            weatherIcon: this.getWeatherIcon(now.text)
+          });
+        } else {
+          console.error('实时天气获取失败:', res.data);
+        }
+      },
+      fail: (err) => {
+        console.error('实时天气请求失败:', err);
+      }
+    });
+
+    // 请求天气预报（获取最高最低温度）
+    wx.request({
+      url: forecastUrl,
+      method: 'GET',
+      success: (res) => {
+        if (res.data && res.data.code === '200' && res.data.daily && res.data.daily[0]) {
+          const today = res.data.daily[0];
+          this.setData({
+            weatherTempMax: today.tempMax || '',
+            weatherTempMin: today.tempMin || '',
             weatherLoading: false
           });
         } else {
-          console.error('天气数据获取失败:', res.data);
+          console.error('天气预报获取失败:', res.data);
           this.setData({ weatherLoading: false });
         }
       },
       fail: (err) => {
-        console.error('天气请求失败:', err);
+        console.error('天气预报请求失败:', err);
         this.setData({ weatherLoading: false });
       }
     });
