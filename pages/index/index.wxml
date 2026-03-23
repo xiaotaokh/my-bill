@@ -13,6 +13,14 @@
           <text class="date-month">{{currentMonth}}月 {{currentYear}}</text>
           <text class="date-week">{{currentWeek}}</text>
         </view>
+        <!-- 天气显示 -->
+        <view class="weather-info" wx:if="{{!weatherLoading && weatherText}}">
+          <text class="weather-icon">{{weatherIcon}}</text>
+          <view class="weather-detail">
+            <text class="weather-temp">{{weatherTemp}}°C</text>
+            <text class="weather-text">{{weatherText}}</text>
+          </view>
+        </view>
       </view>
     </view>
 

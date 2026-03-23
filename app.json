@@ -11,6 +11,12 @@
     "navigationBarTitleText": "朝夕数计365",
     "navigationBarTextStyle": "black"
   },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "获取您的位置用于显示当地天气"
+    }
+  },
+  "requiredPrivateInfos": ["getLocation"],
   "style": "v2",
   "sitemapLocation": "sitemap.json",
   "cloud": true
