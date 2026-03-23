@@ -1406,6 +1406,45 @@ page {
   width: 70rpx;
 }
 
+/* 搜索框 */
+.batch-search-bar {
+  padding: 20rpx 24rpx 0;
+  margin-bottom: 16rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.batch-search-input-wrap {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 40rpx;
+  padding: 16rpx 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(255, 138, 101, 0.1);
+  gap: 16rpx;
+}
+
+.batch-search-icon {
+  font-size: 28rpx;
+  opacity: 0.6;
+}
+
+.batch-search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.batch-search-input::placeholder {
+  color: #bbb;
+}
+
+.batch-search-clear {
+  font-size: 28rpx;
+  color: #999;
+  padding: 8rpx;
+}
+
 /* 全选操作栏 */
 .batch-action-bar {
   display: flex;
@@ -1486,7 +1525,7 @@ page {
 
 /* 资产选择列表 */
 .batch-asset-list {
-  height: calc(100vh - 340rpx);
+  height: calc(100vh - 420rpx);
   position: relative;
   z-index: 1;
 }

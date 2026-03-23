@@ -80,9 +80,11 @@ Page({
     // 批量删除
     showBatchDelete: false,
     batchAssetList: [],
+    filteredBatchAssetList: [],
     selectedAssets: [],
     selectedTotalPrice: '0.00',
     isAllSelected: false,
+    batchSearchKeyword: '',
 
     // 状态
     isLoading: false,
@@ -491,11 +493,11 @@ Page({
 
   enterBatchDelete() {
     this.loadAllAssetsForBatch();
-    this.setData({ showSetting: false, showBatchDelete: true, selectedAssets: [], selectedTotalPrice: '0.00', isAllSelected: false });
+    this.setData({ showSetting: false, showBatchDelete: true, selectedAssets: [], selectedTotalPrice: '0.00', isAllSelected: false, batchSearchKeyword: '' });
   },
 
   exitBatchDelete() {
-    this.setData({ showBatchDelete: false, showSetting: true, selectedAssets: [], selectedTotalPrice: '0.00', isAllSelected: false, batchAssetList: [] });
+    this.setData({ showBatchDelete: false, showSetting: true, selectedAssets: [], selectedTotalPrice: '0.00', isAllSelected: false, batchAssetList: [], filteredBatchAssetList: [], batchSearchKeyword: '' });
   },
 
   async loadAllAssetsForBatch() {
@@ -525,7 +527,7 @@ Page({
         return { ...asset, displayIcon, _selected: false, dateRange };
       }));
 
-      this.setData({ batchAssetList: list, isAllSelected: false });
+      this.setData({ batchAssetList: list, filteredBatchAssetList: list, isAllSelected: false });
       wx.hideLoading();
     } catch (err) {
       console.error(err);
@@ -536,7 +538,7 @@ Page({
 
   toggleSelectAsset(e) {
     const id = e.currentTarget.dataset.id;
-    const { batchAssetList, selectedAssets } = this.data;
+    const { batchAssetList, filteredBatchAssetList, selectedAssets } = this.data;
     const newSelected = selectedAssets.includes(id)
       ? selectedAssets.filter(x => x !== id)
       : [...selectedAssets, id];
@@ -547,34 +549,96 @@ Page({
       .reduce((sum, a) => sum + (Number(a.price) || 0), 0)
       .toFixed(2);
 
+    const newBatchAssetList = batchAssetList.map(a => ({ ...a, _selected: newSelected.includes(a._id) }));
+    const newFilteredList = filteredBatchAssetList.map(a => ({ ...a, _selected: newSelected.includes(a._id) }));
+
     this.setData({
       selectedAssets: newSelected,
       selectedTotalPrice,
-      batchAssetList: batchAssetList.map(a => ({ ...a, _selected: newSelected.includes(a._id) })),
-      isAllSelected: newSelected.length === batchAssetList.length && batchAssetList.length > 0
+      batchAssetList: newBatchAssetList,
+      filteredBatchAssetList: newFilteredList,
+      isAllSelected: newSelected.length === newFilteredList.length && newFilteredList.length > 0
     });
   },
 
   toggleSelectAll() {
-    const { isAllSelected, batchAssetList } = this.data;
+    const { isAllSelected, batchAssetList, filteredBatchAssetList } = this.data;
     if (isAllSelected) {
+      // 取消全选：只取消过滤列表中的选中
+      const filteredIds = new Set(filteredBatchAssetList.map(a => a._id));
+      const newSelected = this.data.selectedAssets.filter(id => !filteredIds.has(id));
+
+      const newBatchAssetList = batchAssetList.map(a => ({
+        ...a,
+        _selected: newSelected.includes(a._id)
+      }));
+      const newFilteredList = filteredBatchAssetList.map(a => ({ ...a, _selected: false }));
+
       this.setData({
-        selectedAssets: [],
-        selectedTotalPrice: '0.00',
-        batchAssetList: batchAssetList.map(a => ({ ...a, _selected: false })),
+        selectedAssets: newSelected,
+        selectedTotalPrice: newSelected.length > 0
+          ? batchAssetList.filter(a => newSelected.includes(a._id))
+              .reduce((sum, a) => sum + (Number(a.price) || 0), 0).toFixed(2)
+          : '0.00',
+        batchAssetList: newBatchAssetList,
+        filteredBatchAssetList: newFilteredList,
         isAllSelected: false
       });
     } else {
+      // 全选：选中过滤列表中的所有
+      const filteredIds = new Set(filteredBatchAssetList.map(a => a._id));
+      const newSelected = [...new Set([...this.data.selectedAssets, ...filteredIds])];
+
       const selectedTotalPrice = batchAssetList
+        .filter(a => newSelected.includes(a._id))
         .reduce((sum, a) => sum + (Number(a.price) || 0), 0)
         .toFixed(2);
+
+      const newBatchAssetList = batchAssetList.map(a => ({
+        ...a,
+        _selected: newSelected.includes(a._id)
+      }));
+      const newFilteredList = filteredBatchAssetList.map(a => ({ ...a, _selected: true }));
+
       this.setData({
-        selectedAssets: batchAssetList.map(a => a._id),
+        selectedAssets: newSelected,
         selectedTotalPrice,
-        batchAssetList: batchAssetList.map(a => ({ ...a, _selected: true })),
+        batchAssetList: newBatchAssetList,
+        filteredBatchAssetList: newFilteredList,
         isAllSelected: true
       });
     }
+  },
+
+  onBatchSearchInput(e) {
+    const keyword = e.detail.value.trim().toLowerCase();
+    const { batchAssetList } = this.data;
+
+    let filteredList = batchAssetList;
+    if (keyword) {
+      filteredList = batchAssetList.filter(asset => {
+        const name = (asset.name || '').toLowerCase();
+        const category = (asset.category || '').toLowerCase();
+        return name.includes(keyword) || category.includes(keyword);
+      });
+    }
+
+    this.setData({
+      batchSearchKeyword: e.detail.value,
+      filteredBatchAssetList: filteredList,
+      isAllSelected: filteredList.length > 0 &&
+        filteredList.every(a => this.data.selectedAssets.includes(a._id))
+    });
+  },
+
+  clearBatchSearch() {
+    const { batchAssetList } = this.data;
+    this.setData({
+      batchSearchKeyword: '',
+      filteredBatchAssetList: batchAssetList,
+      isAllSelected: batchAssetList.length > 0 &&
+        batchAssetList.every(a => this.data.selectedAssets.includes(a._id))
+    });
   },
 
   confirmBatchDelete() {
@@ -593,7 +657,7 @@ Page({
   },
 
   executeBatchDelete() {
-    const { selectedAssets } = this.data;
+    const { selectedAssets, batchSearchKeyword } = this.data;
     wx.showLoading({ title: '删除中...', mask: true });
 
     wx.cloud.callFunction({
@@ -603,7 +667,25 @@ Page({
         wx.hideLoading();
         if (res.result?.success) {
           const remaining = this.data.batchAssetList.filter(a => !selectedAssets.includes(a._id));
-          this.setData({ batchAssetList: remaining, selectedAssets: [], selectedTotalPrice: '0.00', isAllSelected: false });
+
+          // 根据当前搜索关键词过滤剩余列表
+          let filteredRemaining = remaining;
+          if (batchSearchKeyword) {
+            const keyword = batchSearchKeyword.toLowerCase();
+            filteredRemaining = remaining.filter(asset => {
+              const name = (asset.name || '').toLowerCase();
+              const category = (asset.category || '').toLowerCase();
+              return name.includes(keyword) || category.includes(keyword);
+            });
+          }
+
+          this.setData({
+            batchAssetList: remaining,
+            filteredBatchAssetList: filteredRemaining,
+            selectedAssets: [],
+            selectedTotalPrice: '0.00',
+            isAllSelected: false
+          });
           wx.showToast({ title: `已删除 ${selectedAssets.length} 项`, icon: 'success' });
 
           if (remaining.length === 0) {

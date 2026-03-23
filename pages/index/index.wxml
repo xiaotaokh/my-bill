@@ -328,6 +328,21 @@
       <view class="batch-placeholder"></view>
     </view>
 
+    <!-- 搜索框 -->
+    <view class="batch-search-bar">
+      <view class="batch-search-input-wrap">
+        <text class="batch-search-icon">🔍</text>
+        <input
+          class="batch-search-input"
+          type="text"
+          placeholder="搜索资产名称或分类"
+          value="{{batchSearchKeyword}}"
+          bindinput="onBatchSearchInput"
+        />
+        <text wx:if="{{batchSearchKeyword}}" class="batch-search-clear" bindtap="clearBatchSearch">✕</text>
+      </view>
+    </view>
+
     <!-- 全选操作栏 -->
     <view class="batch-action-bar">
       <view class="select-all-btn {{isAllSelected ? 'selected' : ''}}" bindtap="toggleSelectAll">
@@ -337,7 +352,7 @@
         <text class="select-all-text">{{isAllSelected ? '取消全选' : '全选'}}</text>
       </view>
       <view class="filter-hint">
-        <text>共 {{batchAssetList.length}} 项资产</text>
+        <text>共 {{filteredBatchAssetList.length}} 项资产</text>
       </view>
     </view>
 
@@ -346,7 +361,7 @@
       <view class="batch-asset-grid">
         <view
           class="batch-asset-card {{item._selected ? 'selected' : ''}}"
-          wx:for="{{batchAssetList}}"
+          wx:for="{{filteredBatchAssetList}}"
           wx:key="_id"
           bindtap="toggleSelectAsset"
           data-id="{{item._id}}"
@@ -387,6 +402,17 @@
       </view>
 
       <!-- 空状态 -->
+      <view wx:if="{{filteredBatchAssetList.length === 0 && batchAssetList.length > 0}}" class="batch-empty">
+        <view class="empty-sun">
+          <view class="sun-face"></view>
+          <view class="sun-ray ray-1"></view>
+          <view class="sun-ray ray-2"></view>
+          <view class="sun-ray ray-3"></view>
+        </view>
+        <text class="empty-title">未找到匹配的资产</text>
+        <text class="empty-desc">换个关键词试试吧~</text>
+      </view>
+
       <view wx:if="{{batchAssetList.length === 0}}" class="batch-empty">
         <view class="empty-sun">
           <view class="sun-face"></view>
