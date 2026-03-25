@@ -167,7 +167,7 @@
       <!-- 提示信息 -->
       <view class="notice-tip" wx:if="{{isRetired || isSold}}">
         <text class="notice-icon">💡</text>
-        <text class="notice-text">已退役或已卖出的资产不计入总日均成本统计</text>
+        <text class="notice-text">已退役或已卖出的资产不计入总日均成本统计，关闭后默认开启计入总日均</text>
       </view>
       <view class="switch-list">
         <view class="switch-item">
