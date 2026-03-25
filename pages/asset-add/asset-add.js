@@ -700,18 +700,20 @@ Page({
     const checked = e.detail.value;
     const updates = { isRetired: checked };
 
-    // 如果打开已退役，设置默认退役日期为今天，并取消已卖出，同时自动开启不计入总日均
     if (checked) {
+      // 开启退役：，设置默认退役日期为今天，并取消已卖出，同时强制开启不计入总日均
       const today = new Date();
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const day = String(today.getDate()).padStart(2, '0');
       updates.retiredDate = `${year}-${month}-${day}`;
       updates.isSold = false;
-      updates.excludeDaily = true; // 自动开启不计入总日均
+      updates.soldDate = '';
+      updates.excludeDaily = true;
     } else {
-      // 关闭时清空退役日期
+      // 关闭退役：恢复计入总日均
       updates.retiredDate = '';
+      updates.excludeDaily = false;
     }
 
     this.setData(updates);
@@ -722,8 +724,8 @@ Page({
     const checked = e.detail.value;
     const updates = { isSold: checked };
 
-    // 如果打开已卖出，设置默认卖出日期为今天，并取消已退役，同时自动开启不计入总日均
     if (checked) {
+      // 开启卖出：设置默认卖出日期为今天，并取消已退役，同时强制开启不计入总日均
       const today = new Date();
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -731,10 +733,11 @@ Page({
       updates.soldDate = `${year}-${month}-${day}`;
       updates.isRetired = false;
       updates.retiredDate = '';
-      updates.excludeDaily = true; // 自动开启不计入总日均
+      updates.excludeDaily = true;
     } else {
-      // 关闭时清空卖出日期
+      // 关闭卖出：恢复计入总日均
       updates.soldDate = '';
+      updates.excludeDaily = false;
     }
 
     this.setData(updates);
