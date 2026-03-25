@@ -53,15 +53,15 @@ Page({
           { name: '音箱', icon: '🔊' },
           { name: '相机', icon: '📷' },
           { name: '镜头', icon: '🎥' },
-          { name: '投影仪', icon: '📽️' },
+          { name: '投影设备', icon: '📽️' },
           { name: '智能手表', icon: '⌚' },
           { name: '游戏机', icon: '🎮' },
+          { name: '游戏手柄', icon: '🕹️' },
+          { name: '游戏外设', icon: '🖥️' },
           { name: '存储设备', icon: '💾' },
           { name: '路由器', icon: '📡' },
-          { name: '充电器', icon: '🔌' },
-          { name: '充电宝', icon: '🔋' },
           { name: '充电设备', icon: '🔋' },
-          { name: '手机配件', icon: '🔌' },
+          { name: '手机配件', icon: '🧩' },
           { name: '智能家居设备', icon: '🏠' },
           { name: '无人机', icon: '🛸' },
           { name: 'VR/AR设备', icon: '🥽' }
@@ -75,7 +75,6 @@ Page({
           { name: '自行车', icon: '🚲' },
           { name: '电动车', icon: '🛵' },
           { name: '配件', icon: '🔧' },
-          { name: '骑行装备', icon: '🪖' },
           { name: '加油/充电费', icon: '⛽' },
           { name: '停车费', icon: '🅿️' },
           { name: '保养维修', icon: '🛠️' },
@@ -104,12 +103,20 @@ Page({
         name: '虚拟产品',
         icons: [
           { name: '视频会员', icon: '🎬' },
+          { name: '音乐会员', icon: '🎵' },
           { name: '云存储', icon: '☁️' },
           { name: '软件订阅', icon: '💿' },
-          { name: '游戏皮肤/点券', icon: '🎮' },
+          { name: 'AI工具订阅', icon: '🤖' },
+          { name: '游戏软件', icon: '🎮' },
+          { name: '游戏充值', icon: '💳' },
+          { name: '点卡', icon: '🎫' },
+          { name: '游戏皮肤/点券', icon: '🎁' },
           { name: '电子书', icon: '📚' },
           { name: '网课/知识', icon: '🎓' },
-          { name: '手机话费', icon: '💸' }
+          { name: '手机话费', icon: '💸' },
+          { name: '服务器', icon: '🖥️' },
+          { name: '域名/网站服务', icon: '🌐' },
+          { name: 'VPN/加速器', icon: '🚀' }
         ]
       },
       {
@@ -127,7 +134,6 @@ Page({
           { name: '文件柜', icon: '🗄️' },
           { name: '订书机', icon: '📎' },
           { name: '办公桌椅', icon: '🪑' },
-          { name: '投影设备', icon: '📽️' },
           { name: '便签纸', icon: '📝' }
         ]
       },
@@ -136,13 +142,24 @@ Page({
         icons: [
           { name: '健身器材', icon: '🏋️' },
           { name: '瑜伽垫', icon: '🧘' },
+          { name: '跑步装备', icon: '🏃' },
+          { name: '徒步装备', icon: '🥾' },
           { name: '球类装备', icon: '🏀' },
-          { name: '帐篷', icon: '⛺' },
-          { name: '睡袋', icon: '🛏️' },
+          { name: '骑行装备', icon: '🚴' },
+          { name: '游泳', icon: '🏊' },
+          { name: '冲浪/桨板', icon: '🏄' },
+          { name: '水上娱乐', icon: '🚤' },
           { name: '登山', icon: '🏔️' },
           { name: '滑雪装备', icon: '🎿' },
-          { name: '游泳', icon: '🏊' },
-          { name: '骑行', icon: '🚴' },
+          { name: '露营帐篷', icon: '⛺' },
+          { name: '露营睡袋', icon: '🛏️' },
+          { name: '露营家具', icon: '🪑' },
+          { name: '露营炊具', icon: '🍳' },
+          { name: '露营照明', icon: '🔦' },
+          { name: '户外电源', icon: '🔋' },
+          { name: '户外服饰', icon: '🧥' },
+          { name: '户外工具', icon: '🔧' },
+          { name: '户外安全', icon: '🛡️' },
           { name: '钓鱼', icon: '🎣' },
           { name: '筋膜枪', icon: '💆' }
         ]
@@ -153,6 +170,7 @@ Page({
           { name: '上衣', icon: '👕' },
           { name: '裤子', icon: '👖' },
           { name: '裙装', icon: '👗' },
+          { name: '外套', icon: '🧥' },
           { name: '鞋履', icon: '👟' },
           { name: '包袋', icon: '👜' },
           { name: '手表', icon: '⌚' },
@@ -163,11 +181,7 @@ Page({
           { name: '皮带', icon: '🎗️' },
           { name: '围巾', icon: '🧣' },
           { name: '帽子', icon: '🧢' },
-          { name: 'T恤', icon: '🎽' },
-          { name: '衬衫', icon: '👔' },
           { name: '领带', icon: '🎀' },
-          { name: '羽绒服', icon: '🧥' },
-          { name: '大衣', icon: '🧥' },
           { name: '手套', icon: '🧤' },
           { name: '双肩包', icon: '🎒' }
         ]
@@ -184,18 +198,7 @@ Page({
         ]
       },
       {
-        name: '游戏',
-        icons: [
-          { name: '游戏软件', icon: '🎮' },
-          { name: '游戏手柄', icon: '🕹️' },
-          { name: '游戏充值', icon: '💳' },
-          { name: '点卡', icon: '🎫' },
-          { name: '游戏外设', icon: '🖥️' },
-          { name: '桌游', icon: '🎲' }
-        ]
-      },
-      {
-        name: '户外旅行',
+        name: '旅行出行',
         icons: [
           { name: '票据', icon: '✈️' },
           { name: '酒店', icon: '🏨' },
@@ -253,7 +256,8 @@ Page({
           { name: '医疗体检', icon: '🏥' },
           { name: '宠物用品', icon: '🐾' },
           { name: '婚庆服务', icon: '💒' },
-          { name: '法律咨询费', icon: '⚖️' }
+          { name: '法律咨询费', icon: '⚖️' },
+          { name: '桌游', icon: '🎲' }
         ]
       }
     ],

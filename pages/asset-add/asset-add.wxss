@@ -417,7 +417,6 @@
 
 /* 图标分组容器 */
 .icon-groups-container {
-  max-height: 600rpx;
   overflow-y: auto;
   padding: 16rpx;
   background: rgba(255, 255, 255, 0.6);
