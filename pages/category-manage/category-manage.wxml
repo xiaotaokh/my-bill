@@ -70,14 +70,17 @@ module.exports = {
           </view>
           <view class="category-info">
             <text class="category-name">{{item.name}}</text>
-            <text class="category-date" wx:if="{{item.createdAt}}">{{utils.formatDate(item.createdAt)}}</text>
+            <view class="category-meta">
+              <text class="category-count-badge" wx:if="{{item.assetCount > 0}}">{{item.assetCount}}个资产</text>
+              <text class="category-date" wx:if="{{item.createdAt}}">{{utils.formatDate(item.createdAt)}}</text>
+            </view>
           </view>
         </view>
         <view class="card-actions">
           <view class="action-btn edit" catchtap="editCategory" data-index="{{index}}" data-id="{{item._id}}">
             <text>✏️</text>
           </view>
-          <view class="action-btn delete" catchtap="deleteCategory" data-index="{{index}}" data-id="{{item._id}}" wx:if="{{!isProtectedCategory(item.name)}}">
+          <view class="action-btn delete" catchtap="deleteCategory" data-index="{{index}}" data-id="{{item._id}}">
             <text>🗑️</text>
           </view>
         </view>
