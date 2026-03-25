@@ -252,6 +252,8 @@
 
   <!-- fixed 悬浮保存按钮 -->
   <view class="submit-bar">
-    <button class="submit-btn" bindtap="onSubmit">保存资产</button>
+    <view class="submit-btn" bindtap="onSubmit">
+      <text class="submit-text">保存资产</text>
+    </view>
   </view>
 </view>
