@@ -49,16 +49,16 @@ module.exports = {
         <text class="category-count">({{categories.length}})</text>
       </view>
       <view class="sort-group">
-        <view class="sort-pill {{currentSortIndex === -1 ? 'active' : ''}}" bindtap="resetToCustomSort">
-          <text>自定义</text>
+        <view class="sort-pill {{currentSortIndex === 1 ? 'active' : ''}}" bindtap="changeSortByTime">
+          <text>创建时间</text>
+          <text class="sort-arrow {{currentSortIndex === 1 && sortOrder === 'desc' ? 'desc' : ''}}">↑</text>
         </view>
         <view class="sort-pill {{currentSortIndex === 0 ? 'active' : ''}}" bindtap="changeSortByName">
           <text>名称</text>
           <text class="sort-arrow {{currentSortIndex === 0 && sortOrder === 'desc' ? 'desc' : ''}}">↑</text>
         </view>
-        <view class="sort-pill {{currentSortIndex === 1 ? 'active' : ''}}" bindtap="changeSortByTime">
-          <text>创建时间</text>
-          <text class="sort-arrow {{currentSortIndex === 1 && sortOrder === 'desc' ? 'desc' : ''}}">↑</text>
+        <view class="sort-pill {{currentSortIndex === -1 ? 'active' : ''}}" bindtap="resetToCustomSort">
+          <text>自定义</text>
         </view>
       </view>
     </view>
@@ -149,8 +149,8 @@ module.exports = {
 </view>
 
 <!-- 自定义弹窗 -->
-<view class="dialog-mask {{dialogVisible ? 'show' : ''}}" bindtap="closeDialog"></view>
-<view class="dialog-container {{dialogVisible ? 'show' : ''}}">
+<view class="dialog-mask {{dialogVisible ? 'show' : ''}}" wx:if="{{dialogVisible}}" bindtap="closeDialog"></view>
+<view class="dialog-container {{dialogVisible ? 'show' : ''}}" wx:if="{{dialogVisible}}">
   <view class="dialog-content">
     <!-- 标题 -->
     <view class="dialog-header">
@@ -255,8 +255,8 @@ module.exports = {
 </view>
 
 <!-- 分类详情弹窗 -->
-<view class="detail-mask {{detailVisible ? 'show' : ''}}" bindtap="closeDetailDialog"></view>
-<view class="detail-container {{detailVisible ? 'show' : ''}}">
+<view class="detail-mask {{detailVisible ? 'show' : ''}}" wx:if="{{detailVisible}}" bindtap="closeDetailDialog"></view>
+<view class="detail-container {{detailVisible ? 'show' : ''}}" wx:if="{{detailVisible}}">
   <view class="detail-content">
     <!-- 标题 -->
     <view class="detail-header">

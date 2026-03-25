@@ -6,8 +6,8 @@ Page({
     loading: false,
     // 排序相关
     sortOptions: ['名称', '创建时间'],
-    currentSortIndex: -1, // -1 表示自定义排序
-    sortOrder: 'asc', // 'asc' 或 'desc'
+    currentSortIndex: 1, // 默认按创建时间排序
+    sortOrder: 'desc', // 'asc' 或 'desc'，desc 表示最新创建的在最上面
     showSortOptions: false, // 是否显示排序方式选择
 
     // 批量操作相关

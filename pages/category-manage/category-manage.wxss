@@ -347,12 +347,16 @@ page {
   flex-direction: column;
   gap: 6rpx;
   flex: 1;
+  min-width: 0;
 }
 
 .category-name {
   font-size: 32rpx;
   font-weight: 600;
   color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .category-meta {
