@@ -22,34 +22,234 @@ Page({
     // 缩略图选择
     selectedIcon: '📦', // 用户选择的自定义缩略图（默认为📦）
     selectedIconName: '默认',
+    selectedGroupIndex: 0, // 选中的分组索引
+    selectedIconIndex: 0, // 选中的图标索引
     uploadedImagePath: '', // 用户上传的图片路径
-    builtinIcons: [  // 内置的常见资产图标
-      { name: '默认', icon: '📦' },  // 将默认图标放在第一位
-      { name: '手机', icon: '📱' },
-      { name: '电脑', icon: '💻' },
-      { name: '平板', icon: '🖥️' },  // 修复平板图标，使用显示器图标
-      { name: '相机', icon: '📷' },
-      { name: '手表', icon: '⌚' },
-      { name: '眼镜', icon: '👓' },
-      { name: '耳机', icon: '🎧' },
-      { name: '音响', icon: '🔊' },
-      { name: '车子', icon: '🚗' },
-      { name: '房子', icon: '🏠' },
-      { name: '钱包', icon: '👛' },  // 修复钱包图标
-      { name: '珠宝', icon: '💎' },
-      { name: '家电', icon: '📺' },
-      { name: '家具', icon: '🛋️' },  // 修复家具图标
-      { name: '衣物', icon: '👕' },
-      { name: '鞋', icon: '👟' },
-      { name: '包包', icon: '👜' },
-      { name: '书籍', icon: '📚' },
-      { name: '餐饮', icon: '🍔' },
-      { name: '饮品', icon: '🥤' },
-      { name: '药品', icon: '💊' },
-      { name: '健身', icon: '💪' },
-      { name: '乐器', icon: '🎸' },
-      { name: '游戏', icon: '🎮' }
+
+    // 内置图标分组数据
+    builtinIconGroups: [
+      {
+        name: '常用',
+        icons: [
+          { name: '默认', icon: '📦' },
+          { name: '手机', icon: '📱' },
+          { name: '电脑', icon: '💻' },
+          { name: '平板', icon: '📟' },
+          { name: '耳机', icon: '🎧' },
+          { name: '相机', icon: '📷' },
+          { name: '配件', icon: '🔧' },
+          { name: '首饰', icon: '💍' },
+          { name: '房子', icon: '🏠' },
+          { name: '车子', icon: '🚗' }
+        ]
+      },
+      {
+        name: '数码影音',
+        icons: [
+          { name: '手机', icon: '📱' },
+          { name: '电脑', icon: '💻' },
+          { name: '平板', icon: '📟' },
+          { name: '耳机', icon: '🎧' },
+          { name: '音箱', icon: '🔊' },
+          { name: '相机', icon: '📷' },
+          { name: '镜头', icon: '🎥' },
+          { name: '投影仪', icon: '📽️' },
+          { name: '智能手表', icon: '⌚' },
+          { name: '游戏机', icon: '🎮' },
+          { name: '存储设备', icon: '💾' },
+          { name: '路由器', icon: '📡' },
+          { name: '充电设备', icon: '🔋' },
+          { name: '手机配件', icon: '🔌' },
+          { name: '智能家居设备', icon: '🏠' },
+          { name: '无人机', icon: '🛸' },
+          { name: 'VR/AR设备', icon: '🥽' }
+        ]
+      },
+      {
+        name: '交通工具',
+        icons: [
+          { name: '汽车', icon: '🚗' },
+          { name: '摩托车', icon: '🏍️' },
+          { name: '自行车', icon: '🚲' },
+          { name: '电动车', icon: '🛵' },
+          { name: '配件', icon: '🔧' },
+          { name: '骑行装备', icon: '🪖' },
+          { name: '加油/充电费', icon: '⛽' },
+          { name: '停车费', icon: '🅿️' },
+          { name: '保养维修', icon: '🛠️' },
+          { name: '洗车', icon: '🚿' }
+        ]
+      },
+      {
+        name: '家居生活',
+        icons: [
+          { name: '家具', icon: '🛋️' },
+          { name: '家电', icon: '🧊' },
+          { name: '家纺', icon: '🛏️' },
+          { name: '厨具', icon: '🍳' },
+          { name: '餐具', icon: '🍴' },
+          { name: '清洁用品', icon: '🧹' },
+          { name: '收纳用品', icon: '🗂️' },
+          { name: '装饰品', icon: '🖼️' },
+          { name: '灯具', icon: '💡' },
+          { name: '维修工具', icon: '🛠️' }
+        ]
+      },
+      {
+        name: '虚拟产品',
+        icons: [
+          { name: '视频会员', icon: '🎬' },
+          { name: '云存储', icon: '☁️' },
+          { name: '软件订阅', icon: '💿' },
+          { name: '游戏皮肤/点券', icon: '🎮' },
+          { name: '电子书', icon: '📚' },
+          { name: '网课/知识', icon: '🎓' },
+          { name: '手机话费', icon: '💸' }
+        ]
+      },
+      {
+        name: '办公用品',
+        icons: [
+          { name: '电脑配件', icon: '🖥️' },
+          { name: '显示器', icon: '📺' },
+          { name: '打印机', icon: '🖨️' },
+          { name: '纸张', icon: '📄' },
+          { name: '笔', icon: '🖊️' },
+          { name: '文件柜', icon: '🗄️' },
+          { name: '订书机', icon: '📎' },
+          { name: '办公桌椅', icon: '🪑' },
+          { name: '投影设备', icon: '📽️' },
+          { name: '便签纸', icon: '📝' }
+        ]
+      },
+      {
+        name: '户外运动',
+        icons: [
+          { name: '健身器材', icon: '🏋️' },
+          { name: '瑜伽垫', icon: '🧘' },
+          { name: '球类装备', icon: '🏀' },
+          { name: '帐篷', icon: '⛺' },
+          { name: '睡袋', icon: '🛏️' },
+          { name: '登山', icon: '🏔️' },
+          { name: '滑雪装备', icon: '🎿' },
+          { name: '游泳', icon: '🏊' },
+          { name: '骑行', icon: '🚴' },
+          { name: '钓鱼', icon: '🎣' },
+          { name: '筋膜枪', icon: '💆' }
+        ]
+      },
+      {
+        name: '服饰珠宝',
+        icons: [
+          { name: '上衣', icon: '👕' },
+          { name: '裤子', icon: '👖' },
+          { name: '裙装', icon: '👗' },
+          { name: '鞋履', icon: '👟' },
+          { name: '包袋', icon: '👜' },
+          { name: '手表', icon: '⌚' },
+          { name: '项链', icon: '📿' },
+          { name: '手链', icon: '⛓️' },
+          { name: '戒指', icon: '💍' },
+          { name: '耳环', icon: '💎' },
+          { name: '皮带', icon: '🎗️' },
+          { name: '围巾', icon: '🧣' },
+          { name: '帽子', icon: '🧢' },
+          { name: 'T恤', icon: '🎽' },
+          { name: '衬衫', icon: '👔' },
+          { name: '领带', icon: '🎀' },
+          { name: '羽绒服', icon: '🧥' },
+          { name: '大衣', icon: '🧥' },
+          { name: '手套', icon: '🧤' },
+          { name: '双肩包', icon: '🎒' }
+        ]
+      },
+      {
+        name: '收藏投资',
+        icons: [
+          { name: '纪念币', icon: '🪙' },
+          { name: '邮票', icon: '✉️' },
+          { name: '文玩', icon: '🏺' },
+          { name: '古董字画', icon: '🖼️' },
+          { name: '名酒', icon: '🍷' },
+          { name: '手办', icon: '🎎' }
+        ]
+      },
+      {
+        name: '游戏',
+        icons: [
+          { name: '游戏软件', icon: '🎮' },
+          { name: '游戏手柄', icon: '🕹️' },
+          { name: '游戏充值', icon: '💳' },
+          { name: '点卡', icon: '🎫' },
+          { name: '游戏外设', icon: '🖥️' },
+          { name: '桌游', icon: '🎲' }
+        ]
+      },
+      {
+        name: '户外旅行',
+        icons: [
+          { name: '票据', icon: '✈️' },
+          { name: '酒店', icon: '🏨' },
+          { name: '车费', icon: '🚕' },
+          { name: '团费', icon: '👥' },
+          { name: '签证', icon: '🛂' },
+          { name: '行李箱', icon: '🧳' },
+          { name: '纪念品', icon: '🎁' }
+        ]
+      },
+      {
+        name: '工作',
+        icons: [
+          { name: '职业技能培训', icon: '🎓' },
+          { name: '商务应酬', icon: '🥂' },
+          { name: '交通补贴', icon: '🚗' },
+          { name: '办公耗材', icon: '📋' },
+          { name: '相关书籍', icon: '📖' }
+        ]
+      },
+      {
+        name: '日常消耗',
+        icons: [
+          { name: '餐饮', icon: '🍽️' },
+          { name: '生鲜果蔬', icon: '🥬' },
+          { name: '零食饮料', icon: '🍿' },
+          { name: '日用品', icon: '🧴' },
+          { name: '水电燃气费', icon: '💡' },
+          { name: '物业费', icon: '🏢' },
+          { name: '药品', icon: '💊' },
+          { name: '母婴用品', icon: '🍼' }
+        ]
+      },
+      {
+        name: '金融资产',
+        icons: [
+          { name: '股票', icon: '📈' },
+          { name: '基金', icon: '📊' },
+          { name: '债券', icon: '📜' },
+          { name: '黄金/贵金属', icon: '🥇' },
+          { name: '银行存款', icon: '🏦' },
+          { name: '理财产品', icon: '💰' },
+          { name: '保险', icon: '🛡️' },
+          { name: '数字货币', icon: '₿' },
+          { name: '信托', icon: '🔐' }
+        ]
+      },
+      {
+        name: '其他',
+        icons: [
+          { name: '礼金/红包', icon: '🧧' },
+          { name: '捐赠', icon: '🎁' },
+          { name: '罚款', icon: '💸' },
+          { name: '医疗体检', icon: '🏥' },
+          { name: '宠物用品', icon: '🐾' },
+          { name: '婚庆服务', icon: '💒' },
+          { name: '法律咨询费', icon: '⚖️' }
+        ]
+      }
     ],
+
+    // 当前展开的分组索引
+    expandedGroupIndex: 0,  // 默认展开第一个分组（常用）
 
     // 类别 - 初始为空，从数据库加载
     categories: [],
@@ -130,10 +330,7 @@ Page({
               // emoji 图标
               selectedIcon = asset.icon;
               // 查找对应的图标名称
-              const builtinIcon = this.data.builtinIcons.find(item => item.icon === asset.icon);
-              if (builtinIcon) {
-                selectedIconName = builtinIcon.name;
-              }
+              selectedIconName = this.findIconNameByValue(asset.icon);
             }
           }
 
@@ -264,26 +461,48 @@ Page({
 
   // 移除已上传的图片
   removeUploadedImage() {
-    // 删除上传图片后，默认选中第一个内置图标（默认图标）
+    // 删除上传图片后，清空选中状态
     this.setData({
       uploadedImagePath: '',
-      selectedIcon: this.data.builtinIcons[0].icon, // 默认选中第一个内置图标
-      selectedIconName: this.data.builtinIcons[0].name
+      selectedIcon: '📦',
+      selectedIconName: '默认'
     });
   },
 
   selectBuiltinIcon(e) {
     const icon = e.currentTarget.dataset.icon;
+    const groupIdx = e.currentTarget.dataset.groupIdx;
+    const iconIdx = e.currentTarget.dataset.iconIdx;
     this.setData({
       selectedIcon: icon.icon,
       selectedIconName: icon.name,
+      selectedGroupIndex: groupIdx,
+      selectedIconIndex: iconIdx,
       uploadedImagePath: '' // 清空之前上传的图片
     });
-    // 移除提示信息
-    // wx.showToast({
-    //   title: `已选择${icon.name}`,
-    //   icon: 'success'
-    // });
+  },
+
+  // 切换分组展开/收起
+  toggleGroup(e) {
+    const index = parseInt(e.currentTarget.dataset.index);
+    if (this.data.expandedGroupIndex === index) {
+      // 如果点击的是已展开的分组，则收起
+      this.setData({ expandedGroupIndex: -1 });
+    } else {
+      // 否则展开该分组
+      this.setData({ expandedGroupIndex: index });
+    }
+  },
+
+  // 根据图标查找对应的名称（用于编辑模式回显）
+  findIconNameByValue(iconValue) {
+    for (const group of this.data.builtinIconGroups) {
+      const found = group.icons.find(item => item.icon === iconValue);
+      if (found) {
+        return found.name;
+      }
+    }
+    return '默认';
   },
 
   // 选择自定义图标

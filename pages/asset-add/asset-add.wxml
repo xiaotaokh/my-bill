@@ -65,11 +65,24 @@
         <text class="form-title">选择缩略图</text>
       </view>
       <view class="icon-selector">
-        <!-- 内置图标选择行 -->
-        <view class="builtin-icons-row">
-          <view class="builtin-icon-item {{selectedIcon === item.icon ? 'selected' : ''}}" wx:for="{{builtinIcons}}" wx:key="index" bindtap="selectBuiltinIcon" data-icon="{{item}}">
-            <text class="builtin-icon">{{item.icon}}</text>
-            <text class="builtin-icon-name">{{item.name}}</text>
+        <!-- 内置图标分组选择 -->
+        <view class="icon-groups-container">
+          <view wx:for="{{builtinIconGroups}}" wx:key="name" wx:for-item="group" wx:for-index="idx">
+            <!-- 分组标题 -->
+            <view class="group-title {{idx === 0 ? 'first' : ''}}">{{group.name}}</view>
+            <!-- 分组图标列表 -->
+            <view class="group-icons">
+              <view class="group-icon-item {{selectedGroupIndex === idx && selectedIconIndex === index ? 'selected' : ''}}"
+                    wx:for="{{group.icons}}"
+                    wx:key="name"
+                    bindtap="selectBuiltinIcon"
+                    data-icon="{{item}}"
+                    data-group-idx="{{idx}}"
+                    data-icon-idx="{{index}}">
+                <text class="icon-emoji">{{item.icon}}</text>
+                <text class="icon-name">{{item.name}}</text>
+              </view>
+            </view>
           </view>
         </view>
 
@@ -80,7 +93,7 @@
           <text class="upload-desc-large">支持jpg/png/webp/svg格式，不超过2M</text>
         </view>
 
-        <!-- 用户上传的缩略图预览区域（显示在上传组件下方） -->
+        <!-- 用户上传的缩略图预览区域 -->
         <view class="uploaded-preview-area" wx:if="{{uploadedImagePath}}">
           <view class="image-container">
             <image class="uploaded-preview-image" src="{{uploadedImagePath}}" mode="aspectFill"></image>
