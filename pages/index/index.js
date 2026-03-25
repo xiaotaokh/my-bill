@@ -71,6 +71,15 @@ Page({
     reportCategoryStats: [],
     reportColors: ['#667eea', '#764ba2', '#9b72e8', '#f472b6', '#fb923c', '#34d399', '#60a5fa', '#a78bfa', '#fbbf24', '#38bdf8'],
 
+    // 状态统计
+    reportActiveCount: 0,
+    reportActivePrice: 0,
+    reportRetiredCount: 0,
+    reportRetiredPrice: 0,
+    reportSoldCount: 0,
+    reportSoldPrice: 0,
+    reportDailyCost: 0,
+
     // 图表配置 - 使用延迟加载
     pieEc: { lazyLoad: true },
     lineEc: { lazyLoad: true },
@@ -823,6 +832,12 @@ Page({
       let includedCount = 0; // 计入总资产的资产数
       let excludedCount = 0; // 不计入总资产的资产数
 
+      // 状态统计
+      let activeCount = 0, activePrice = 0;
+      let retiredCount = 0, retiredPrice = 0;
+      let soldCount = 0, soldPrice = 0;
+      let dailyCostTotal = 0; // 日均成本（全部资产）
+
       // 先初始化所有分类
       const categoryList = this.data.categoryList || [];
       categoryList.forEach(c => {
@@ -830,26 +845,48 @@ Page({
         categoryAssetsMap[c.name] = [];
       });
 
-      assets.forEach(a => {
-        const cat = a.category || '未分类';
-        const price = Number(a.price) || 0;
+      // 使用 calculateAssetFields 处理每个资产，复用首页的计算逻辑
+      const enrichedAssets = assets.map(a => this.calculateAssetFields(a));
+
+      enrichedAssets.forEach(asset => {
+        const cat = asset.category || '未分类';
+        const price = Number(asset.price) || 0;
         if (!categoryMap[cat]) {
           categoryMap[cat] = { name: cat, total: 0, count: 0, icon: '', displayIcon: '' };
           categoryAssetsMap[cat] = [];
         }
         categoryMap[cat].total += price;
         categoryMap[cat].count++;
-        categoryAssetsMap[cat].push({ name: a.name, price: price });
+        categoryAssetsMap[cat].push({ name: asset.name, price: price });
 
         // 总资产 = 所有资产金额总和
         totalPrice += price;
 
         // 统计不计入总资产的金额
-        if (a.excludeTotal === true || a.excludeTotal === 'true') {
+        if (asset.excludeTotal === true || asset.excludeTotal === 'true') {
           excludedPrice += price;
           excludedCount++;
         } else {
           includedCount++;
+        }
+
+        // 计算日均成本（全部资产）- 复用首页逻辑
+        if (asset.status === 'active' && asset.dailyCost) {
+          dailyCostTotal += parseFloat(asset.dailyCost);
+        } else if ((asset.status === 'retired' || asset.status === 'sold') && asset.dailyEquivalent) {
+          dailyCostTotal += parseFloat(asset.dailyEquivalent);
+        }
+
+        // 状态统计
+        if (asset.status === 'active') {
+          activeCount++;
+          activePrice += price;
+        } else if (asset.status === 'retired') {
+          retiredCount++;
+          retiredPrice += price;
+        } else if (asset.status === 'sold') {
+          soldCount++;
+          soldPrice += price;
         }
       });
 
@@ -869,7 +906,15 @@ Page({
         reportCategoryStats,
         reportCategoryAssetsMap: categoryAssetsMap,
         pieCenterText: '¥' + totalPrice.toFixed(2),
-        pieCenterSubText: '总资产'
+        pieCenterSubText: '总资产',
+        // 状态统计
+        reportActiveCount: activeCount,
+        reportActivePrice: activePrice.toFixed(2),
+        reportRetiredCount: retiredCount,
+        reportRetiredPrice: retiredPrice.toFixed(2),
+        reportSoldCount: soldCount,
+        reportSoldPrice: soldPrice.toFixed(2),
+        reportDailyCost: dailyCostTotal.toFixed(2)
       });
 
       if (assets.length > 0) {

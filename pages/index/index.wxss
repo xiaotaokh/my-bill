@@ -2135,8 +2135,8 @@ page {
   z-index: 1;
 }
 
-/* 统计概览卡片 - 主打大数字设计 */
-.report-stats-card {
+/* 资产概览卡片 */
+.report-overview {
   background: rgba(255, 255, 255, 0.98);
   border-radius: 28rpx;
   padding: 24rpx;
@@ -2207,138 +2207,147 @@ page {
 }
 
 /* 次要数据网格 */
-.sub-stats-grid {
+.overview-grid {
   display: flex;
-  gap: 10rpx;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
 }
 
-.sub-stat-item {
+.overview-grid:last-of-type {
+  margin-bottom: 24rpx;
+}
+
+.overview-item {
   flex: 1;
-  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
   padding: 16rpx 12rpx;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 16rpx;
+}
+
+.overview-item.daily {
+  background: linear-gradient(135deg, rgba(102, 234, 164, 0.1), rgba(56, 178, 172, 0.08));
+}
+
+.overview-item.exclude {
+  background: rgba(156, 163, 175, 0.1);
+}
+
+.overview-icon {
+  font-size: 32rpx;
+}
+
+.overview-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8rpx;
-  transition: all 0.25s ease;
 }
 
-.sub-stat-item:active {
-  transform: scale(0.97);
-}
-
-/* 资产总数 - 薄荷绿 */
-.sub-stat-item:nth-child(1) {
-  background: linear-gradient(135deg, #E8FDF5 0%, #D1FAE5 100%);
-  border: 1rpx solid rgba(16, 185, 129, 0.15);
-}
-
-.sub-stat-item:nth-child(1) .sub-stat-icon {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-  width: 44rpx;
-  height: 44rpx;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24rpx;
-  flex-shrink: 0;
-}
-
-.sub-stat-item:nth-child(1) .sub-stat-value {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* 分类 - 靛蓝紫 */
-.sub-stat-item:nth-child(2) {
-  background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
-  border: 1rpx solid rgba(99, 102, 241, 0.15);
-}
-
-.sub-stat-item:nth-child(2) .sub-stat-icon {
-  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
-  width: 44rpx;
-  height: 44rpx;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24rpx;
-  flex-shrink: 0;
-}
-
-.sub-stat-item:nth-child(2) .sub-stat-value {
-  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.sub-stat-icon {
-  font-size: 28rpx;
-  flex-shrink: 0;
-}
-
-.sub-stat-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4rpx;
-  min-width: 0;
-}
-
-.sub-stat-value {
+.overview-value {
   font-size: 28rpx;
   font-weight: 700;
-  line-height: 1.2;
+  color: #333;
 }
 
-.sub-stat-unit {
-  font-size: 16rpx;
+.overview-unit {
+  font-size: 20rpx;
   font-weight: 500;
-  color: #9ca3af;
+  color: #888;
   margin-left: 2rpx;
 }
 
-.sub-stat-label {
-  font-size: 18rpx;
-  color: #6B7280;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.overview-label {
+  font-size: 22rpx;
+  color: #888;
 }
 
-/* 不计入 - 玫红色 */
-.sub-stat-item.excluded {
-  background: linear-gradient(135deg, #FFF1F2 0%, #FECDD3 100%);
-  border: 1rpx solid rgba(244, 63, 94, 0.15);
-}
-
-.sub-stat-item.excluded .sub-stat-icon {
-  background: linear-gradient(135deg, #FDA4AF 0%, #FB7185 100%);
-  width: 44rpx;
-  height: 44rpx;
-  border-radius: 12rpx;
+/* 资产状态分隔线 */
+.overview-divider {
   display: flex;
   align-items: center;
-  justify-content: center;
+  margin-bottom: 16rpx;
+}
+
+.overview-divider::before,
+.overview-divider::after {
+  content: '';
+  flex: 1;
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.2), transparent);
+}
+
+.overview-divider-text {
   font-size: 24rpx;
-  flex-shrink: 0;
+  color: #888;
+  padding: 0 20rpx;
 }
 
-.sub-stat-item.excluded .sub-stat-value {
-  background: linear-gradient(135deg, #F43F5E 0%, #E11D48 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* 资产状态网格 */
+.status-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 12rpx;
 }
 
-.sub-stat-item.excluded .sub-stat-label {
-  color: #F43F5E;
+.status-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 12rpx;
+  border-radius: 16rpx;
+  background: rgba(245, 247, 250, 0.8);
+  transition: all 0.3s ease;
+}
+
+.status-item.active {
+  background: linear-gradient(135deg, rgba(102, 234, 164, 0.15), rgba(56, 178, 172, 0.1));
+}
+
+.status-item.retired {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.1));
+}
+
+.status-item.sold {
+  background: linear-gradient(135deg, rgba(255, 183, 77, 0.15), rgba(255, 138, 101, 0.1));
+}
+
+.status-icon {
+  font-size: 36rpx;
+  margin-bottom: 8rpx;
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.status-count {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #333;
+}
+
+.status-unit {
+  font-size: 20rpx;
+  font-weight: 500;
+  color: #888;
+  margin-left: 2rpx;
+}
+
+.status-label {
+  font-size: 22rpx;
+  color: #888;
+  margin-top: 4rpx;
+}
+
+.status-price {
+  font-size: 22rpx;
+  color: #666;
+  margin-top: 8rpx;
 }
 
 /* 图表区域 - 简洁清爽 */

@@ -494,12 +494,18 @@
 
     <!-- 统计内容 -->
     <view wx:else class="report-content">
-      <!-- 统计概览 - 主打大数字设计 -->
-      <view class="report-stats-card">
+      <!-- 资产概览卡片 -->
+      <view class="report-overview">
+        <!-- 概览标题 -->
+        <view class="section-header">
+          <text class="section-title">资产概览</text>
+          <image class="section-icon-svg" src="/images/overview.svg" mode="aspectFit"></image>
+        </view>
+
         <!-- 主资产卡片 - 视觉焦点 -->
         <view class="main-asset-card">
           <view class="main-asset-header">
-            <text class="main-asset-label">总资产</text>
+            <text class="main-asset-label">全部资产</text>
             <view class="main-asset-badge">{{reportTotalAssets}}件</view>
           </view>
           <view class="main-asset-value">¥{{reportTotalPrice}}</view>
@@ -507,27 +513,71 @@
         </view>
 
         <!-- 次要数据网格 -->
-        <view class="sub-stats-grid">
-          <view class="sub-stat-item">
-            <view class="sub-stat-icon">📦</view>
-            <view class="sub-stat-info">
-              <text class="sub-stat-value">{{reportTotalAssets}}<text class="sub-stat-unit">件</text></text>
-              <text class="sub-stat-label">资产总数</text>
+        <view class="overview-grid">
+          <view class="overview-item">
+            <view class="overview-icon">📦</view>
+            <view class="overview-info">
+              <view class="overview-value">{{reportTotalAssets}}<text class="overview-unit">件</text></view>
+              <view class="overview-label">资产总数</view>
             </view>
           </view>
-          <view class="sub-stat-item">
-            <view class="sub-stat-icon">🏷️</view>
-            <view class="sub-stat-info">
-              <text class="sub-stat-value">{{reportCategoryStats.length}}<text class="sub-stat-unit">个</text></text>
-              <text class="sub-stat-label">分类</text>
+          <view class="overview-item">
+            <view class="overview-icon">🏷️</view>
+            <view class="overview-info">
+              <view class="overview-value">{{reportCategoryStats.length}}<text class="overview-unit">个</text></view>
+              <view class="overview-label">分类</view>
             </view>
           </view>
-          <view class="sub-stat-item excluded">
-            <view class="sub-stat-icon">🔒</view>
-            <view class="sub-stat-info">
-              <text class="sub-stat-value">¥{{reportExcludedPrice}}</text>
-              <text class="sub-stat-label">不计入 ({{reportExcludedCount}}件)</text>
+        </view>
+
+        <!-- 日均成本和不计入 -->
+        <view class="overview-grid">
+          <view class="overview-item daily">
+            <view class="overview-icon">📊</view>
+            <view class="overview-info">
+              <view class="overview-value">¥{{reportDailyCost}}<text class="overview-unit">/天</text></view>
+              <view class="overview-label">日均成本(全部资产)</view>
             </view>
+          </view>
+          <view class="overview-item exclude">
+            <view class="overview-icon">🔒</view>
+            <view class="overview-info">
+              <view class="overview-value">¥{{reportExcludedPrice}}</view>
+              <view class="overview-label">不计入总资产 ({{reportExcludedCount}}件)</view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 资产状态分隔线 -->
+        <view class="overview-divider">
+          <text class="overview-divider-text">资产状态</text>
+        </view>
+
+        <!-- 资产状态网格 -->
+        <view class="status-grid">
+          <view class="status-item active">
+            <view class="status-icon">🚀</view>
+            <view class="status-info">
+              <view class="status-count">{{reportActiveCount}}<text class="status-unit">件</text></view>
+              <view class="status-label">服役中</view>
+            </view>
+            <view class="status-price">¥{{reportActivePrice}}</view>
+          </view>
+          <view class="status-item retired">
+            <view class="status-icon">🏠</view>
+            <view class="status-info">
+              <view class="status-count">{{reportRetiredCount}}<text class="status-unit">件</text></view>
+              <view class="status-label">已退役</view>
+            </view>
+            <view class="status-price">¥{{reportRetiredPrice}}</view>
+          </view>
+          <view class="status-item sold">
+            <view class="status-icon">💰</view>
+            <view class="status-info">
+              <view class="status-count">{{reportSoldCount}}<text class="status-unit">件</text></view>
+              <view class="status-label">已卖出</view>
+            </view>
+            <view class="status-price">¥{{reportSoldPrice}}</view>
           </view>
         </view>
       </view>
@@ -560,7 +610,7 @@
       <!-- 折线图 -->
       <view class="report-chart-section">
         <view class="section-header">
-          <text class="section-title">资产时间线</text>
+          <text class="section-title">购买趋势</text>
           <image class="section-icon-svg" src="/images/line-chart.svg" mode="aspectFit"></image>
         </view>
         <view class="chart-wrapper" style="height: 500rpx;">
@@ -571,7 +621,7 @@
       <!-- 时间段资产统计 -->
       <view class="report-chart-section">
         <view class="section-header">
-          <text class="section-title">资产时间段</text>
+          <text class="section-title">时段分布</text>
           <image class="section-icon-svg" src="/images/bar-chart.svg" mode="aspectFit"></image>
         </view>
 
