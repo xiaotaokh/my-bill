@@ -34,6 +34,10 @@ module.exports = {
       <text class="header-title">分类管理</text>
       <text class="header-subtitle">整理你的资产分类</text>
     </view>
+    <!-- 批量操作按钮 -->
+    <view class="batch-toggle-btn" bindtap="toggleBatchMode">
+      <text>{{batchMode ? '取消' : '批量管理'}}</text>
+    </view>
   </view>
 
   <!-- 分类列表 -->
@@ -45,6 +49,9 @@ module.exports = {
         <text class="category-count">({{categories.length}})</text>
       </view>
       <view class="sort-group">
+        <view class="sort-pill {{currentSortIndex === -1 ? 'active' : ''}}" bindtap="resetToCustomSort">
+          <text>自定义</text>
+        </view>
         <view class="sort-pill {{currentSortIndex === 0 ? 'active' : ''}}" bindtap="changeSortByName">
           <text>名称</text>
           <text class="sort-arrow {{currentSortIndex === 0 && sortOrder === 'desc' ? 'desc' : ''}}">↑</text>
@@ -58,11 +65,17 @@ module.exports = {
 
     <view class="category-grid">
       <view
-        class="category-card"
+        class="category-card {{item._selected ? 'selected' : ''}} {{batchMode && item.assetCount > 0 ? 'disabled' : ''}}"
         wx:for="{{categories}}"
         wx:key="_id"
         style="--delay: {{index * 0.05}}s"
+        bindtap="{{batchMode && !item.assetCount ? 'toggleCategorySelection' : ''}}"
+        data-id="{{item._id}}"
+        data-index="{{index}}"
       >
+        <!-- 左上角资产数量标记 -->
+        <view class="asset-count-tag" wx:if="{{item.assetCount > 0}}">{{item.assetCount}}</view>
+
         <view class="card-content">
           <view class="category-icon-wrap">
             <image wx:if="{{item.displayIcon}}" src="{{item.displayIcon}}" mode="aspectFit" class="category-icon-img"></image>
@@ -70,18 +83,31 @@ module.exports = {
           </view>
           <view class="category-info">
             <text class="category-name">{{item.name}}</text>
-            <view class="category-meta">
-              <text class="category-count-badge" wx:if="{{item.assetCount > 0}}">{{item.assetCount}}个资产</text>
-              <text class="category-date" wx:if="{{item.createdAt}}">{{utils.formatDate(item.createdAt)}}</text>
-            </view>
+            <text class="category-date" wx:if="{{item.createdAt}}">{{utils.formatDate(item.createdAt)}}</text>
           </view>
         </view>
-        <view class="card-actions">
+        <view class="card-actions" wx:if="{{!batchMode}}">
+          <view class="action-btn info" catchtap="showCategoryDetail" data-index="{{index}}" data-id="{{item._id}}">
+            <text>📋</text>
+          </view>
+          <view class="action-btn move" catchtap="moveUpCategory" data-index="{{index}}" wx:if="{{index > 0}}">
+            <text>↑</text>
+          </view>
+          <view class="action-btn move" catchtap="moveDownCategory" data-index="{{index}}" wx:if="{{index < categories.length - 1}}">
+            <text>↓</text>
+          </view>
           <view class="action-btn edit" catchtap="editCategory" data-index="{{index}}" data-id="{{item._id}}">
             <text>✏️</text>
           </view>
           <view class="action-btn delete" catchtap="deleteCategory" data-index="{{index}}" data-id="{{item._id}}">
             <text>🗑️</text>
+          </view>
+        </view>
+
+        <!-- 批量选择指示器 -->
+        <view class="selection-indicator" wx:if="{{batchMode}}">
+          <view class="checkbox {{item._selected ? 'checked' : ''}} {{item.assetCount > 0 ? 'disabled' : ''}}">
+            <text wx:if="{{item._selected}}">✓</text>
           </view>
         </view>
       </view>
@@ -99,7 +125,19 @@ module.exports = {
 
   <!-- 添加分类按钮 -->
   <view class="add-category-section">
-    <view class="add-btn-wrap">
+    <!-- 批量操作模式 -->
+    <view class="batch-actions" wx:if="{{batchMode}}">
+      <view class="batch-action-btn select-all" bindtap="toggleSelectAll">
+        <text class="batch-icon">☑️</text>
+        <text class="batch-text">{{selectedCategoryIds.length > 0 ? '取消全选' : '全选'}}</text>
+      </view>
+      <view class="batch-action-btn delete {{selectedCategoryIds.length > 0 ? 'active' : ''}}" bindtap="batchDeleteCategories">
+        <text class="batch-icon">🗑️</text>
+        <text class="batch-text">删除{{selectedCategoryIds.length > 0 ? ' (' + selectedCategoryIds.length + ')' : ''}}</text>
+      </view>
+    </view>
+    <!-- 正常模式 -->
+    <view class="add-btn-wrap" wx:else>
       <view class="add-btn" bindtap="addCategory">
         <view class="add-btn-inner">
           <text class="add-icon">+</text>
@@ -138,7 +176,25 @@ module.exports = {
             placeholder="请输入分类名称"
             value="{{tempCategoryName}}"
             bindinput="onCategoryNameInput"
-            maxlength="20"
+            maxlength="10"
+          />
+        </view>
+      </view>
+
+      <!-- 分类描述输入 -->
+      <view class="form-item">
+        <view class="item-label">
+          <text class="label-icon">📋</text>
+          <text>分类描述</text>
+        </view>
+        <view class="input-wrap">
+          <textarea
+            class="item-textarea"
+            placeholder="请输入分类描述（可选）"
+            value="{{tempDescription}}"
+            bindinput="onDescriptionInput"
+            maxlength="120"
+            auto-height
           />
         </view>
       </view>
@@ -193,6 +249,50 @@ module.exports = {
       <button class="dialog-btn cancel" bindtap="closeDialog">取消</button>
       <button class="dialog-btn confirm" bindtap="confirmCategoryOperation">
         <text>{{operationType === 'add' ? '🌱 添加' : '✨ 保存'}}</text>
+      </button>
+    </view>
+  </view>
+</view>
+
+<!-- 分类详情弹窗 -->
+<view class="detail-mask {{detailVisible ? 'show' : ''}}" bindtap="closeDetailDialog"></view>
+<view class="detail-container {{detailVisible ? 'show' : ''}}">
+  <view class="detail-content">
+    <!-- 标题 -->
+    <view class="detail-header">
+      <view class="detail-icon-wrap">
+        <image wx:if="{{currentCategory.displayIcon}}" src="{{currentCategory.displayIcon}}" mode="aspectFit" class="detail-icon-img"></image>
+        <text wx:else class="detail-emoji">{{currentCategory.icon || '📦'}}</text>
+      </view>
+      <view class="detail-title-wrap">
+        <text class="detail-title">{{currentCategory.name}}</text>
+      </view>
+      <view class="detail-close" bindtap="closeDetailDialog">✕</view>
+    </view>
+
+    <!-- 详情内容 -->
+    <view class="detail-body">
+      <view class="detail-item">
+        <text class="detail-label">创建时间</text>
+        <text class="detail-value">{{currentCategory.createdAt ? utils.formatDate(currentCategory.createdAt) : '-'}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">资产数量</text>
+        <text class="detail-value">{{currentCategory.assetCount || 0}} 个</text>
+      </view>
+      <view class="detail-item" wx:if="{{currentCategory.description}}">
+        <text class="detail-label">分类描述</text>
+        <text class="detail-value desc">{{currentCategory.description}}</text>
+      </view>
+    </view>
+
+    <!-- 底部按钮 -->
+    <view class="detail-footer">
+      <button class="detail-btn edit" bindtap="editFromDetail">
+        <text>✏️ 编辑</text>
+      </button>
+      <button class="detail-btn delete" bindtap="deleteFromDetail" wx:if="{{!currentCategory.assetCount || currentCategory.assetCount === 0}}">
+        <text>🗑️ 删除</text>
       </button>
     </view>
   </view>

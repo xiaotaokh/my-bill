@@ -49,6 +49,8 @@ exports.main = async (event, context) => {
         _openid: wxContext.OPENID,
         name: name.trim(),
         icon: icon || '', // 添加图标字段，默认为空
+        description: event.description || '', // 分类描述
+        sortOrder: event.sortOrder || 0, // 排序顺序
         createdAt: db.serverDate(),
         updatedAt: db.serverDate()
       }
@@ -58,7 +60,8 @@ exports.main = async (event, context) => {
       success: true,
       id: result._id,
       name: name.trim(),
-      icon: icon || '' // 返回图标信息
+      icon: icon || '', // 返回图标信息
+      description: event.description || ''
     };
   } catch (err) {
     console.error('添加类别失败:', err);

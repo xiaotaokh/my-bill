@@ -39,6 +39,14 @@ exports.main = async (event, context) => {
       updateData.icon = icon;
     }
 
+    if (event.description !== undefined) {
+      updateData.description = event.description;
+    }
+
+    if (event.sortOrder !== undefined) {
+      updateData.sortOrder = event.sortOrder;
+    }
+
     // 更新类别
     await db.collection('categories').doc(categoryId).update({
       data: updateData

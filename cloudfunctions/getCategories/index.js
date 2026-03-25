@@ -36,11 +36,12 @@ exports.main = async (event, context) => {
     // 获取微信调用上下文
     const wxContext = cloud.getWXContext();
 
-    // 只获取当前用户的类别
+    // 只获取当前用户的类别，按 sortOrder 排序
     const res = await db.collection('categories')
       .where({
         _openid: wxContext.OPENID
       })
+      .orderBy('sortOrder', 'asc')
       .orderBy('createdAt', 'asc')
       .get();
 
