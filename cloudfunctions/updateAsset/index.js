@@ -19,6 +19,8 @@ exports.main = async (event, context) => {
       purchaseDate,
       category,
       icon,
+      iconName = '',  // 图标名称，用于回显
+      groupName = '',  // 分组名称，用于回显
       remark = '',
       status = 'active',
       retiredDate = '',
@@ -66,6 +68,8 @@ exports.main = async (event, context) => {
         purchaseDate: purchaseDate,
         category: category,
         icon: icon,
+        iconName: iconName,  // 存储图标名称
+        groupName: groupName,  // 存储分组名称
         remark: remark,
         status: status,
         retiredDate: retiredDate,

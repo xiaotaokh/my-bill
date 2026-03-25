@@ -22,7 +22,7 @@ Page({
     // 缩略图选择
     selectedIcon: '📦', // 用户选择的自定义缩略图（默认为📦）
     selectedIconName: '默认',
-    selectedGroupIndex: 0, // 选中的分组索引
+    selectedGroupName: '常用', // 选中的分组名称
     selectedIconIndex: 0, // 选中的图标索引
     uploadedImagePath: '', // 用户上传的图片路径
 
@@ -58,6 +58,8 @@ Page({
           { name: '游戏机', icon: '🎮' },
           { name: '存储设备', icon: '💾' },
           { name: '路由器', icon: '📡' },
+          { name: '充电器', icon: '🔌' },
+          { name: '充电宝', icon: '🔋' },
           { name: '充电设备', icon: '🔋' },
           { name: '手机配件', icon: '🔌' },
           { name: '智能家居设备', icon: '🏠' },
@@ -84,6 +86,7 @@ Page({
         name: '家居生活',
         icons: [
           { name: '家具', icon: '🛋️' },
+          { name: '儿童家具', icon: '🧸' },
           { name: '家电', icon: '🧊' },
           { name: '家纺', icon: '🛏️' },
           { name: '厨具', icon: '🍳' },
@@ -92,7 +95,9 @@ Page({
           { name: '收纳用品', icon: '🗂️' },
           { name: '装饰品', icon: '🖼️' },
           { name: '灯具', icon: '💡' },
-          { name: '维修工具', icon: '🛠️' }
+          { name: '维修工具', icon: '🛠️' },
+          { name: '搬运工具', icon: '🛒' },
+          { name: '购物工具', icon: '🧺' }
         ]
       },
       {
@@ -110,6 +115,10 @@ Page({
       {
         name: '办公用品',
         icons: [
+          { name: '鼠标', icon: '🖱️' },
+          { name: '键盘', icon: '⌨️' },
+          { name: '触摸板', icon: '🖐️' },
+          { name: '拓展坞', icon: '🔌' },
           { name: '电脑配件', icon: '🖥️' },
           { name: '显示器', icon: '📺' },
           { name: '打印机', icon: '🖨️' },
@@ -237,6 +246,7 @@ Page({
       {
         name: '其他',
         icons: [
+          { name: '他人', icon: '👤' },
           { name: '礼金/红包', icon: '🧧' },
           { name: '捐赠', icon: '🎁' },
           { name: '罚款', icon: '💸' },
@@ -308,6 +318,8 @@ Page({
           let uploadedImagePath = '';
           let selectedIcon = '📦';
           let selectedIconName = '默认';
+          let selectedGroupName = '常用';
+          let selectedIconIndex = 0;
 
           if (asset.icon) {
             if (asset.icon.startsWith('cloud://')) {
@@ -319,6 +331,8 @@ Page({
                 if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
                   uploadedImagePath = asset.icon; // 保存原始云存储路径
                   selectedIcon = ''; // 清空内置图标
+                  selectedIconName = ''; // 清空图标名称
+                  selectedGroupName = ''; // 清空分组名称，不选中任何内置图标
                 }
               } catch (e) {
                 console.error('获取临时文件链接失败:', e);
@@ -326,11 +340,16 @@ Page({
             } else if (asset.icon.startsWith('http')) {
               uploadedImagePath = asset.icon;
               selectedIcon = '';
+              selectedIconName = ''; // 清空图标名称
+              selectedGroupName = ''; // 清空分组名称，不选中任何内置图标
             } else {
               // emoji 图标
               selectedIcon = asset.icon;
-              // 查找对应的图标名称
-              selectedIconName = this.findIconNameByValue(asset.icon);
+              // 查找对应的图标名称和索引，传入保存的图标名称和分组名称
+              const iconInfo = this.findIconInfoByValue(asset.icon, asset.iconName, asset.groupName);
+              selectedIconName = iconInfo.name;
+              selectedGroupName = iconInfo.groupName;
+              selectedIconIndex = iconInfo.iconIndex;
             }
           }
 
@@ -353,6 +372,8 @@ Page({
             excludeDaily: isRetired || isSold ? true : (asset.excludeDaily || false),
             selectedIcon: selectedIcon,
             selectedIconName: selectedIconName,
+            selectedGroupName: selectedGroupName,
+            selectedIconIndex: selectedIconIndex,
             uploadedImagePath: uploadedImagePath,
             assetCategory: asset.category || '' // 保存类别，等待类别加载后选中
           });
@@ -465,18 +486,20 @@ Page({
     this.setData({
       uploadedImagePath: '',
       selectedIcon: '📦',
-      selectedIconName: '默认'
+      selectedIconName: '默认',
+      selectedGroupName: '常用',
+      selectedIconIndex: 0
     });
   },
 
   selectBuiltinIcon(e) {
     const icon = e.currentTarget.dataset.icon;
-    const groupIdx = e.currentTarget.dataset.groupIdx;
+    const groupName = e.currentTarget.dataset.groupName;
     const iconIdx = e.currentTarget.dataset.iconIdx;
     this.setData({
       selectedIcon: icon.icon,
       selectedIconName: icon.name,
-      selectedGroupIndex: groupIdx,
+      selectedGroupName: groupName,
       selectedIconIndex: iconIdx,
       uploadedImagePath: '' // 清空之前上传的图片
     });
@@ -494,15 +517,49 @@ Page({
     }
   },
 
-  // 根据图标查找对应的名称（用于编辑模式回显）
-  findIconNameByValue(iconValue) {
-    for (const group of this.data.builtinIconGroups) {
-      const found = group.icons.find(item => item.icon === iconValue);
-      if (found) {
-        return found.name;
+  // 根据分组名称、图标和名称查找对应的索引（用于编辑模式回显）
+  findIconInfoByValue(iconValue, iconName, groupName) {
+    for (let groupIdx = 0; groupIdx < this.data.builtinIconGroups.length; groupIdx++) {
+      const group = this.data.builtinIconGroups[groupIdx];
+      for (let iconIdx = 0; iconIdx < group.icons.length; iconIdx++) {
+        const item = group.icons[iconIdx];
+        // 同时匹配分组名称、图标和名称
+        if (group.name === groupName && item.icon === iconValue && item.name === iconName) {
+          return {
+            name: item.name,
+            groupName: group.name,
+            iconIndex: iconIdx
+          };
+        }
       }
     }
-    return '默认';
+    // 如果完全匹配失败，只匹配图标+名称（兼容旧数据）
+    for (let groupIdx = 0; groupIdx < this.data.builtinIconGroups.length; groupIdx++) {
+      const group = this.data.builtinIconGroups[groupIdx];
+      for (let iconIdx = 0; iconIdx < group.icons.length; iconIdx++) {
+        if (group.icons[iconIdx].icon === iconValue && group.icons[iconIdx].name === iconName) {
+          return {
+            name: group.icons[iconIdx].name,
+            groupName: group.name,
+            iconIndex: iconIdx
+          };
+        }
+      }
+    }
+    // 最后只匹配图标
+    for (let groupIdx = 0; groupIdx < this.data.builtinIconGroups.length; groupIdx++) {
+      const group = this.data.builtinIconGroups[groupIdx];
+      for (let iconIdx = 0; iconIdx < group.icons.length; iconIdx++) {
+        if (group.icons[iconIdx].icon === iconValue) {
+          return {
+            name: group.icons[iconIdx].name,
+            groupName: group.name,
+            iconIndex: iconIdx
+          };
+        }
+      }
+    }
+    return { name: '默认', groupName: '常用', iconIndex: 0 };
   },
 
   // 选择自定义图标
@@ -540,6 +597,9 @@ Page({
         // 设置临时路径作为预览，并清空之前选择的内置图标
         this.setData({
           selectedIcon: '', // 清空之前选择的内置图标
+          selectedIconName: '',
+          selectedGroupName: '',
+          selectedIconIndex: 0,
           uploadedImagePath: tempFilePath // 设置上传图片的临时路径
         });
 
@@ -787,6 +847,8 @@ Page({
       purchaseDate: formData.purchaseDate,
       category: formData.category,
       icon: formData.icon, // 传递缩略图字段
+      iconName: this.data.uploadedImagePath ? '' : (this.data.selectedIconName || '默认'), // 保存图标名称用于回显（上传图片时为空）
+      groupName: this.data.uploadedImagePath ? '' : (this.data.selectedGroupName || '常用'), // 保存分组名称用于回显
       remark: formData.remark || '',
       status: status,
       retiredDate: this.data.isRetired ? this.data.retiredDate : '',

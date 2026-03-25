@@ -72,12 +72,12 @@
             <view class="group-title {{idx === 0 ? 'first' : ''}}">{{group.name}}</view>
             <!-- 分组图标列表 -->
             <view class="group-icons">
-              <view class="group-icon-item {{selectedGroupIndex === idx && selectedIconIndex === index ? 'selected' : ''}}"
+              <view class="group-icon-item {{selectedGroupName === group.name && selectedIconIndex === index ? 'selected' : ''}}"
                     wx:for="{{group.icons}}"
                     wx:key="name"
                     bindtap="selectBuiltinIcon"
                     data-icon="{{item}}"
-                    data-group-idx="{{idx}}"
+                    data-group-name="{{group.name}}"
                     data-icon-idx="{{index}}">
                 <text class="icon-emoji">{{item.icon}}</text>
                 <text class="icon-name">{{item.name}}</text>
