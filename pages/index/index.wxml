@@ -1,10 +1,9 @@
 <!--index.wxml-->
 <view class="container">
-  <!-- 顶部背景 - 仅首页显示 -->
-  <view class="header-bg" style="{{showSetting || showBatchDelete ? 'display: none;' : 'display: block;'}}"></view>
-
   <!-- 主内容区域 -->
   <view class="main-content" style="{{showSetting || showReport || showBatchDelete ? 'display: none;' : 'display: block;'}}">
+    <!-- 顶部背景 -->
+    <view class="header-bg" style="{{showSetting || showBatchDelete ? 'display: none;' : 'display: block;'}}"></view>
     <!-- 日期显示 -->
     <view class="date-section">
       <view class="date-display">
@@ -48,7 +47,16 @@
     <!-- 统计指标卡片 -->
     <view class="stats-section">
       <view class="stat-row">
-        <view class="stat-item">
+        <view class="stat-item {{activeStatus === 'all' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="all">
+          <view class="stat-icon total-icon">
+            <text class="iconfont">🗂️</text>
+          </view>
+          <view class="stat-content">
+            <text class="stat-number">{{statsTotalCount}}</text>
+            <text class="stat-name">资产总数</text>
+          </view>
+        </view>
+        <view class="stat-item {{activeStatus === 'active' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="active">
           <view class="stat-icon active-icon">
             <text class="iconfont">🚀</text>
           </view>
@@ -57,7 +65,7 @@
             <text class="stat-name">服役中</text>
           </view>
         </view>
-        <view class="stat-item">
+        <view class="stat-item {{activeStatus === 'retired' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="retired">
           <view class="stat-icon retired-icon">
             <text class="iconfont">🏠</text>
           </view>
@@ -66,22 +74,13 @@
             <text class="stat-name">已退役</text>
           </view>
         </view>
-        <view class="stat-item">
+        <view class="stat-item {{activeStatus === 'sold' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="sold">
           <view class="stat-icon sold-icon">
             <text class="iconfont">💰</text>
           </view>
           <view class="stat-content">
             <text class="stat-number">{{soldCount}}</text>
             <text class="stat-name">已卖出</text>
-          </view>
-        </view>
-        <view class="stat-item">
-          <view class="stat-icon total-icon">
-            <text class="iconfont">🗂️</text>
-          </view>
-          <view class="stat-content">
-            <text class="stat-number">{{statsTotalCount}}</text>
-            <text class="stat-name">资产总数</text>
           </view>
         </view>
       </view>
@@ -112,29 +111,6 @@
             <text class="pill-text">{{item.name}}</text>
           </view>
         </block>
-      </view>
-      <!-- 状态筛选 -->
-      <view class="filter-bar">
-        <view
-          class="filter-pill {{activeStatus === 'all' ? 'active-all' : ''}}"
-          bindtap="filterByStatus"
-          data-status="all"
-        >全部</view>
-        <view
-          class="filter-pill {{activeStatus === 'active' ? 'active-active' : ''}}"
-          bindtap="filterByStatus"
-          data-status="active"
-        >服役中</view>
-        <view
-          class="filter-pill {{activeStatus === 'retired' ? 'active-retired' : ''}}"
-          bindtap="filterByStatus"
-          data-status="retired"
-        >已退役</view>
-        <view
-          class="filter-pill {{activeStatus === 'sold' ? 'active-sold' : ''}}"
-          bindtap="filterByStatus"
-          data-status="sold"
-        >已卖出</view>
       </view>
     </view>
 
