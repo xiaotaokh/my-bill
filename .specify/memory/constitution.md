@@ -1,13 +1,10 @@
 <!--
 ## Sync Impact Report
-- Version change: N/A → 1.0.0 (Initial creation)
+- Version change: 1.0.0 → 1.1.0 (MINOR: New principle added)
 - New principles added:
-  - I. 简洁优先 (Simplicity First)
-  - II. 用户体验至上 (User Experience First)
-  - III. 数据安全 (Data Security)
-  - IV. 可维护性 (Maintainability)
-  - V. 云原生架构 (Cloud-Native Architecture)
-- Added sections: 技术约束, 开发流程, 治理
+  - VI. 交互一致性 (Interaction Consistency)
+- Modified principles: None
+- Added sections: None
 - Removed sections: None
 - Templates status:
   - plan-template.md: ✅ Compatible (Constitution Check section supports custom gates)
@@ -79,6 +76,18 @@
 
 **理由**: 云原生架构降低运维成本，自动扩展，按量付费，适合个人项目。
 
+### VI. 交互一致性 (Interaction Consistency)
+
+确保所有用户在不同设备上获得一致的视觉和交互体验：
+
+- 使用 `rpx` 单位确保尺寸在不同屏幕上等比缩放
+- 使用微信提供的系统信息 API 适配特殊机型（刘海屏、底部安全区域等）
+- 字体、颜色、间距使用全局样式变量，保持视觉一致性
+- 交互组件（按钮、表单、弹窗）统一样式和行为
+- 测试覆盖主流机型（iOS 和 Android 各至少 2 款）
+
+**理由**: 小程序运行在多种设备上，屏幕尺寸、系统版本差异大，不一致的交互会造成用户困惑和信任度下降。
+
 ## 技术约束
 
 ### 技术栈限定
@@ -149,4 +158,4 @@
 - 使用 `README.md` 记录项目说明和快速开始指南
 - 重大变更需同步更新相关文档
 
-**Version**: 1.0.0 | **Ratified**: 2026-03-18 | **Last Amended**: 2026-03-18
+**Version**: 1.1.0 | **Ratified**: 2026-03-18 | **Last Amended**: 2026-03-27
