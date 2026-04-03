@@ -163,6 +163,13 @@
             <view class="card-header">
               <view class="name-row">
                 <text class="asset-name">{{item.name}}</text>
+                <!-- 每期金额显示 -->
+                <view wx:if="{{item.assetType === 'subscription' && item.periodAmountDisplay}}" class="period-amount-text">
+                  <text>{{item.periodAmountDisplay}}</text>
+                  <text class="period-type-small">(</text>
+                  <text class="period-type-small">{{item.periodTypeDisplay}}</text>
+                  <text class="period-type-small">)</text>
+                </view>
                 <!-- 订阅标签 -->
                 <view class="subscription-badge" wx:if="{{item.assetType === 'subscription'}}">
                   <text>订阅</text>

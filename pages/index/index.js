@@ -359,6 +359,27 @@ Page({
     return periodMap[periodType] || 30;
   },
 
+  // 获取周期类型显示文本
+  getPeriodTypeText(periodType, periodDays) {
+    const periodTextMap = {
+      'monthly': '月',
+      'yearly': '年',
+      'weekly': '周',
+      'custom': periodDays ? `${periodDays}天` : '自定义'
+    };
+    return periodTextMap[periodType] || '周期';
+  },
+
+  // 格式化每期金额显示
+  formatPeriodAmount(asset) {
+    if (asset.assetType !== 'subscription' || !asset.periodAmount) return { amount: '', period: '' };
+    const periodTypeText = this.getPeriodTypeText(asset.periodType, asset.periodDays);
+    return {
+      amount: `¥${asset.periodAmount}元/`,
+      period: periodTypeText
+    };
+  },
+
   // 计算订阅资产日均成本
   calculateSubscriptionDailyCost(asset) {
     if (asset.assetType !== 'subscription') return '0.00';
@@ -418,6 +439,8 @@ Page({
         dailyCost,
         dailyEquivalent: '0.00',
         totalInvestment: totalInvestment.toFixed(2),
+        periodAmountDisplay: this.formatPeriodAmount(asset).amount,
+        periodTypeDisplay: this.formatPeriodAmount(asset).period,
         dateRange: asset.subscriptionStatus === 'pending'
           ? `待生效: ${startDate}`
           : (asset.subscriptionStatus === 'ended'

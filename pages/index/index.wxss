@@ -627,6 +627,25 @@ page {
   color: #1565c0;
 }
 
+/* 订阅资产每期金额显示 - 与订阅标签同行 */
+.period-amount-text {
+  display: flex;
+  align-items: baseline;
+  font-size: 20rpx;
+  font-weight: 600;
+  color: #00838f;
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+  padding: 4rpx 12rpx;
+  border-radius: 10rpx;
+  flex-shrink: 0;
+  margin-left: 8rpx;
+}
+
+.period-type-small {
+  font-size: 16rpx;
+  font-weight: 500;
+}
+
 /* 订阅资产标签 */
 .subscription-badge {
   padding: 4rpx 12rpx;
