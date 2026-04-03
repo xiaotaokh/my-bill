@@ -5,6 +5,13 @@ cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV
 })
 
+// 周期天数映射
+const PERIOD_DAYS_MAP = {
+  'monthly': 30,
+  'yearly': 365,
+  'weekly': 7
+}
+
 // 云函数入口函数
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
@@ -25,15 +32,55 @@ exports.main = async (event, context) => {
       retiredDate = '',  // 退役日期
       soldDate = '',  // 卖出日期
       excludeTotal = false,
-      excludeDaily = false
+      excludeDaily = false,
+      // 订阅资产字段
+      assetType = 'fixed',  // 资产类型: 'fixed' | 'subscription'
+      periodAmount,  // 每期金额
+      periodType,  // 周期类型: 'monthly' | 'yearly' | 'weekly' | 'custom'
+      periodDays,  // 周期天数（自定义时使用）
+      subscriptionStartDate,  // 订阅开始日期
+      subscriptionEndDate = '',  // 订阅结束日期
+      pendingSubscription = false  // 待订阅开关
     } = event;
 
     // 验证必需参数
-    if (!name || !price || !purchaseDate || !category) {
+    if (!name || !purchaseDate || !category) {
       return {
         success: false,
         error: '缺少必需参数'
       };
+    }
+
+    // 普通资产必须有 price
+    if (assetType === 'fixed' && !price) {
+      return {
+        success: false,
+        error: '缺少价格参数'
+      };
+    }
+
+    // 订阅资产验证
+    if (assetType === 'subscription') {
+      if (!periodAmount || periodAmount <= 0) {
+        return {
+          success: false,
+          error: '每期金额必须大于0'
+        };
+      }
+      if (!periodType) {
+        return {
+          success: false,
+          error: '请选择周期类型'
+        };
+      }
+      if (periodType === 'custom') {
+        if (!periodDays || periodDays < 1 || periodDays > 365) {
+          return {
+            success: false,
+            error: '周期天数必须在1-365之间'
+          };
+        }
+      }
     }
 
     // 检查资产名称是否重复
@@ -51,26 +98,51 @@ exports.main = async (event, context) => {
       };
     }
 
+    // 构建基础数据
+    const assetData = {
+      _openid: wxContext.OPENID,
+      name: name.trim(),
+      purchaseDate: purchaseDate,
+      category: category,
+      icon: icon,  // 存储图标信息
+      iconName: iconName,  // 存储图标名称
+      groupName: groupName,  // 存储分组名称
+      remark: remark,
+      excludeTotal: excludeTotal,
+      excludeDaily: excludeDaily,
+      createdAt: db.serverDate(),
+      updatedAt: db.serverDate()
+    };
+
+    // 根据资产类型添加不同字段
+    if (assetType === 'subscription') {
+      // 订阅资产
+      const calculatedPeriodDays = periodType === 'custom' ? periodDays : PERIOD_DAYS_MAP[periodType];
+      const subscriptionStatus = pendingSubscription ? 'pending' : 'active';
+
+      assetData.assetType = 'subscription';
+      assetData.price = parseFloat(periodAmount);  // price 字段存储每期金额，用于列表排序等
+      assetData.periodAmount = parseFloat(periodAmount);
+      assetData.periodType = periodType;
+      assetData.periodDays = calculatedPeriodDays;
+      assetData.subscriptionStartDate = pendingSubscription ? subscriptionStartDate : purchaseDate;
+      assetData.subscriptionEndDate = subscriptionEndDate;
+      assetData.subscriptionStatus = subscriptionStatus;
+      assetData.amountHistory = [];  // 金额变更历史
+      assetData.pendingSubscription = pendingSubscription;
+      assetData.status = 'active';  // 订阅资产使用 subscriptionStatus
+    } else {
+      // 普通资产
+      assetData.assetType = 'fixed';
+      assetData.price = parseFloat(price);
+      assetData.status = status;
+      assetData.retiredDate = retiredDate;
+      assetData.soldDate = soldDate;
+    }
+
     // 添加资产到数据库
     const result = await db.collection('assets').add({
-      data: {
-        _openid: wxContext.OPENID,
-        name: name.trim(),
-        price: parseFloat(price),
-        purchaseDate: purchaseDate,
-        category: category,
-        icon: icon,  // 存储图标信息
-        iconName: iconName,  // 存储图标名称
-        groupName: groupName,  // 存储分组名称
-        remark: remark,
-        status: status,
-        retiredDate: retiredDate,  // 存储退役日期
-        soldDate: soldDate,  // 存储卖出日期
-        excludeTotal: excludeTotal,
-        excludeDaily: excludeDaily,
-        createdAt: db.serverDate(),
-        updatedAt: db.serverDate()
-      }
+      data: assetData
     });
 
     return {

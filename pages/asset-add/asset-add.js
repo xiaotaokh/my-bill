@@ -7,6 +7,11 @@ Page({
     assetName: '', // 用于编辑时显示标题
     assetCategory: '', // 用于编辑时回显类别
 
+    // 资产类型
+    assetType: 'fixed', // 'fixed' | 'subscription'
+    periodTypeOptions: ['月度', '年度', '周', '自定义'],
+    periodTypeIndex: 0,
+
     // 表单数据
     name: '',
     price: '',
@@ -18,6 +23,15 @@ Page({
     excludeDaily: false,
     retiredDate: '', // 退役日期
     soldDate: '', // 卖出日期
+
+    // 订阅资产字段
+    periodAmount: '',
+    periodType: 'monthly',
+    periodDays: '',
+    subscriptionStartDate: '',
+    subscriptionEndDate: '',
+    pendingSubscription: false,
+    endSubscription: false,
 
     // 缩略图选择
     selectedIcon: '📦', // 用户选择的自定义缩略图（默认为📦）
@@ -361,10 +375,35 @@ Page({
           const isRetired = asset.status === 'retired';
           const isSold = asset.status === 'sold';
 
+          // 处理订阅资产数据回显
+          const isSubscription = asset.assetType === 'subscription';
+          let periodAmount = '';
+          let periodType = 'monthly';
+          let periodTypeIndex = 0;
+          let periodDays = '';
+          let subscriptionStartDate = '';
+          let subscriptionEndDate = '';
+          let pendingSubscription = false;
+          let endSubscription = false;
+
+          if (isSubscription) {
+            periodAmount = String(asset.periodAmount || '');
+            periodType = asset.periodType || 'monthly';
+            const periodTypes = ['monthly', 'yearly', 'weekly', 'custom'];
+            periodTypeIndex = periodTypes.indexOf(periodType);
+            if (periodType === 'custom') {
+              periodDays = String(asset.periodDays || '');
+            }
+            subscriptionStartDate = asset.subscriptionStartDate || '';
+            subscriptionEndDate = asset.subscriptionEndDate || '';
+            pendingSubscription = asset.pendingSubscription || false;
+            endSubscription = asset.subscriptionStatus === 'ended';
+          }
+
           this.setData({
             assetName: asset.name,
             name: asset.name,
-            price: String(asset.price),
+            price: isSubscription ? '' : String(asset.price),
             purchaseDate: asset.purchaseDate,
             remark: asset.remark || '',
             isRetired: isRetired,
@@ -379,7 +418,17 @@ Page({
             selectedGroupName: selectedGroupName,
             selectedIconIndex: selectedIconIndex,
             uploadedImagePath: uploadedImagePath,
-            assetCategory: asset.category || '' // 保存类别，等待类别加载后选中
+            assetCategory: asset.category || '', // 保存类别，等待类别加载后选中
+            // 订阅资产字段
+            assetType: asset.assetType || 'fixed',
+            periodAmount: periodAmount,
+            periodType: periodType,
+            periodTypeIndex: periodTypeIndex,
+            periodDays: periodDays,
+            subscriptionStartDate: subscriptionStartDate,
+            subscriptionEndDate: subscriptionEndDate,
+            pendingSubscription: pendingSubscription,
+            endSubscription: endSubscription
           });
 
           wx.hideLoading();
@@ -767,6 +816,149 @@ Page({
     this.setData({ excludeDaily: e.detail.value });
   },
 
+  // 资产类型切换
+  onAssetTypeChange(e) {
+    const assetType = e.currentTarget.dataset.type;
+
+    // 编辑模式下，如果切换到当前已有的类型，不做任何处理
+    if (this.data.isEdit && assetType === this.data.assetType) {
+      return;
+    }
+
+    // 编辑模式下切换资产类型时，需要提示用户
+    if (this.data.isEdit) {
+      wx.showModal({
+        title: '确认切换',
+        content: '切换资产类型将清空相关字段数据，确定要切换吗？',
+        success: (res) => {
+          if (res.confirm) {
+            this.setData({
+              assetType,
+              // 切换类型时清空订阅字段
+              periodAmount: '',
+              periodType: 'monthly',
+              periodTypeIndex: 0,
+              periodDays: '',
+              subscriptionStartDate: '',
+              subscriptionEndDate: '',
+              pendingSubscription: false,
+              endSubscription: false,
+              // 同时清空普通资产的退役/卖出状态
+              isRetired: false,
+              isSold: false,
+              retiredDate: '',
+              soldDate: '',
+              price: ''
+            });
+          }
+        }
+      });
+    } else {
+      // 新增模式：直接切换
+      this.setData({
+        assetType,
+        // 切换类型时清空订阅字段
+        periodAmount: '',
+        periodType: 'monthly',
+        periodTypeIndex: 0,
+        periodDays: '',
+        subscriptionStartDate: '',
+        subscriptionEndDate: '',
+        pendingSubscription: false,
+        endSubscription: false
+      });
+    }
+  },
+
+  // 每期金额输入
+  onPeriodAmountInput(e) {
+    this.setData({ periodAmount: e.detail.value });
+  },
+
+  // 周期类型选择
+  onPeriodTypeChange(e) {
+    const index = parseInt(e.detail.value);
+    const periodTypes = ['monthly', 'yearly', 'weekly', 'custom'];
+    const periodType = periodTypes[index];
+    this.setData({
+      periodTypeIndex: index,
+      periodType,
+      periodDays: '' // 清空自定义天数
+    });
+  },
+
+  // 周期天数输入
+  onPeriodDaysInput(e) {
+    this.setData({ periodDays: e.detail.value });
+  },
+
+  // 待订阅开关
+  onPendingSubscriptionChange(e) {
+    const checked = e.detail.value;
+    const updates = { pendingSubscription: checked };
+    if (checked) {
+      // 打开时设置默认开始日期为今天
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      updates.subscriptionStartDate = `${year}-${month}-${day}`;
+    } else {
+      updates.subscriptionStartDate = '';
+    }
+    this.setData(updates);
+  },
+
+  // 订阅开始日期改变
+  onSubscriptionStartDateChange(e) {
+    this.setData({ subscriptionStartDate: e.detail.value });
+  },
+
+  // 订阅结束日期改变
+  onSubscriptionEndDateChange(e) {
+    this.setData({ subscriptionEndDate: e.detail.value });
+  },
+
+  // 结束订阅开关
+  onEndSubscriptionChange(e) {
+    const checked = e.detail.value;
+    const updates = { endSubscription: checked };
+    if (checked) {
+      // 设置默认结束日期为今天
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      updates.subscriptionEndDate = `${year}-${month}-${day}`;
+    } else {
+      updates.subscriptionEndDate = '';
+    }
+    this.setData(updates);
+  },
+
+  // 验证订阅资产表单
+  validateSubscriptionForm() {
+    const errors = {};
+    const { periodAmount, periodType, periodDays, pendingSubscription, subscriptionStartDate } = this.data;
+
+    if (!periodAmount || parseFloat(periodAmount) <= 0) {
+      errors.periodAmount = '请输入有效的每期金额';
+    }
+
+    if (pendingSubscription && !subscriptionStartDate) {
+      errors.subscriptionStartDate = '请选择订阅开始日期';
+    }
+
+    if (periodType === 'custom') {
+      const days = parseInt(periodDays);
+      if (!periodDays || isNaN(days) || days < 1 || days > 365) {
+        errors.periodDays = '周期天数必须在1-365之间';
+      }
+    }
+
+    return errors;
+  },
+
   // 表单验证
   validateForm(formData) {
     const errors = {};
@@ -778,11 +970,28 @@ Page({
       errors.name = '物品名称不能超过 50 个字符';
     }
 
-    // 验证价格
-    if (!formData.price || formData.price <= 0) {
-      errors.price = '请输入有效的价格';
-    } else if (isNaN(formData.price)) {
-      errors.price = '价格必须是数字';
+    // 根据资产类型验证不同字段
+    if (this.data.assetType === 'subscription') {
+      // 订阅资产验证
+      if (!this.data.periodAmount || parseFloat(this.data.periodAmount) <= 0) {
+        errors.periodAmount = '请输入有效的每期金额';
+      }
+      if (this.data.periodType === 'custom') {
+        const days = parseInt(this.data.periodDays);
+        if (!this.data.periodDays || isNaN(days) || days < 1 || days > 365) {
+          errors.periodDays = '周期天数必须在1-365之间';
+        }
+      }
+      if (this.data.pendingSubscription && !this.data.subscriptionStartDate) {
+        errors.subscriptionStartDate = '请选择订阅开始日期';
+      }
+    } else {
+      // 普通资产验证价格
+      if (!formData.price || formData.price <= 0) {
+        errors.price = '请输入有效的价格';
+      } else if (isNaN(formData.price)) {
+        errors.price = '价格必须是数字';
+      }
     }
 
     // 验证购买日期
@@ -813,7 +1022,7 @@ Page({
     // 构造表单数据
     const formData = {
       name: this.data.name,
-      price: this.data.price,
+      price: this.data.assetType === 'subscription' ? this.data.periodAmount : this.data.price,
       purchaseDate: this.data.purchaseDate,
       remark: this.data.remark,
       // 优先使用上传的图片，如果有的话；否则使用选择的内置图标
@@ -841,10 +1050,12 @@ Page({
 
     // 确定资产状态
     let status = 'active'; // 默认服役中
-    if (this.data.isRetired) {
-      status = 'retired';
-    } else if (this.data.isSold) {
-      status = 'sold';
+    if (this.data.assetType === 'fixed') {
+      if (this.data.isRetired) {
+        status = 'retired';
+      } else if (this.data.isSold) {
+        status = 'sold';
+      }
     }
 
     // 构造请求数据
@@ -861,8 +1072,23 @@ Page({
       retiredDate: this.data.isRetired ? this.data.retiredDate : '',
       soldDate: this.data.isSold ? this.data.soldDate : '',
       excludeTotal: this.data.excludeTotal,
-      excludeDaily: this.data.excludeDaily
+      excludeDaily: this.data.excludeDaily,
+      // 资产类型
+      assetType: this.data.assetType
     };
+
+    // 订阅资产额外字段
+    if (this.data.assetType === 'subscription') {
+      requestData.periodAmount = parseFloat(this.data.periodAmount);
+      requestData.periodType = this.data.periodType;
+      if (this.data.periodType === 'custom') {
+        requestData.periodDays = parseInt(this.data.periodDays);
+      }
+      requestData.subscriptionStartDate = this.data.pendingSubscription ? this.data.subscriptionStartDate : this.data.purchaseDate;
+      requestData.subscriptionEndDate = this.data.subscriptionEndDate;
+      requestData.pendingSubscription = this.data.pendingSubscription;
+      requestData.endSubscription = this.data.endSubscription;
+    }
 
     // 根据是否编辑模式调用不同的云函数
     const cloudFunctionName = this.data.isEdit ? 'updateAsset' : 'addAsset';

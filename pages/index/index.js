@@ -346,7 +346,89 @@ Page({
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   },
 
+  // 根据周期类型获取周期天数
+  getPeriodDays(periodType, customDays) {
+    const periodMap = {
+      'monthly': 30,
+      'yearly': 365,
+      'weekly': 7
+    };
+    if (periodType === 'custom') {
+      return parseInt(customDays) || 30;
+    }
+    return periodMap[periodType] || 30;
+  },
+
+  // 计算订阅资产日均成本
+  calculateSubscriptionDailyCost(asset) {
+    if (asset.assetType !== 'subscription') return '0.00';
+    if (!asset.periodAmount || !asset.periodType) return '0.00';
+
+    const periodDays = this.getPeriodDays(asset.periodType, asset.periodDays);
+    const dailyCost = asset.periodAmount / periodDays;
+    return dailyCost.toFixed(2);
+  },
+
   calculateAssetFields(asset) {
+    // 订阅资产处理
+    if (asset.assetType === 'subscription') {
+      const purchaseDate = this.parseDate(asset.purchaseDate);
+      const now = new Date();
+      const subscriptionStartDate = asset.subscriptionStartDate ? this.parseDate(asset.subscriptionStartDate) : purchaseDate;
+
+      // 计算订阅开始日期（待生效状态使用subscriptionStartDate）
+      const effectiveStartDate = asset.subscriptionStatus === 'pending' ? subscriptionStartDate : purchaseDate;
+
+      // 订阅结束日期
+      let endDate = now;
+      if (asset.subscriptionStatus === 'ended' && asset.subscriptionEndDate) {
+        endDate = this.parseDate(asset.subscriptionEndDate);
+      }
+
+      // 计算已订阅天数
+      let usedDays = 0;
+      if (asset.subscriptionStatus !== 'pending') {
+        usedDays = Math.floor((endDate - effectiveStartDate) / (1000 * 60 * 60 * 24)) + 1;
+        if (usedDays <= 0) usedDays = 1;
+      }
+
+      // 订阅资产日均成本 = 每期金额 / 周期天数
+      const dailyCost = this.calculateSubscriptionDailyCost(asset);
+
+      // 计算总投入（动态累计）
+      let totalInvestment = 0;
+      if (asset.subscriptionStatus !== 'pending' && asset.periodAmount && asset.periodType) {
+        const periodDays = this.getPeriodDays(asset.periodType, asset.periodDays);
+        const totalDays = usedDays;
+        const completedPeriods = Math.floor(totalDays / periodDays) + 1;
+        totalInvestment = asset.periodAmount * completedPeriods;
+      }
+
+      const startDate = this.formatDate(asset.subscriptionStartDate || asset.purchaseDate);
+      const dateRangeEnd = asset.subscriptionStatus === 'ended' && asset.subscriptionEndDate
+        ? this.formatDate(asset.subscriptionEndDate) : '至今';
+
+      const categoryItem = this.data.categoryList?.find(c => c.name === asset.category);
+      const categoryIcon = categoryItem?.displayIcon || categoryItem?.icon || '';
+      const categoryIconUrl = categoryIcon?.startsWith('http') ? categoryIcon : '';
+
+      return {
+        ...asset,
+        usedDays,
+        dailyCost,
+        dailyEquivalent: '0.00',
+        totalInvestment: totalInvestment.toFixed(2),
+        dateRange: asset.subscriptionStatus === 'pending'
+          ? `待生效: ${startDate}`
+          : (asset.subscriptionStatus === 'ended'
+            ? `${startDate} - ${dateRangeEnd}`
+            : `${startDate} - 至今`),
+        categoryIcon,
+        categoryIconUrl
+      };
+    }
+
+    // 普通资产处理
     const purchaseDate = this.parseDate(asset.purchaseDate);
     const now = new Date();
     let usedDays = 0;
@@ -426,17 +508,53 @@ Page({
     let filteredTotal = 0; // 当前筛选条件下所有资产总金额
     let filteredDailyTotal = 0; // 当前筛选条件下所有资产的日均总和
     let activeCount = 0, retiredCount = 0, soldCount = 0;
+    let subscriptionActiveCount = 0, subscriptionPendingCount = 0, subscriptionEndedCount = 0;
 
-    // 根据分类筛选计算统计数量（服役中/已退役/已卖出/资产总数）
+    // 根据分类筛选计算统计数量
     const statsAssets = activeCategory === 'all' ? assets : assets.filter(a => a.category === activeCategory);
     statsAssets.forEach(asset => {
-      if (asset.status === 'active') activeCount++;
-      else if (asset.status === 'retired') retiredCount++;
-      else if (asset.status === 'sold') soldCount++;
+      // 订阅资产统计
+      if (asset.assetType === 'subscription') {
+        if (asset.subscriptionStatus === 'active' || (!asset.subscriptionStatus && asset.status === 'active')) {
+          subscriptionActiveCount++;
+        } else if (asset.subscriptionStatus === 'pending') {
+          subscriptionPendingCount++;
+        } else if (asset.subscriptionStatus === 'ended') {
+          subscriptionEndedCount++;
+        }
+      } else {
+        // 普通资产统计
+        if (asset.status === 'active') activeCount++;
+        else if (asset.status === 'retired') retiredCount++;
+        else if (asset.status === 'sold') soldCount++;
+      }
     });
 
     // 从筛选后的资产计算金额统计
     filteredAssets.forEach(asset => {
+      // 订阅资产处理
+      if (asset.assetType === 'subscription') {
+        // 订阅资产使用 totalInvestment 作为总金额
+        const investment = parseFloat(asset.totalInvestment) || 0;
+        filteredTotal += investment;
+
+        // 订阅资产日均成本
+        if (asset.subscriptionStatus !== 'pending' && asset.subscriptionStatus !== 'ended' && asset.dailyCost) {
+          filteredDailyTotal += parseFloat(asset.dailyCost);
+        }
+
+        if (asset.excludeTotal === true || asset.excludeTotal === 'true') return;
+        totalPrice += investment;
+
+        // 订阅资产的日均成本计入统计（待生效和已结束的不计入）
+        if (asset.subscriptionStatus !== 'pending' && asset.subscriptionStatus !== 'ended' &&
+            asset.excludeDaily !== true && asset.excludeDaily !== 'true' && asset.dailyCost) {
+          dailyCostTotal += parseFloat(asset.dailyCost);
+        }
+        return;
+      }
+
+      // 普通资产处理
       filteredTotal += asset.price || 0; // 计算所有资产金额
 
       // 计算所有资产的日均（active用dailyCost，retired/sold用dailyEquivalent）
@@ -475,6 +593,7 @@ Page({
       totalPriceSize: calcFontSize(totalPriceStr, 48, 26),
       dailyCostSize: calcFontSize(dailyCostStr, 28, 20),
       activeCount, retiredCount, soldCount,
+      subscriptionActiveCount, subscriptionPendingCount, subscriptionEndedCount,
       statsTotalCount: statsAssets.length
     });
   },

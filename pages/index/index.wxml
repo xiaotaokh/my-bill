@@ -163,7 +163,20 @@
             <view class="card-header">
               <view class="name-row">
                 <text class="asset-name">{{item.name}}</text>
-                <view class="asset-badge {{item.status}}">
+                <!-- 订阅标签 -->
+                <view class="subscription-badge" wx:if="{{item.assetType === 'subscription'}}">
+                  <text>订阅</text>
+                </view>
+                <!-- 待生效标签 -->
+                <view class="pending-badge" wx:if="{{item.subscriptionStatus === 'pending'}}">
+                  <text>待生效</text>
+                </view>
+                <!-- 已结束标签 -->
+                <view class="ended-badge" wx:if="{{item.subscriptionStatus === 'ended'}}">
+                  <text>已结束</text>
+                </view>
+                <!-- 普通资产状态标签 -->
+                <view class="asset-badge {{item.status}}" wx:if="{{item.assetType !== 'subscription'}}">
                   <text>{{item.status === 'active' ? '服役中' : item.status === 'retired' ? '已退役' : '已卖出'}}</text>
                 </view>
               </view>
@@ -184,37 +197,58 @@
               <text class="purchase-date">{{item.dateRange}}</text>
             </view>
             <view class="card-stats">
-              <block wx:if="{{item.status === 'active'}}">
-                <view class="stat-item {{item.excludeDaily ? 'has-badge' : ''}}">
-                  <text class="stat-label">日均成本</text>
-                  <text class="stat-value cost {{item.excludeDaily ? 'excluded' : 'included'}}">¥{{item.dailyCost}}/天</text>
-                  <text wx:if="{{item.excludeDaily}}" class="exclude-badge">不计入</text>
-                </view>
-                <view class="stat-divider"></view>
-              </block>
-              <block wx:else>
+              <!-- 订阅资产统计 -->
+              <block wx:if="{{item.assetType === 'subscription'}}">
                 <view class="stat-item">
-                  <text class="stat-label">折合每日</text>
-                  <text class="stat-value cost">¥{{item.dailyEquivalent}}/天</text>
-                </view>
-                <view class="stat-divider"></view>
-                <view class="stat-item has-badge">
                   <text class="stat-label">日均成本</text>
-                  <text class="stat-value cost excluded">¥{{item.dailyCost}}/天</text>
-                  <text class="exclude-badge">不计入</text>
+                  <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
                 </view>
                 <view class="stat-divider"></view>
+                <view class="stat-item" wx:if="{{item.subscriptionStatus !== 'pending'}}">
+                  <text class="stat-label">已订阅</text>
+                  <text class="stat-value">{{item.usedDays}}天</text>
+                </view>
+                <view class="stat-divider" wx:if="{{item.subscriptionStatus !== 'pending'}}"></view>
+                <view class="stat-item {{item.excludeTotal ? 'has-badge' : ''}}">
+                  <text class="stat-label">总投入</text>
+                  <text class="stat-value price {{item.excludeTotal ? 'excluded' : ''}}">¥{{item.totalInvestment}}</text>
+                  <text wx:if="{{item.excludeTotal}}" class="exclude-badge">不计入</text>
+                </view>
               </block>
-              <view class="stat-item">
-                <text class="stat-label">已使用(含今天)</text>
-                <text class="stat-value">{{item.usedDays}}天</text>
-              </view>
-              <view class="stat-divider"></view>
-              <view class="stat-item {{item.excludeTotal ? 'has-badge' : ''}}">
-                <text class="stat-label">价格</text>
-                <text class="stat-value price {{item.excludeTotal ? 'excluded' : ''}}">¥{{item.price}}</text>
-                <text wx:if="{{item.excludeTotal}}" class="exclude-badge">不计入</text>
-              </view>
+              <!-- 普通资产统计 -->
+              <block wx:else>
+                <block wx:if="{{item.status === 'active'}}">
+                  <view class="stat-item {{item.excludeDaily ? 'has-badge' : ''}}">
+                    <text class="stat-label">日均成本</text>
+                    <text class="stat-value cost {{item.excludeDaily ? 'excluded' : 'included'}}">¥{{item.dailyCost}}/天</text>
+                    <text wx:if="{{item.excludeDaily}}" class="exclude-badge">不计入</text>
+                  </view>
+                  <view class="stat-divider"></view>
+                </block>
+                <block wx:else>
+                  <view class="stat-item">
+                    <text class="stat-label">折合每日</text>
+                    <text class="stat-value cost">¥{{item.dailyEquivalent}}/天</text>
+                  </view>
+                  <view class="stat-divider"></view>
+                  <view class="stat-item has-badge">
+                    <text class="stat-label">日均成本</text>
+                    <text class="stat-value cost excluded">¥{{item.dailyCost}}/天</text>
+                    <text class="exclude-badge">不计入</text>
+                  </view>
+                  <view class="stat-divider"></view>
+                </block>
+                <view class="stat-item">
+                  <text class="stat-label">已使用(含今天)</text>
+                  <text class="stat-value">{{item.usedDays}}天</text>
+                </view>
+                <view class="stat-divider"></view>
+                <view class="stat-item {{item.excludeTotal ? 'has-badge' : ''}}">
+                  <text class="stat-label">价格</text>
+                  <text class="stat-value price {{item.excludeTotal ? 'excluded' : ''}}">¥{{item.price}}</text>
+                  <text wx:if="{{item.excludeTotal}}" class="exclude-badge">不计入</text>
+                </view>
+              </block>
             </view>
           </view>
         </view>

@@ -757,3 +757,51 @@
   pointer-events: none;
   z-index: 0;
 }
+
+/* 资产类型选择器 */
+.asset-type-selector {
+  display: flex;
+  gap: 20rpx;
+  width: 100%;
+}
+
+.type-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx 24rpx;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(248, 250, 252, 0.7) 100%);
+  border-radius: 20rpx;
+  border: 3rpx solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.type-option:active {
+  transform: scale(0.98);
+}
+
+.type-option.selected {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+  box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.2);
+}
+
+.type-icon {
+  font-size: 48rpx;
+  margin-bottom: 12rpx;
+}
+
+.type-label {
+  font-size: 28rpx;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.type-option.selected .type-label {
+  color: #1e40af;
+  font-weight: 600;
+}
