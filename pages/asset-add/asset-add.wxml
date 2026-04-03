@@ -41,6 +41,38 @@
         />
       </view>
 
+      <!-- 待订阅开关（仅订阅资产显示） -->
+      <view class="switch-list switch-list-margin" wx:if="{{assetType === 'subscription'}}">
+        <view class="switch-item">
+          <text class="switch-label">待订阅</text>
+          <switch
+            checked="{{pendingSubscription}}"
+            bindchange="onPendingSubscriptionChange"
+            color="#6366f1"
+          />
+        </view>
+      </view>
+
+      <!-- 待订阅开始日期（待订阅开启时显示） -->
+      <view class="form-item" wx:if="{{assetType === 'subscription' && pendingSubscription}}">
+        <view class="item-label">
+          <text class="required">*</text>
+          <text>开始日期</text>
+        </view>
+        <picker
+          mode="date"
+          bindchange="onSubscriptionStartDateChange"
+          value="{{subscriptionStartDate}}"
+          start="{{todayDate}}"
+          class="item-picker"
+        >
+          <view class="picker-content">
+            <text class="picker-value">{{subscriptionStartDate || '请选择开始日期'}}</text>
+            <text class="picker-icon">›</text>
+          </view>
+        </picker>
+      </view>
+
       <!-- 价格（普通资产） -->
       <view class="form-item" wx:if="{{assetType === 'fixed'}}">
         <view class="item-label">
@@ -58,8 +90,8 @@
         />
       </view>
 
-      <!-- 购买日期 -->
-      <view class="form-item">
+      <!-- 购买日期/订阅日期（待订阅关闭时显示） -->
+      <view class="form-item" wx:if="{{assetType === 'fixed' || !pendingSubscription}}">
         <view class="item-label">
           <text class="required">*</text>
           <text>{{assetType === 'subscription' ? '订阅日期' : '购买日期'}}</text>
@@ -68,6 +100,7 @@
           mode="date"
           bindchange="onDateChange"
           value="{{purchaseDate}}"
+          end="{{todayDate}}"
           class="item-picker"
         >
           <view class="picker-content">
@@ -137,71 +170,52 @@
         />
       </view>
 
-      <!-- 结束订阅（编辑模式） -->
-      <view class="form-item" wx:if="{{isEdit}}">
-        <view class="item-label">
-          <text>结束订阅</text>
+      <!-- 结束订阅（编辑模式，仅已生效的订阅资产显示） -->
+      <view class="switch-list switch-list-margin" wx:if="{{isEdit && !pendingSubscription}}">
+        <!-- 提示信息 -->
+        <view class="notice-tip" wx:if="{{endSubscription}}">
+          <text class="notice-icon">💡</text>
+          <text class="notice-text">已结束订阅的资产不计入总日均成本统计，关闭后默认开启计入总日均</text>
         </view>
-        <switch
-          checked="{{endSubscription}}"
-          bindchange="onEndSubscriptionChange"
-          color="#f44336"
-        />
-      </view>
-
-      <!-- 订阅结束日期 -->
-      <view class="form-item" wx:if="{{endSubscription || subscriptionEndDate}}">
-        <view class="item-label">
-          <text>结束日期</text>
-        </view>
-        <picker
-          mode="date"
-          bindchange="onSubscriptionEndDateChange"
-          value="{{subscriptionEndDate}}"
-          class="item-picker"
-        >
-          <view class="picker-content">
-            <text class="picker-value">{{subscriptionEndDate || '请选择结束日期'}}</text>
-            <text class="picker-icon">›</text>
-          </view>
-        </picker>
-      </view>
-    </view>
-
-    <!-- 待订阅设置 -->
-    <view class="form-group" wx:if="{{assetType === 'subscription' && !isEdit}}">
-      <view class="form-header">
-        <text class="form-title">其他</text>
-      </view>
-      <view class="switch-list">
         <view class="switch-item">
-          <text class="switch-label">待订阅</text>
+          <text class="switch-label">结束订阅</text>
           <switch
-            checked="{{pendingSubscription}}"
-            bindchange="onPendingSubscriptionChange"
-            color="#6366f1"
+            checked="{{endSubscription}}"
+            bindchange="onEndSubscriptionChange"
+            color="#f44336"
           />
         </view>
-        <!-- 订阅开始日期（待订阅开关打开时显示） -->
-        <view class="retired-date-wrapper" wx:if="{{pendingSubscription}}">
+        <!-- 订阅结束日期（结束订阅开启时显示） -->
+        <view class="retired-date-wrapper" wx:if="{{endSubscription || subscriptionEndDate}}">
           <view class="retired-date-item">
             <view class="item-label">
               <text class="required">*</text>
-              <text>开始日期</text>
+              <text>结束日期</text>
             </view>
             <picker
               mode="date"
-              bindchange="onSubscriptionStartDateChange"
-              value="{{subscriptionStartDate}}"
+              bindchange="onSubscriptionEndDateChange"
+              value="{{subscriptionEndDate}}"
+              start="{{purchaseDate}}"
+              end="{{todayDate}}"
               class="item-picker"
             >
               <view class="picker-content">
-                <text class="picker-value">{{subscriptionStartDate || '请选择开始日期'}}</text>
+                <text class="picker-value">{{subscriptionEndDate || '请选择结束日期'}}</text>
                 <text class="picker-icon">›</text>
               </view>
             </picker>
           </view>
         </view>
+      </view>
+    </view>
+
+    <!-- 其他设置（订阅资产） -->
+    <view class="form-group" wx:if="{{assetType === 'subscription'}}">
+      <view class="form-header">
+        <text class="form-title">其他</text>
+      </view>
+      <view class="switch-list">
         <view class="switch-item">
           <text class="switch-label">不计入总资产</text>
           <switch
@@ -216,6 +230,7 @@
             checked="{{excludeDaily}}"
             bindchange="onExcludeDailyChange"
             color="#6366f1"
+            disabled="{{endSubscription}}"
           />
         </view>
       </view>

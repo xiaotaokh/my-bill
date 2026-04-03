@@ -343,6 +343,10 @@
   gap: 24rpx;
 }
 
+.switch-list-margin {
+  margin-bottom: 24rpx;
+}
+
 /* 提示信息 */
 .notice-tip {
   display: flex;

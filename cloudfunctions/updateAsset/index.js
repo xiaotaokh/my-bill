@@ -54,19 +54,37 @@ exports.main = async (event, context) => {
       };
     }
 
-    if (!name || !purchaseDate || !category) {
+    if (!name || !category) {
       return {
         success: false,
         error: '缺少必需参数'
       };
     }
 
-    // 普通资产必须有 price
-    if (assetType === 'fixed' && !price) {
-      return {
-        success: false,
-        error: '缺少价格参数'
-      };
+    // 普通资产必须有 purchaseDate 和 price
+    if (assetType === 'fixed') {
+      if (!purchaseDate) {
+        return {
+          success: false,
+          error: '缺少购买日期'
+        };
+      }
+      if (!price) {
+        return {
+          success: false,
+          error: '缺少价格参数'
+        };
+      }
+    }
+
+    // 订阅资产必须有日期（purchaseDate 或 subscriptionStartDate）
+    if (assetType === 'subscription') {
+      if (!purchaseDate && !subscriptionStartDate) {
+        return {
+          success: false,
+          error: '缺少订阅日期'
+        };
+      }
     }
 
     // 订阅资产验证
@@ -141,8 +159,29 @@ exports.main = async (event, context) => {
       updateData.periodAmount = parseFloat(periodAmount);
       updateData.periodType = periodType;
       updateData.periodDays = calculatedPeriodDays;
-      updateData.subscriptionStartDate = pendingSubscription ? subscriptionStartDate : purchaseDate;
-      updateData.subscriptionEndDate = subscriptionEndDate;
+
+      // 根据待订阅状态设置日期
+      if (pendingSubscription) {
+        // 待订阅：使用 subscriptionStartDate，清空结束状态
+        updateData.purchaseDate = subscriptionStartDate;
+        updateData.subscriptionStartDate = subscriptionStartDate;
+        updateData.subscriptionEndDate = '';
+        updateData.subscriptionStatus = 'pending';
+      } else {
+        // 已订阅：使用 purchaseDate
+        updateData.purchaseDate = purchaseDate;
+        updateData.subscriptionStartDate = purchaseDate;
+        updateData.subscriptionEndDate = subscriptionEndDate || '';
+
+        // 处理结束订阅（仅非待订阅状态）
+        if (endSubscription) {
+          updateData.subscriptionStatus = 'ended';
+          updateData.subscriptionEndDate = subscriptionEndDate || new Date().toISOString().split('T')[0];
+        } else {
+          updateData.subscriptionStatus = 'active';
+        }
+      }
+
       updateData.pendingSubscription = pendingSubscription;
 
       // 处理金额变更历史
@@ -156,16 +195,6 @@ exports.main = async (event, context) => {
           effectiveDate: currentAsset.data.subscriptionStartDate || currentAsset.data.purchaseDate
         };
         updateData.amountHistory = [...existingAmountHistory, historyEntry];
-      }
-
-      // 处理结束订阅
-      if (endSubscription) {
-        updateData.subscriptionStatus = 'ended';
-        updateData.subscriptionEndDate = subscriptionEndDate || new Date().toISOString().split('T')[0];
-      } else if (pendingSubscription) {
-        updateData.subscriptionStatus = 'pending';
-      } else {
-        updateData.subscriptionStatus = 'active';
       }
 
       // 保持 status 字段为 active（订阅资产使用 subscriptionStatus）

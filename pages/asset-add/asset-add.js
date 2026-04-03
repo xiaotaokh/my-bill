@@ -283,30 +283,37 @@ Page({
     categories: [],
 
     // 表单验证
-    errors: {}
+    errors: {},
+
+    // 今天的日期（用于限制日期选择器）
+    todayDate: ''
   },
 
   onLoad: function (options) {
+    // 初始化今天的日期
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayDate = `${year}-${month}-${day}`;
+
     // 检查是否是编辑模式
     if (options.id && options.edit === 'true') {
       this.setData({
         isEdit: true,
-        assetId: options.id
+        assetId: options.id,
+        todayDate: todayDate
       });
       // 编辑模式：先加载资产详情，详情加载完成后再加载类别
       // loadAssetDetail 会在完成后调用 loadCategories
       this.loadAssetDetail(options.id);
     } else {
       // 添加模式：初始化购买日期为今天
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-
       this.setData({
-        purchaseDate: `${year}-${month}-${day}`,
+        purchaseDate: todayDate,
         selectedIcon: '📦', // 设置默认的通用emoji
-        selectedIconName: '默认'
+        selectedIconName: '默认',
+        todayDate: todayDate
       });
 
       // 添加模式下直接加载类别
@@ -896,15 +903,21 @@ Page({
   onPendingSubscriptionChange(e) {
     const checked = e.detail.value;
     const updates = { pendingSubscription: checked };
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
     if (checked) {
-      // 打开时设置默认开始日期为今天
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      updates.subscriptionStartDate = `${year}-${month}-${day}`;
+      // 打开待订阅：设置开始日期，清空结束订阅状态
+      updates.subscriptionStartDate = todayStr;
+      updates.endSubscription = false;
+      updates.subscriptionEndDate = '';
     } else {
-      updates.subscriptionStartDate = '';
+      // 关闭待订阅：设置订阅日期
+      updates.purchaseDate = todayStr;
     }
     this.setData(updates);
   },
@@ -924,14 +937,18 @@ Page({
     const checked = e.detail.value;
     const updates = { endSubscription: checked };
     if (checked) {
-      // 设置默认结束日期为今天
+      // 设置默认结束日期，并强制开启不计入总日均
       const today = new Date();
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const day = String(today.getDate()).padStart(2, '0');
-      updates.subscriptionEndDate = `${year}-${month}-${day}`;
+      const todayStr = `${year}-${month}-${day}`;
+
+      updates.subscriptionEndDate = todayStr;
+      updates.excludeDaily = true;
     } else {
       updates.subscriptionEndDate = '';
+      updates.excludeDaily = false;
     }
     this.setData(updates);
   },
@@ -994,9 +1011,24 @@ Page({
       }
     }
 
-    // 验证购买日期
-    if (!formData.purchaseDate) {
-      errors.purchaseDate = '请选择购买日期';
+    // 验证购买日期（订阅资产根据待订阅状态验证不同字段）
+    if (this.data.assetType === 'subscription') {
+      if (this.data.pendingSubscription) {
+        // 待订阅：验证开始日期
+        if (!this.data.subscriptionStartDate) {
+          errors.subscriptionStartDate = '请选择开始日期';
+        }
+      } else {
+        // 已订阅：验证订阅日期
+        if (!formData.purchaseDate) {
+          errors.purchaseDate = '请选择订阅日期';
+        }
+      }
+    } else {
+      // 普通资产：验证购买日期
+      if (!formData.purchaseDate) {
+        errors.purchaseDate = '请选择购买日期';
+      }
     }
 
     // 验证类别
@@ -1084,8 +1116,20 @@ Page({
       if (this.data.periodType === 'custom') {
         requestData.periodDays = parseInt(this.data.periodDays);
       }
-      requestData.subscriptionStartDate = this.data.pendingSubscription ? this.data.subscriptionStartDate : this.data.purchaseDate;
-      requestData.subscriptionEndDate = this.data.subscriptionEndDate;
+
+      // 根据待订阅状态设置日期
+      if (this.data.pendingSubscription) {
+        // 待订阅开启：使用开始日期，清空订阅日期和结束日期
+        requestData.purchaseDate = '';
+        requestData.subscriptionStartDate = this.data.subscriptionStartDate;
+        requestData.subscriptionEndDate = '';
+      } else {
+        // 待订阅关闭：使用订阅日期
+        requestData.purchaseDate = this.data.purchaseDate;
+        requestData.subscriptionStartDate = '';
+        requestData.subscriptionEndDate = this.data.subscriptionEndDate;
+      }
+
       requestData.pendingSubscription = this.data.pendingSubscription;
       requestData.endSubscription = this.data.endSubscription;
     }

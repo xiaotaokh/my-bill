@@ -44,19 +44,37 @@ exports.main = async (event, context) => {
     } = event;
 
     // 验证必需参数
-    if (!name || !purchaseDate || !category) {
+    if (!name || !category) {
       return {
         success: false,
         error: '缺少必需参数'
       };
     }
 
-    // 普通资产必须有 price
-    if (assetType === 'fixed' && !price) {
-      return {
-        success: false,
-        error: '缺少价格参数'
-      };
+    // 普通资产必须有 purchaseDate 和 price
+    if (assetType === 'fixed') {
+      if (!purchaseDate) {
+        return {
+          success: false,
+          error: '缺少购买日期'
+        };
+      }
+      if (!price) {
+        return {
+          success: false,
+          error: '缺少价格参数'
+        };
+      }
+    }
+
+    // 订阅资产必须有日期（purchaseDate 或 subscriptionStartDate）
+    if (assetType === 'subscription') {
+      if (!purchaseDate && !subscriptionStartDate) {
+        return {
+          success: false,
+          error: '缺少订阅日期'
+        };
+      }
     }
 
     // 订阅资产验证
@@ -125,8 +143,20 @@ exports.main = async (event, context) => {
       assetData.periodAmount = parseFloat(periodAmount);
       assetData.periodType = periodType;
       assetData.periodDays = calculatedPeriodDays;
-      assetData.subscriptionStartDate = pendingSubscription ? subscriptionStartDate : purchaseDate;
-      assetData.subscriptionEndDate = subscriptionEndDate;
+
+      // 根据待订阅状态设置日期
+      if (pendingSubscription) {
+        // 待订阅：使用 subscriptionStartDate
+        assetData.purchaseDate = subscriptionStartDate;
+        assetData.subscriptionStartDate = subscriptionStartDate;
+        assetData.subscriptionEndDate = '';
+      } else {
+        // 已订阅：使用 purchaseDate
+        assetData.purchaseDate = purchaseDate;
+        assetData.subscriptionStartDate = purchaseDate;
+        assetData.subscriptionEndDate = subscriptionEndDate || '';
+      }
+
       assetData.subscriptionStatus = subscriptionStatus;
       assetData.amountHistory = [];  // 金额变更历史
       assetData.pendingSubscription = pendingSubscription;
