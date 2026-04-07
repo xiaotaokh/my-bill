@@ -4,6 +4,26 @@
   <view class="main-content" style="{{showSetting || showReport || showBatchDelete ? 'display: none;' : 'display: block;'}}">
     <!-- 顶部背景 -->
     <view class="header-bg" style="{{showSetting || showBatchDelete ? 'display: none;' : 'display: block;'}}"></view>
+
+    <!-- 搜索输入框 -->
+    <view class="search-bar-container {{showSearchInput ? 'show' : ''}}" wx:if="{{showSearchInput && !showSetting && !showReport && !showBatchDelete}}">
+      <view class="search-bar">
+        <text class="search-icon">🔍</text>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="搜索资产名称"
+          value="{{searchInputValue}}"
+          bindinput="onSearchInput"
+          bindconfirm="doSearch"
+          confirm-type="search"
+          focus="{{showSearchInput}}"
+        />
+        <text wx:if="{{searchInputValue}}" class="search-clear" bindtap="clearSearch">✕</text>
+        <text class="search-cancel" bindtap="cancelSearch">取消</text>
+      </view>
+    </view>
+
     <!-- 日期显示 -->
     <view class="date-section">
       <view class="date-display">
@@ -483,7 +503,7 @@
     </view>
   </view>
 
-  <!-- 底部悬浮：首页/统计/设置切换 + 新增资产按钮 -->
+  <!-- 底部悬浮：首页/统计/设置切换 + 搜索 + 新增资产按钮 -->
   <view class="bottom-controls" style="{{showBatchDelete ? 'display: none;' : 'display: flex;'}}">
     <!-- 首页/统计/设置切换悬浮按钮组 -->
     <view class="mode-switch-fab">
@@ -503,12 +523,23 @@
       </view>
     </view>
 
-    <!-- 新增资产悬浮按钮 -->
-    <view class="add-asset-fab" bindtap="goToAdd">
-      <view class="fab-inner">
-        <text class="fab-icon">+</text>
+    <!-- 搜索和新增资产按钮组 -->
+    <view class="action-fab-group">
+      <!-- 搜索资产悬浮按钮 -->
+      <view class="search-asset-fab" bindtap="toggleSearchInput">
+        <view class="fab-inner search-fab-inner">
+          <text class="fab-icon">🔍</text>
+        </view>
+        <view class="fab-glow search-glow"></view>
       </view>
-      <view class="fab-glow"></view>
+
+      <!-- 新增资产悬浮按钮 -->
+      <view class="add-asset-fab" bindtap="goToAdd">
+        <view class="fab-inner">
+          <text class="fab-icon">+</text>
+        </view>
+        <view class="fab-glow"></view>
+      </view>
     </view>
   </view>
 

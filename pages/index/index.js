@@ -106,7 +106,12 @@ Page({
     // 状态
     isLoading: false,
     _fromSetting: false,
-    showBackToTop: false
+    showBackToTop: false,
+
+    // 搜索
+    searchKeyword: '',
+    showSearchInput: false,
+    searchInputValue: ''
   },
 
   onLoad() {
@@ -265,6 +270,15 @@ Page({
     app.getOpenid().then(openid => {
       const db = wx.cloud.database({ env: app.globalData.envId });
       const where = { _openid: openid };
+
+      // 添加名称搜索条件
+      if (this.data.searchKeyword) {
+        // 使用正则表达式进行模糊搜索
+        where.name = db.RegExp({
+          regexp: this.data.searchKeyword,
+          options: 'i'  // 不区分大小写
+        });
+      }
 
       const sortField = sortDbFields[currentSortIndex];
       const orderField = sortField || 'createdAt';
@@ -1586,6 +1600,45 @@ Page({
 
       this.timeChart = chart;
       return chart;
+    });
+  },
+
+  // ============================================
+  // 搜索功能
+  // ============================================
+
+  // 显示/隐藏搜索输入框
+  toggleSearchInput() {
+    const showSearchInput = !this.data.showSearchInput;
+    this.setData({ showSearchInput });
+  },
+
+  // 搜索输入
+  onSearchInput(e) {
+    this.setData({ searchInputValue: e.detail.value });
+  },
+
+  // 执行搜索
+  doSearch() {
+    const keyword = this.data.searchInputValue.trim();
+    this.setData({ searchKeyword: keyword });
+    this.loadAssets();
+  },
+
+  // 清空搜索
+  clearSearch() {
+    this.setData({
+      searchKeyword: '',
+      searchInputValue: '',
+      showSearchInput: false
+    });
+    this.loadAssets();
+  },
+
+  // 取消搜索
+  cancelSearch() {
+    this.setData({
+      showSearchInput: false
     });
   }
 });
