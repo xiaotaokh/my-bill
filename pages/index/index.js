@@ -111,7 +111,8 @@ Page({
     // 搜索
     searchKeyword: '',
     showSearchInput: false,
-    searchInputValue: ''
+    searchInputValue: '',
+    searchInputFocus: false
   },
 
   onLoad() {
@@ -258,7 +259,7 @@ Page({
   },
 
   // 加载资产
-  loadAssets() {
+  loadAssets(searchKeyword) {
     if (this.data.isLoading) return;
 
     this.setData({ isLoading: true });
@@ -267,15 +268,18 @@ Page({
     const app = getApp();
     const { currentSortIndex, sortOrder, sortDbFields } = this.data;
 
+    // 使用传入的搜索关键词，或当前状态中的值
+    const keyword = searchKeyword !== undefined ? searchKeyword : this.data.searchKeyword;
+
     app.getOpenid().then(openid => {
       const db = wx.cloud.database({ env: app.globalData.envId });
       const where = { _openid: openid };
 
       // 添加名称搜索条件
-      if (this.data.searchKeyword) {
+      if (keyword) {
         // 使用正则表达式进行模糊搜索
         where.name = db.RegExp({
-          regexp: this.data.searchKeyword,
+          regexp: keyword,
           options: 'i'  // 不区分大小写
         });
       }
@@ -1609,8 +1613,25 @@ Page({
 
   // 显示/隐藏搜索输入框
   toggleSearchInput() {
-    const showSearchInput = !this.data.showSearchInput;
-    this.setData({ showSearchInput });
+    if (this.data.showSearchInput) {
+      // 关闭时恢复原状
+      this.setData({
+        searchKeyword: '',
+        searchInputValue: '',
+        showSearchInput: false,
+        searchInputFocus: false
+      });
+      this.loadAssets('');  // 传入空字符串确保加载全部资产
+    } else {
+      // 先显示搜索框，延迟设置 focus 确保键盘弹出
+      this.setData({
+        showSearchInput: true,
+        searchInputFocus: false
+      });
+      setTimeout(() => {
+        this.setData({ searchInputFocus: true });
+      }, 100);
+    }
   },
 
   // 搜索输入
@@ -1622,23 +1643,24 @@ Page({
   doSearch() {
     const keyword = this.data.searchInputValue.trim();
     this.setData({ searchKeyword: keyword });
-    this.loadAssets();
+    this.loadAssets(keyword);
   },
 
-  // 清空搜索
+  // 清空输入框内容
   clearSearch() {
+    this.setData({
+      searchInputValue: ''
+    });
+  },
+
+  // 取消搜索 - 恢复原状
+  cancelSearch() {
     this.setData({
       searchKeyword: '',
       searchInputValue: '',
-      showSearchInput: false
+      showSearchInput: false,
+      searchInputFocus: false
     });
-    this.loadAssets();
-  },
-
-  // 取消搜索
-  cancelSearch() {
-    this.setData({
-      showSearchInput: false
-    });
+    this.loadAssets('');  // 传入空字符串确保加载全部资产
   }
 });

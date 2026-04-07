@@ -6,7 +6,7 @@
     <view class="header-bg" style="{{showSetting || showBatchDelete ? 'display: none;' : 'display: block;'}}"></view>
 
     <!-- 搜索输入框 -->
-    <view class="search-bar-container {{showSearchInput ? 'show' : ''}}" wx:if="{{showSearchInput && !showSetting && !showReport && !showBatchDelete}}">
+    <view class="search-bar-container" hidden="{{!showSearchInput || showSetting || showBatchDelete}}">
       <view class="search-bar">
         <text class="search-icon">🔍</text>
         <input
@@ -17,7 +17,7 @@
           bindinput="onSearchInput"
           bindconfirm="doSearch"
           confirm-type="search"
-          focus="{{showSearchInput}}"
+          focus="{{searchInputFocus}}"
         />
         <text wx:if="{{searchInputValue}}" class="search-clear" bindtap="clearSearch">✕</text>
         <text class="search-cancel" bindtap="cancelSearch">取消</text>
@@ -526,9 +526,9 @@
     <!-- 搜索和新增资产按钮组 -->
     <view class="action-fab-group">
       <!-- 搜索资产悬浮按钮 -->
-      <view class="search-asset-fab" bindtap="toggleSearchInput">
+      <view class="search-asset-fab {{showSearchInput ? 'active' : ''}}" bindtap="toggleSearchInput">
         <view class="fab-inner search-fab-inner">
-          <text class="fab-icon">🔍</text>
+          <text class="fab-icon">{{showSearchInput ? '✕' : '🔍'}}</text>
         </view>
         <view class="fab-glow search-glow"></view>
       </view>
