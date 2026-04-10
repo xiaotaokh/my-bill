@@ -345,6 +345,20 @@
         </view>
       </view>
 
+      <!-- 用户统计 -->
+      <view class="setting-item-full" bindtap="navigateToUserStats" wx:if="{{showUserStats}}">
+        <view class="setting-icon-box">
+          <text>🔒</text>
+        </view>
+        <view class="setting-info">
+          <text class="setting-title-text">用户统计</text>
+          <text class="setting-desc">查看用户访问和资产创建统计</text>
+        </view>
+        <view class="setting-arrow">
+          <text class="arrow">›</text>
+        </view>
+      </view>
+
       <!-- 关于 -->
       <view class="setting-item-full" bindtap="showAboutInfo">
         <view class="setting-icon-box">

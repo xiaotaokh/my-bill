@@ -30,6 +30,10 @@ Page({
     soldCount: 0,
     statsTotalCount: 0,
 
+    // 管理员标识
+    showUserStats: false,
+    isAdmin: false,
+
     // 资产列表
     assets: [],
     filteredAssets: [],
@@ -119,6 +123,37 @@ Page({
     this.loadCategories();
     this.loadAssets();
     this.loadWeather();
+    this.checkAdmin();
+  },
+
+  checkAdmin() {
+    const app = getApp();
+    const ADMIN_OPENID = 'ofW_r4lPk806IqPSk4-gR9r_478g';
+    
+    app.getOpenid().then(openid => {
+      console.log('=== 管理员检查 ===');
+      console.log('当前用户 openid:', openid);
+      console.log('管理员 openid:', ADMIN_OPENID);
+      console.log('是否匹配:', openid === ADMIN_OPENID);
+      
+      if (openid === ADMIN_OPENID) {
+        this.setData({
+          isAdmin: true,
+          showUserStats: true
+        });
+      } else {
+        this.setData({
+          isAdmin: false,
+          showUserStats: false
+        });
+      }
+    }).catch(err => {
+      console.error('获取 openid 失败', err);
+      this.setData({
+        isAdmin: false,
+        showUserStats: false
+      });
+    });
   },
 
   onShow() {
@@ -717,6 +752,10 @@ Page({
   navigateToCategoryManage() {
     this.setData({ _fromSetting: true });
     wx.navigateTo({ url: '/pages/category-manage/category-manage' });
+  },
+
+  navigateToUserStats() {
+    wx.navigateTo({ url: '/pages/user-stats/user-stats' });
   },
 
   navigateToSetting() {
