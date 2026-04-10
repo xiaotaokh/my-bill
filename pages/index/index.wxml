@@ -4,6 +4,26 @@
   <view class="main-content" style="{{showSetting || showReport || showBatchDelete ? 'display: none;' : 'display: block;'}}">
     <!-- 顶部背景 -->
     <view class="header-bg" style="{{showSetting || showBatchDelete ? 'display: none;' : 'display: block;'}}"></view>
+
+    <!-- 搜索输入框 -->
+    <view class="search-bar-container" hidden="{{!showSearchInput || showSetting || showBatchDelete}}">
+      <view class="search-bar">
+        <text class="search-icon">🔍</text>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="搜索资产名称"
+          value="{{searchInputValue}}"
+          bindinput="onSearchInput"
+          bindconfirm="doSearch"
+          confirm-type="search"
+          focus="{{searchInputFocus}}"
+        />
+        <text wx:if="{{searchInputValue}}" class="search-clear" bindtap="clearSearch">✕</text>
+        <text class="search-cancel" bindtap="cancelSearch">取消</text>
+      </view>
+    </view>
+
     <!-- 日期显示 -->
     <view class="date-section">
       <view class="date-display">
@@ -163,7 +183,27 @@
             <view class="card-header">
               <view class="name-row">
                 <text class="asset-name">{{item.name}}</text>
-                <view class="asset-badge {{item.status}}">
+                <!-- 每期金额显示 -->
+                <view wx:if="{{item.assetType === 'subscription' && item.periodAmountDisplay}}" class="period-amount-text">
+                  <text>{{item.periodAmountDisplay}}</text>
+                  <text class="period-type-small">(</text>
+                  <text class="period-type-small">{{item.periodTypeDisplay}}</text>
+                  <text class="period-type-small">)</text>
+                </view>
+                <!-- 订阅标签 -->
+                <view class="subscription-badge" wx:if="{{item.assetType === 'subscription'}}">
+                  <text>订阅</text>
+                </view>
+                <!-- 待生效标签 -->
+                <view class="pending-badge" wx:if="{{item.subscriptionStatus === 'pending'}}">
+                  <text>待生效</text>
+                </view>
+                <!-- 已结束标签 -->
+                <view class="ended-badge" wx:if="{{item.subscriptionStatus === 'ended'}}">
+                  <text>已结束</text>
+                </view>
+                <!-- 普通资产状态标签 -->
+                <view class="asset-badge {{item.status}}" wx:if="{{item.assetType !== 'subscription'}}">
                   <text>{{item.status === 'active' ? '服役中' : item.status === 'retired' ? '已退役' : '已卖出'}}</text>
                 </view>
               </view>
@@ -184,37 +224,58 @@
               <text class="purchase-date">{{item.dateRange}}</text>
             </view>
             <view class="card-stats">
-              <block wx:if="{{item.status === 'active'}}">
-                <view class="stat-item {{item.excludeDaily ? 'has-badge' : ''}}">
-                  <text class="stat-label">日均成本</text>
-                  <text class="stat-value cost {{item.excludeDaily ? 'excluded' : 'included'}}">¥{{item.dailyCost}}/天</text>
-                  <text wx:if="{{item.excludeDaily}}" class="exclude-badge">不计入</text>
-                </view>
-                <view class="stat-divider"></view>
-              </block>
-              <block wx:else>
+              <!-- 订阅资产统计 -->
+              <block wx:if="{{item.assetType === 'subscription'}}">
                 <view class="stat-item">
-                  <text class="stat-label">折合每日</text>
-                  <text class="stat-value cost">¥{{item.dailyEquivalent}}/天</text>
-                </view>
-                <view class="stat-divider"></view>
-                <view class="stat-item has-badge">
                   <text class="stat-label">日均成本</text>
-                  <text class="stat-value cost excluded">¥{{item.dailyCost}}/天</text>
-                  <text class="exclude-badge">不计入</text>
+                  <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
                 </view>
                 <view class="stat-divider"></view>
+                <view class="stat-item" wx:if="{{item.subscriptionStatus !== 'pending'}}">
+                  <text class="stat-label">已订阅</text>
+                  <text class="stat-value">{{item.usedDays}}天</text>
+                </view>
+                <view class="stat-divider" wx:if="{{item.subscriptionStatus !== 'pending'}}"></view>
+                <view class="stat-item {{item.excludeTotal ? 'has-badge' : ''}}">
+                  <text class="stat-label">总投入</text>
+                  <text class="stat-value price {{item.excludeTotal ? 'excluded' : ''}}">¥{{item.totalInvestment}}</text>
+                  <text wx:if="{{item.excludeTotal}}" class="exclude-badge">不计入</text>
+                </view>
               </block>
-              <view class="stat-item">
-                <text class="stat-label">已使用(含今天)</text>
-                <text class="stat-value">{{item.usedDays}}天</text>
-              </view>
-              <view class="stat-divider"></view>
-              <view class="stat-item {{item.excludeTotal ? 'has-badge' : ''}}">
-                <text class="stat-label">价格</text>
-                <text class="stat-value price {{item.excludeTotal ? 'excluded' : ''}}">¥{{item.price}}</text>
-                <text wx:if="{{item.excludeTotal}}" class="exclude-badge">不计入</text>
-              </view>
+              <!-- 普通资产统计 -->
+              <block wx:else>
+                <block wx:if="{{item.status === 'active'}}">
+                  <view class="stat-item {{item.excludeDaily ? 'has-badge' : ''}}">
+                    <text class="stat-label">日均成本</text>
+                    <text class="stat-value cost {{item.excludeDaily ? 'excluded' : 'included'}}">¥{{item.dailyCost}}/天</text>
+                    <text wx:if="{{item.excludeDaily}}" class="exclude-badge">不计入</text>
+                  </view>
+                  <view class="stat-divider"></view>
+                </block>
+                <block wx:else>
+                  <view class="stat-item">
+                    <text class="stat-label">折合每日</text>
+                    <text class="stat-value cost">¥{{item.dailyEquivalent}}/天</text>
+                  </view>
+                  <view class="stat-divider"></view>
+                  <view class="stat-item has-badge">
+                    <text class="stat-label">日均成本</text>
+                    <text class="stat-value cost excluded">¥{{item.dailyCost}}/天</text>
+                    <text class="exclude-badge">不计入</text>
+                  </view>
+                  <view class="stat-divider"></view>
+                </block>
+                <view class="stat-item">
+                  <text class="stat-label">已使用(含今天)</text>
+                  <text class="stat-value">{{item.usedDays}}天</text>
+                </view>
+                <view class="stat-divider"></view>
+                <view class="stat-item {{item.excludeTotal ? 'has-badge' : ''}}">
+                  <text class="stat-label">价格</text>
+                  <text class="stat-value price {{item.excludeTotal ? 'excluded' : ''}}">¥{{item.price}}</text>
+                  <text wx:if="{{item.excludeTotal}}" class="exclude-badge">不计入</text>
+                </view>
+              </block>
             </view>
           </view>
         </view>
@@ -280,6 +341,20 @@
           <text class="setting-desc">选择多个资产一键删除</text>
         </view>
         <view class="setting-arrow warm-arrow">
+          <text class="arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 用户统计 -->
+      <view class="setting-item-full" bindtap="navigateToUserStats" wx:if="{{showUserStats}}">
+        <view class="setting-icon-box">
+          <text>🔒</text>
+        </view>
+        <view class="setting-info">
+          <text class="setting-title-text">用户统计</text>
+          <text class="setting-desc">查看用户访问和资产创建统计</text>
+        </view>
+        <view class="setting-arrow">
           <text class="arrow">›</text>
         </view>
       </view>
@@ -442,7 +517,7 @@
     </view>
   </view>
 
-  <!-- 底部悬浮：首页/统计/设置切换 + 新增资产按钮 -->
+  <!-- 底部悬浮：首页/统计/设置切换 + 搜索 + 新增资产按钮 -->
   <view class="bottom-controls" style="{{showBatchDelete ? 'display: none;' : 'display: flex;'}}">
     <!-- 首页/统计/设置切换悬浮按钮组 -->
     <view class="mode-switch-fab">
@@ -462,12 +537,23 @@
       </view>
     </view>
 
-    <!-- 新增资产悬浮按钮 -->
-    <view class="add-asset-fab" bindtap="goToAdd">
-      <view class="fab-inner">
-        <text class="fab-icon">+</text>
+    <!-- 搜索和新增资产按钮组 -->
+    <view class="action-fab-group">
+      <!-- 搜索资产悬浮按钮 -->
+      <view class="search-asset-fab {{showSearchInput ? 'active' : ''}}" bindtap="toggleSearchInput">
+        <view class="fab-inner search-fab-inner">
+          <text class="fab-icon">{{showSearchInput ? '✕' : '🔍'}}</text>
+        </view>
+        <view class="fab-glow search-glow"></view>
       </view>
-      <view class="fab-glow"></view>
+
+      <!-- 新增资产悬浮按钮 -->
+      <view class="add-asset-fab" bindtap="goToAdd">
+        <view class="fab-inner">
+          <text class="fab-icon">+</text>
+        </view>
+        <view class="fab-glow"></view>
+      </view>
     </view>
   </view>
 

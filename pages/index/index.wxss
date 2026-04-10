@@ -627,6 +627,58 @@ page {
   color: #1565c0;
 }
 
+/* 订阅资产每期金额显示 - 与订阅标签同行 */
+.period-amount-text {
+  display: flex;
+  align-items: baseline;
+  font-size: 20rpx;
+  font-weight: 600;
+  color: #00838f;
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+  padding: 4rpx 12rpx;
+  border-radius: 10rpx;
+  flex-shrink: 0;
+  margin-left: 8rpx;
+}
+
+.period-type-small {
+  font-size: 16rpx;
+  font-weight: 500;
+}
+
+/* 订阅资产标签 */
+.subscription-badge {
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+  font-size: 18rpx;
+  font-weight: 500;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+  color: #7b1fa2;
+}
+
+/* 待生效标签 */
+.pending-badge {
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+  font-size: 18rpx;
+  font-weight: 500;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+  color: #f57f17;
+}
+
+/* 已结束标签 */
+.ended-badge {
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+  font-size: 18rpx;
+  font-weight: 500;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
+  color: #c2185b;
+}
+
 .card-info {
   display: flex;
   align-items: center;
@@ -1239,6 +1291,123 @@ page {
   left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
+}
+
+/* 搜索和新增资产按钮组 */
+.action-fab-group {
+  display: flex;
+  gap: 16rpx;
+  align-items: center;
+  pointer-events: auto;
+}
+
+/* 搜索资产悬浮按钮 - 与新增资产按钮样式保持一致 */
+.search-asset-fab {
+  width: 90rpx;
+  height: 90rpx;
+  position: relative;
+}
+
+.search-asset-fab .fab-inner {
+  width: 100%;
+  height: 100%;
+  /* 使用蓝色渐变 */
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 16rpx rgba(59, 130, 246, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-asset-fab .fab-inner:active {
+  transform: scale(0.92);
+}
+
+.search-asset-fab .fab-icon {
+  font-size: 44rpx;
+  color: #fff;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+.search-asset-fab .fab-glow {
+  position: absolute;
+  width: 160rpx;
+  height: 160rpx;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+/* 搜索按钮激活状态 - 输入框显示时 */
+.search-asset-fab.active .fab-inner {
+  background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+  box-shadow: 0 6rpx 16rpx rgba(244, 114, 182, 0.3);
+}
+
+.search-asset-fab.active .fab-icon {
+  font-size: 36rpx;
+  font-weight: bold;
+}
+
+.search-asset-fab.active .fab-glow {
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.15) 0%, transparent 70%);
+}
+
+/* 搜索输入框容器 */
+.search-bar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 20rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #9b72e8 100%);
+  z-index: 1000;
+}
+
+/* 搜索输入框 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 40rpx;
+  padding: 16rpx 20rpx;
+  gap: 12rpx;
+  box-shadow: 0 4rpx 20rpx rgba(102, 126, 234, 0.2);
+}
+
+.search-icon {
+  font-size: 32rpx;
+  color: #667eea;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  background: transparent;
+}
+
+.search-input::placeholder {
+  color: #999;
+}
+
+.search-clear {
+  font-size: 28rpx;
+  color: #999;
+  padding: 8rpx;
+}
+
+.search-cancel {
+  font-size: 26rpx;
+  color: #667eea;
+  font-weight: 500;
+  padding: 8rpx 12rpx;
 }
 
 /* 回到顶部悬浮按钮 */

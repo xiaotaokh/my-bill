@@ -1,0 +1,4 @@
+<!--pages/user-stats/user-stats.wxml-->
+<view class="container">
+  <text class="page-title">用户统计</text>
+</view>

@@ -15,7 +15,12 @@ Page({
       usedDays: 0,
       dailyCost: '0.00',
       dailyEquivalent: '0.00',
-      dateRange: ''
+      dateRange: '',
+      // 订阅资产专属字段
+      periodTypeText: '',
+      totalInvestment: '0.00',
+      subscriptionStartDateFormatted: '',
+      subscriptionEndDateFormatted: ''
     }
   },
 
@@ -148,8 +153,40 @@ Page({
     return `${year}-${month}-${day} ${hour}:${minute}`;
   },
 
+  // 根据周期类型获取周期天数
+  getPeriodDays(periodType, customDays) {
+    const periodMap = {
+      'monthly': 30,
+      'yearly': 365,
+      'weekly': 7
+    };
+    if (periodType === 'custom') {
+      return parseInt(customDays) || 30;
+    }
+    return periodMap[periodType] || 30;
+  },
+
+  // 获取周期类型文本
+  getPeriodTypeText(periodType, customDays) {
+    const typeMap = {
+      'monthly': '月度',
+      'yearly': '年度',
+      'weekly': '周'
+    };
+    if (periodType === 'custom') {
+      return `${customDays || 30}天`;
+    }
+    return typeMap[periodType] || '月度';
+  },
+
   // 计算显示信息 - 和首页保持一致
   calculateDisplayInfo(asset) {
+    // 订阅资产处理
+    if (asset.assetType === 'subscription') {
+      return this.calculateSubscriptionDisplayInfo(asset);
+    }
+
+    // 普通资产处理
     const purchaseDate = this.parseDate(asset.purchaseDate);
     const now = new Date();
 
@@ -196,7 +233,75 @@ Page({
       usedDays: usedDays,
       dailyCost: dailyCost,
       dailyEquivalent: dailyEquivalent,
-      dateRange: asset.status === 'active' ? `${startDate} - 至今` : `${startDate} - ${dateRangeEnd}`
+      dateRange: asset.status === 'active' ? `${startDate} - 至今` : `${startDate} - ${dateRangeEnd}`,
+      periodTypeText: '',
+      totalInvestment: '0.00',
+      subscriptionStartDateFormatted: '',
+      subscriptionEndDateFormatted: ''
+    };
+  },
+
+  // 计算订阅资产显示信息
+  calculateSubscriptionDisplayInfo(asset) {
+    const purchaseDate = this.parseDate(asset.purchaseDate);
+    const subscriptionStartDate = asset.subscriptionStartDate ? this.parseDate(asset.subscriptionStartDate) : purchaseDate;
+    const now = new Date();
+
+    // 计算已订阅天数
+    let usedDays = 0;
+    let endDate = now;
+
+    if (asset.subscriptionStatus === 'ended' && asset.subscriptionEndDate) {
+      endDate = this.parseDate(asset.subscriptionEndDate);
+    }
+
+    // 待生效状态不计算使用天数
+    if (asset.subscriptionStatus !== 'pending') {
+      usedDays = Math.floor((endDate - subscriptionStartDate) / (1000 * 60 * 60 * 24)) + 1;
+      if (usedDays <= 0) usedDays = 1;
+    }
+
+    // 计算订阅资产日均成本 = 每期金额 / 周期天数
+    let dailyCost = '0.00';
+    if (asset.periodAmount && asset.periodType) {
+      const periodDays = this.getPeriodDays(asset.periodType, asset.periodDays);
+      dailyCost = (asset.periodAmount / periodDays).toFixed(2);
+    }
+
+    // 计算总投入
+    let totalInvestment = '0.00';
+    if (asset.subscriptionStatus !== 'pending' && asset.periodAmount && asset.periodType) {
+      const periodDays = this.getPeriodDays(asset.periodType, asset.periodDays);
+      const completedPeriods = Math.floor(usedDays / periodDays) + 1;
+      totalInvestment = (asset.periodAmount * completedPeriods).toFixed(2);
+    }
+
+    // 周期类型文本
+    const periodTypeText = this.getPeriodTypeText(asset.periodType, asset.periodDays);
+
+    // 日期范围
+    const startDate = this.formatDate(asset.subscriptionStartDate || asset.purchaseDate);
+    let dateRangeEnd = '至今';
+    if (asset.subscriptionStatus === 'ended' && asset.subscriptionEndDate) {
+      dateRangeEnd = this.formatDate(asset.subscriptionEndDate);
+    }
+    const dateRange = asset.subscriptionStatus === 'pending'
+      ? `待生效: ${startDate}`
+      : `${startDate} - ${dateRangeEnd}`;
+
+    return {
+      purchaseDateFormatted: this.formatDate(asset.purchaseDate),
+      createdAtFormatted: this.formatDate(asset.createdAt),
+      retiredDateFormatted: '',
+      soldDateFormatted: '',
+      usedDays: usedDays,
+      dailyCost: dailyCost,
+      dailyEquivalent: '0.00',
+      dateRange: dateRange,
+      periodTypeText: periodTypeText,
+      totalInvestment: totalInvestment,
+      subscriptionStartDateFormatted: this.formatDate(asset.subscriptionStartDate),
+      subscriptionEndDateFormatted: this.formatDate(asset.subscriptionEndDate)
     };
   },
 

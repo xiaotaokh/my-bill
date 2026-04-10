@@ -1,0 +1,13 @@
+/* pages/user-stats/user-stats.wxss */
+.container {
+  padding: 20rpx;
+}
+
+.page-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #333;
+  display: block;
+  text-align: center;
+  padding: 40rpx 0;
+}
