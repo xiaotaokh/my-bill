@@ -12,8 +12,6 @@ const WEATHER_API_KEY = '01d7c36f2c944e0592fb1032e7a382a1';
 exports.main = async (event, context) => {
   const { latitude, longitude } = event;
 
-  console.log('收到请求:', { latitude, longitude });
-
   if (!latitude || !longitude) {
     return { success: false, error: '缺少位置参数' };
   }
@@ -55,7 +53,6 @@ exports.main = async (event, context) => {
             const json = JSON.parse(cleanData);
             resolve(json);
           } catch (e) {
-            console.error('解析失败:', e.message);
             reject(e);
           }
         });
@@ -69,20 +66,15 @@ exports.main = async (event, context) => {
       fetch(`${baseUrl}/v7/weather/3d?location=${location}&key=${WEATHER_API_KEY}`)
     ]);
 
-    console.log('实时天气数据:', JSON.stringify(nowData));
-    console.log('预报数据:', JSON.stringify(forecastData));
-
     const result = {
       success: true,
       now: nowData?.code === '200' ? nowData.now : null,
       forecast: forecastData?.code === '200' ? forecastData.daily : null
     };
 
-    console.log('返回结果:', JSON.stringify(result));
     return result;
 
   } catch (error) {
-    console.error('获取天气失败:', error);
     return { success: false, error: error.message };
   }
 };

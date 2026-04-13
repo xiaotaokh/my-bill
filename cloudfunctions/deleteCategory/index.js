@@ -65,8 +65,6 @@ exports.main = async (event, context) => {
       message: '删除成功'
     };
   } catch (err) {
-    console.error('删除类别失败:', err);
-
     // 如果是权限错误，给出更友好的提示
     if (err.errCode === -502001 || (err.message && err.message.includes('permission'))) {
       return {

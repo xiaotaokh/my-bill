@@ -806,6 +806,12 @@
   margin-bottom: 12rpx;
 }
 
+.type-icon-img {
+  width: 48rpx;
+  height: 48rpx;
+  margin-bottom: 12rpx;
+}
+
 .type-label {
   font-size: 28rpx;
   color: #6b7280;

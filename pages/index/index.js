@@ -116,7 +116,13 @@ Page({
     searchKeyword: '',
     showSearchInput: false,
     searchInputValue: '',
-    searchInputFocus: false
+    searchInputFocus: false,
+
+    // 用户授权弹窗
+    showAuthModal: false,
+    authNickName: '',
+    authAvatarUrl: '',
+    authSubmitting: false
   },
 
   onLoad() {
@@ -124,6 +130,133 @@ Page({
     this.loadAssets();
     this.loadWeather();
     this.checkAdmin();
+    this.checkUserAuth();
+  },
+
+  // 检查用户是否已授权
+  checkUserAuth() {
+    const app = getApp();
+    const ADMIN_OPENID = 'ofW_r4lPk806IqPSk4-gR9r_478g';
+
+    app.getOpenid().then(openid => {
+      // 管理员不需要弹窗，也不需要记录到用户统计
+      if (openid === ADMIN_OPENID) {
+        return;
+      }
+
+      wx.cloud.callFunction({
+        name: 'saveUserInfo',
+        data: { updateAccessTime: false },
+        success: (res) => {
+          if (res.result?.success && res.result?.isNewUser) {
+            // 新用户，显示授权弹窗
+            this.setData({ showAuthModal: true });
+          } else if (res.result?.success) {
+            // 已有用户记录，检查是否有昵称头像
+            wx.cloud.database().collection('users').where({ _openid: openid }).limit(1).get().then(dbRes => {
+              const user = dbRes.data[0];
+              if (user && !user.nickName && !user.avatarUrl) {
+                // 缺少昵称头像，显示授权弹窗
+                this.setData({ showAuthModal: true });
+              } else if (user && user.nickName && user.avatarUrl) {
+                // 用户已授权，更新访问时间
+                wx.cloud.callFunction({
+                  name: 'saveUserInfo',
+                  data: { updateAccessTime: true }
+                });
+              }
+            });
+          }
+        }
+      });
+    });
+  },
+
+  // 选择头像
+  onChooseAvatar(e) {
+    const avatarUrl = e.detail.avatarUrl;
+    this.setData({ authAvatarUrl: avatarUrl });
+  },
+
+  // 输入昵称
+  onNicknameInput(e) {
+    this.setData({ authNickName: e.detail.value });
+  },
+
+  // 昵称输入框失焦（微信昵称选择后自动填充）
+  onNicknameBlur(e) {
+    if (e.detail.value) {
+      this.setData({ authNickName: e.detail.value });
+    }
+  },
+
+  // 提交用户信息
+  submitUserInfo() {
+    const { authNickName, authAvatarUrl } = this.data;
+
+    if (!authAvatarUrl) {
+      wx.showToast({ title: '请选择头像', icon: 'none' });
+      return;
+    }
+
+    if (!authNickName.trim()) {
+      wx.showToast({ title: '请输入昵称', icon: 'none' });
+      return;
+    }
+
+    this.setData({ authSubmitting: true });
+
+    // 上传头像到云存储（如果是本地临时文件）
+    const uploadPromise = authAvatarUrl.startsWith('http') ?
+      Promise.resolve(authAvatarUrl) : this.uploadAvatar(authAvatarUrl);
+
+    uploadPromise.then(finalAvatarUrl => {
+      wx.cloud.callFunction({
+        name: 'saveUserInfo',
+        data: {
+          nickName: authNickName.trim(),
+          avatarUrl: finalAvatarUrl
+        },
+        success: (res) => {
+          this.setData({ authSubmitting: false });
+          if (res.result?.success) {
+            this.setData({
+              showAuthModal: false,
+              authNickName: '',
+              authAvatarUrl: ''
+            });
+          } else {
+            wx.showToast({ title: res.result?.error || '保存失败', icon: 'none' });
+          }
+        },
+        fail: () => {
+          this.setData({ authSubmitting: false });
+          wx.showToast({ title: '网络错误', icon: 'none' });
+        }
+      });
+    }).catch(() => {
+      this.setData({ authSubmitting: false });
+      wx.showToast({ title: '头像上传失败', icon: 'none' });
+    });
+  },
+
+  // 取消授权（退出小程序）
+  cancelAuth() {
+    wx.exitMiniProgram();
+  },
+
+  // 上传头像到云存储
+  uploadAvatar(tempFilePath) {
+    return new Promise((resolve, reject) => {
+      const timestamp = Date.now();
+      const cloudPath = `user-avatars/${timestamp}.jpg`;
+      wx.cloud.uploadFile({
+        cloudPath,
+        filePath: tempFilePath,
+        success: res => resolve(res.fileID),
+        fail: err => reject(err)
+      });
+    });
   },
 
   checkAdmin() {
@@ -131,11 +264,6 @@ Page({
     const ADMIN_OPENID = 'ofW_r4lPk806IqPSk4-gR9r_478g';
     
     app.getOpenid().then(openid => {
-      console.log('=== 管理员检查 ===');
-      console.log('当前用户 openid:', openid);
-      console.log('管理员 openid:', ADMIN_OPENID);
-      console.log('是否匹配:', openid === ADMIN_OPENID);
-      
       if (openid === ADMIN_OPENID) {
         this.setData({
           isAdmin: true,
@@ -148,7 +276,6 @@ Page({
         });
       }
     }).catch(err => {
-      console.error('获取 openid 失败', err);
       this.setData({
         isAdmin: false,
         showUserStats: false
@@ -178,7 +305,6 @@ Page({
         this.fetchWeather(latitude, longitude);
       },
       fail: (err) => {
-        console.error('获取位置失败:', err);
         // 位置获取失败时显示默认状态
         this.setData({
           weatherText: '',
@@ -196,7 +322,6 @@ Page({
       name: 'getWeather',
       data: { latitude, longitude },
       success: (res) => {
-        console.log('天气云函数返回:', res.result);
         if (res.result?.success) {
           const { now, forecast } = res.result;
 
@@ -215,12 +340,10 @@ Page({
 
           this.setData(updateData);
         } else {
-          console.error('天气获取失败:', res.result?.error);
           this.setData({ weatherLoading: false });
         }
       },
       fail: (err) => {
-        console.error('天气请求失败:', err);
         this.setData({ weatherLoading: false });
       }
     });
@@ -349,7 +472,6 @@ Page({
         this.applySort();
       }
     }).catch(err => {
-      console.error('加载失败:', err);
       this.setData({ assets: [], filteredAssets: [], isLoading: false });
       wx.hideLoading();
       wx.showToast({ title: '加载失败', icon: 'none' });
@@ -836,7 +958,6 @@ Page({
       this.setData({ batchAssetList: list, filteredBatchAssetList: list, isAllSelected: false });
       wx.hideLoading();
     } catch (err) {
-      console.error(err);
       wx.hideLoading();
       wx.showToast({ title: '加载失败', icon: 'none' });
     }
@@ -1124,7 +1245,6 @@ Page({
         }, 200);
       }
     } catch (err) {
-      console.error(err);
       this.setData({ reportLoading: false, reportEmpty: true });
     }
   },

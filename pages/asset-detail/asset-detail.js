@@ -89,8 +89,6 @@ Page({
         }
       })
       .catch(err => {
-        console.error('加载资产失败:', err);
-
         // 检查是否是权限错误（访问他人数据）
         if (err.errCode === -502001 || (err.message && err.message.includes('permission'))) {
           wx.showToast({
@@ -407,7 +405,6 @@ Page({
         }, 1500);
       })
       .catch(err => {
-        console.error('删除失败:', err);
         wx.hideLoading();
         wx.showToast({
           title: '删除失败',

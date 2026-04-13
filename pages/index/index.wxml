@@ -8,7 +8,7 @@
     <!-- 搜索输入框 -->
     <view class="search-bar-container" hidden="{{!showSearchInput || showSetting || showBatchDelete}}">
       <view class="search-bar">
-        <text class="search-icon">🔍</text>
+        <image class="search-icon-img" src="/images/search-icon-dark.svg" mode="aspectFit"></image>
         <input
           class="search-input"
           type="text"
@@ -397,7 +397,7 @@
     <!-- 搜索框 -->
     <view class="batch-search-bar">
       <view class="batch-search-input-wrap">
-        <text class="batch-search-icon">🔍</text>
+        <image class="batch-search-icon-img" src="/images/search-icon-dark.svg" mode="aspectFit"></image>
         <input
           class="batch-search-input"
           type="text"
@@ -542,7 +542,8 @@
       <!-- 搜索资产悬浮按钮 -->
       <view class="search-asset-fab {{showSearchInput ? 'active' : ''}}" bindtap="toggleSearchInput">
         <view class="fab-inner search-fab-inner">
-          <text class="fab-icon">{{showSearchInput ? '✕' : '🔍'}}</text>
+          <text class="fab-icon">{{showSearchInput ? '✕' : ''}}</text>
+          <image wx:if="{{!showSearchInput}}" class="fab-icon-img" src="/images/search-icon.svg" mode="aspectFit"></image>
         </view>
         <view class="fab-glow search-glow"></view>
       </view>
@@ -775,5 +776,43 @@
   <!-- 回到顶部悬浮按钮 -->
   <view class="back-to-top-fab {{showBackToTop && !showBatchDelete ? 'show' : ''}}" bindtap="scrollToTop" catchtouchmove="preventTouchMove">
     <text class="back-top-icon">↑</text>
+  </view>
+
+  <!-- 用户授权弹窗 -->
+  <view class="auth-modal {{showAuthModal ? 'show' : ''}}" wx:if="{{showAuthModal}}">
+    <view class="auth-mask"></view>
+    <view class="auth-panel">
+      <view class="auth-panel-header">
+        <text class="auth-panel-title">获取你的昵称和头像</text>
+        <text class="auth-panel-desc">需要授权才能使用小程序，点击取消将退出</text>
+      </view>
+
+      <view class="auth-panel-body">
+        <!-- 头像 -->
+        <view class="auth-row">
+          <text class="auth-row-label">头像</text>
+          <button class="auth-avatar-btn-small" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+            <image class="auth-avatar-small" src="{{authAvatarUrl || '/images/default-avatar.svg'}}" mode="aspectFill"></image>
+            <text class="auth-avatar-arrow">›</text>
+          </button>
+        </view>
+
+        <!-- 昵称 -->
+        <view class="auth-row">
+          <text class="auth-row-label">昵称</text>
+          <view class="auth-nickname-wrap">
+            <input class="auth-nickname-input-small" type="nickname" placeholder="点击使用微信昵称" value="{{authNickName}}" bindinput="onNicknameInput" bindblur="onNicknameBlur" maxlength="12" />
+            <text class="auth-nickname-arrow">›</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="auth-panel-footer">
+        <button class="auth-cancel-btn" bindtap="cancelAuth">取消</button>
+        <button class="auth-confirm-btn {{(!authAvatarUrl || !authNickName) ? 'disabled' : ''}}" bindtap="submitUserInfo" disabled="{{!authAvatarUrl || !authNickName}}">
+          允许
+        </button>
+      </view>
+    </view>
   </view>
 </view>

@@ -226,7 +226,6 @@ exports.main = async (event, context) => {
     };
 
   } catch (error) {
-    console.error('更新资产失败:', error);
     return {
       success: false,
       error: error.message

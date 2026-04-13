@@ -1,4 +1,5 @@
 {
   "usingComponents": {},
-  "navigationBarTitleText": "用户统计"
+  "navigationBarTitleText": "用户统计",
+  "enablePullDownRefresh": true
 }

@@ -71,7 +71,6 @@ exports.main = async (event, context) => {
       errors: failedCount > 0 ? errors : undefined
     };
   } catch (err) {
-    console.error('批量删除资产失败:', err);
     return {
       success: false,
       error: err.message || '批量删除失败'

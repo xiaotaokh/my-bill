@@ -66,8 +66,6 @@ Component({
     });
 
     if (!this.data.ec) {
-      console.warn('组件需绑定 ec 变量，例：<ec-canvas id="mychart-dom-bar" '
-        + 'canvas-id="mychart-bar" ec="{{ ec }}"></ec-canvas>');
       return;
     }
 
@@ -86,7 +84,6 @@ Component({
       this.setData({ isUseNewCanvas });
 
       if (forceUseOldCanvas && canUseNewCanvas) {
-        console.warn('开发者强制使用旧canvas,建议关闭');
       }
 
       if (isUseNewCanvas) {
@@ -96,12 +93,8 @@ Component({
       } else {
         const isValid = compareVersion(version, '1.9.91') >= 0
         if (!isValid) {
-          console.error('微信基础库版本过低，需大于等于 1.9.91。'
-            + '参见：https://github.com/ecomfe/echarts-for-weixin'
-            + '#%E5%BE%AE%E4%BF%A1%E7%89%88%E6%9C%AC%E8%A6%81%E6%B1%82');
           return;
         } else {
-          console.warn('建议将微信基础库调整大于等于2.9.0版本。升级后绘图将有更好性能');
           this.initByOldWay(callback);
         }
       }
@@ -168,7 +161,6 @@ Component({
                   image.src = src;
                   return image;
                 }
-                console.error('加载图片依赖 `Canvas.createImage()` API，要求小程序基础库版本在 2.7.0 及以上。');
                 // PENDING fallback?
               }
             })

@@ -50,15 +50,12 @@ App({
         success: (res) => {
           if (res.result && res.result.openid) {
             this.globalData.openid = res.result.openid;
-            console.log('获取 openid 成功:', res.result.openid);
             resolve(res.result.openid);
           } else {
-            console.error('获取 openid 失败：返回结果为空', res);
             reject(res);
           }
         },
         fail: (err) => {
-          console.error('获取 openid 失败:', err);
           reject(err);
         }
       });

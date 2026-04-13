@@ -38,7 +38,6 @@ exports.main = async (event, context) => {
       message: '排序更新成功'
     };
   } catch (err) {
-    console.error('更新分类排序失败:', err);
     return {
       success: false,
       error: err.message

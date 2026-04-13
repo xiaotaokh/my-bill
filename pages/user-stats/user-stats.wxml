@@ -1,4 +1,73 @@
 <!--pages/user-stats/user-stats.wxml-->
 <view class="container">
-  <text class="page-title">用户统计</text>
+  <!-- 装饰背景 -->
+  <view class="bg-decoration">
+    <view class="bubble bubble-1"></view>
+    <view class="bubble bubble-2"></view>
+    <view class="bubble bubble-3"></view>
+  </view>
+
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">用户统计</text>
+    <text class="page-subtitle">查看小程序用户信息</text>
+  </view>
+
+  <!-- 统计概览 -->
+  <view class="stats-summary">
+    <view class="summary-item">
+      <text class="summary-icon">👥</text>
+      <view class="summary-info">
+        <text class="summary-value">{{users.length}}</text>
+        <text class="summary-label">用户总数</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 用户列表 -->
+  <view wx:elif="{{!empty}}" class="user-list">
+    <view class="list-header">
+      <text class="list-title">用户列表</text>
+    </view>
+
+    <view class="user-card" wx:for="{{users}}" wx:key="_id">
+      <view class="user-avatar">
+        <image class="avatar-img" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+      </view>
+      <view class="user-info">
+        <view class="user-header">
+          <text class="user-name">{{item.nickName}}</text>
+          <view wx:if="{{item.genderText}}" class="gender-badge {{item.gender === 1 ? 'male' : 'female'}}">
+            <text>{{item.genderText}}</text>
+          </view>
+        </view>
+        <view class="user-stats">
+          <view class="stat-row">
+            <text class="stat-label">首次访问</text>
+            <text class="stat-value">{{item.firstAccessText}}</text>
+          </view>
+          <view class="stat-row">
+            <text class="stat-label">最近访问</text>
+            <text class="stat-value">{{item.lastAccessText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部留白 -->
+    <view class="list-spacer"></view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{empty && !loading}}" class="empty-state">
+    <view class="empty-icon">📭</view>
+    <text class="empty-title">暂无用户数据</text>
+    <text class="empty-desc">等待用户访问小程序</text>
+  </view>
 </view>

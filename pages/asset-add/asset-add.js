@@ -360,7 +360,7 @@ Page({
                   selectedGroupName = ''; // 清空分组名称，不选中任何内置图标
                 }
               } catch (e) {
-                console.error('获取临时文件链接失败:', e);
+                // 获取失败时使用 null
               }
             } else if (asset.icon.startsWith('http')) {
               uploadedImagePath = asset.icon;
@@ -454,7 +454,6 @@ Page({
         }
       })
       .catch(err => {
-        console.error('加载资产详情失败:', err);
         wx.hideLoading();
         wx.showToast({
           title: '加载失败',
@@ -471,7 +470,6 @@ Page({
     wx.cloud.callFunction({
       name: 'getCategories',
       success: (res) => {
-        console.log('加载类别成功:', res);
         if (res.result && res.result.success && res.result.data) {
           const processCategories = async () => {
             const categoriesData = res.result.data;
@@ -489,7 +487,7 @@ Page({
                     displayIcon = fileRes.fileList[0].tempFileURL;
                   }
                 } catch (e) {
-                  console.error('获取临时文件链接失败:', e);
+                  // 获取失败时使用空
                 }
               } else if (category.icon && category.icon.startsWith('http')) {
                 // 已经是 http 临时链接，直接使用
@@ -516,18 +514,15 @@ Page({
               categoriesWithIcons[0].selected = true;
             }
 
-            console.log('类别列表:', categoriesWithIcons);
             this.setData({ categories: categoriesWithIcons });
           };
 
           processCategories();
         } else {
-          console.log('加载类别失败，云函数返回错误:', res.result);
           this.setData({ categories: [] });
         }
       },
       fail: (err) => {
-        console.error('加载类别失败:', err);
         this.setData({ categories: [] });
       }
     });
@@ -667,7 +662,6 @@ Page({
         this.uploadIconToCloud(tempFilePath);
       },
       fail: (err) => {
-        console.error('选择图片失败:', err);
         if (err.errMsg && err.errMsg.includes('cancel')) {
           // 用户取消选择，不做任何操作
           return;
@@ -690,7 +684,6 @@ Page({
       cloudPath: fileName,
       filePath: filePath,
       success: (res) => {
-        console.log('上传成功:', res.fileID);
         // 上传成功后，更新selectedIcon为云存储路径，保持缩略图显示
         this.setData({
           uploadedImagePath: res.fileID // 使用uploadedImagePath存储云存储路径
@@ -702,7 +695,6 @@ Page({
         });
       },
       fail: (err) => {
-        console.error('上传失败:', err);
         wx.hideLoading();
         wx.showToast({
           title: '上传失败，请重试',
@@ -1145,7 +1137,6 @@ Page({
       name: cloudFunctionName,
       data: requestData,
       success: (res) => {
-        console.log('云函数调用成功:', res);
         if (res.result.success) {
           wx.hideLoading();
           wx.showToast({
@@ -1182,7 +1173,6 @@ Page({
         }
       },
       fail: (err) => {
-        console.error('云函数调用失败:', err);
         wx.hideLoading();
         wx.showToast({
           title: '保存失败，请重试',

@@ -68,7 +68,6 @@ exports.main = async (event, context) => {
       data: categoriesWithCount
     };
   } catch (err) {
-    console.error('获取类别失败:', err);
     return {
       success: false,
       error: err.message,

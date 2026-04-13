@@ -9,12 +9,12 @@
       <view class="asset-type-selector">
         <view class="type-option {{assetType === 'fixed' ? 'selected' : ''}}"
               bindtap="onAssetTypeChange" data-type="fixed">
-          <text class="type-icon">💰</text>
+          <image class="type-icon-img" src="/images/fixed-asset.svg" mode="aspectFit"></image>
           <text class="type-label">普通资产</text>
         </view>
         <view class="type-option {{assetType === 'subscription' ? 'selected' : ''}}"
               bindtap="onAssetTypeChange" data-type="subscription">
-          <text class="type-icon">🔄</text>
+          <image class="type-icon-img" src="/images/subscription-asset.svg" mode="aspectFit"></image>
           <text class="type-label">订阅资产</text>
         </view>
       </view>

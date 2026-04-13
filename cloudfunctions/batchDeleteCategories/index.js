@@ -85,7 +85,6 @@ exports.main = async (event, context) => {
         : `成功删除${deletableCategoryIds.length}个分类`
     };
   } catch (err) {
-    console.error('批量删除分类失败:', err);
     return {
       success: false,
       error: err.message

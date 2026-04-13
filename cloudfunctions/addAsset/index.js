@@ -182,7 +182,6 @@ exports.main = async (event, context) => {
     };
 
   } catch (error) {
-    console.error('添加资产失败:', error);
     return {
       success: false,
       error: error.message
