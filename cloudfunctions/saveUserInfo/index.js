@@ -11,7 +11,7 @@ exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext();
   const openid = wxContext.OPENID;
 
-  const { nickName, avatarUrl, gender, updateAccessTime = true } = event;
+  const { nickName, avatarUrl, updateAccessTime = true } = event;
 
   try {
     // 查询是否已存在用户记录
@@ -34,7 +34,6 @@ exports.main = async (event, context) => {
       // 仅更新传入的字段
       if (nickName) updateData.nickName = nickName;
       if (avatarUrl) updateData.avatarUrl = avatarUrl;
-      if (gender) updateData.gender = gender;
 
       // 更新访问时间
       if (updateAccessTime) {
@@ -56,7 +55,6 @@ exports.main = async (event, context) => {
         _openid: openid,
         nickName: nickName || '',
         avatarUrl: avatarUrl || '',
-        gender: gender || 0,
         firstAccessTime: now,
         lastAccessTime: now,
         createdAt: now,

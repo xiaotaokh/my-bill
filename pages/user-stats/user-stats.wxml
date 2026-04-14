@@ -1,62 +1,187 @@
 <!--pages/user-stats/user-stats.wxml-->
 <view class="container">
-  <!-- 装饰背景 -->
+  <!-- 渐变背景头部 -->
+  <view class="header-bg"></view>
+
+  <!-- 装饰气泡 -->
   <view class="bg-decoration">
     <view class="bubble bubble-1"></view>
     <view class="bubble bubble-2"></view>
     <view class="bubble bubble-3"></view>
+    <view class="bubble bubble-4"></view>
   </view>
 
-  <!-- 页面标题 -->
+  <!-- 页面标题区域 -->
   <view class="page-header">
     <text class="page-title">用户统计</text>
-    <text class="page-subtitle">查看小程序用户信息</text>
+    <text class="page-subtitle">用户访问与资产概览</text>
   </view>
 
-  <!-- 统计概览 -->
-  <view class="stats-summary">
-    <view class="summary-item">
-      <text class="summary-icon">👥</text>
-      <view class="summary-info">
-        <text class="summary-value">{{users.length}}</text>
-        <text class="summary-label">用户总数</text>
+  <!-- 统计概览卡片组 -->
+  <view class="stats-overview">
+    <view class="overview-card main-card">
+      <view class="card-icon">👥</view>
+      <view class="card-content">
+        <text class="card-value">{{users.length}}</text>
+        <text class="card-label">用户总数</text>
+      </view>
+      <view class="card-glow"></view>
+    </view>
+    <view class="overview-card">
+      <view class="card-icon">📦</view>
+      <view class="card-content">
+        <text class="card-value">{{totalAssetCount}}</text>
+        <text class="card-label">资产总数</text>
+      </view>
+    </view>
+    <view class="overview-card">
+      <view class="card-icon">⚡</view>
+      <view class="card-content">
+        <text class="card-value">{{activeUserCount}}</text>
+        <text class="card-label">活跃用户</text>
       </view>
     </view>
   </view>
 
-  <!-- 加载状态 -->
-  <view wx:if="{{loading}}" class="loading-state">
-    <view class="loading-spinner"></view>
-    <text class="loading-text">加载中...</text>
+  <!-- 筛选排序栏 -->
+  <view class="filter-bar" wx:if="{{!empty && !loading}}">
+    <!-- 搜索框 -->
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="搜索用户"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+      />
+      <text wx:if="{{searchKeyword}}" class="search-clear" bindtap="clearSearch">✕</text>
+    </view>
+    <!-- 排序选择 -->
+    <view class="sort-selector">
+      <picker mode="selector" range="{{sortOptions}}" range-key="label" value="{{sortIndex}}" bindchange="onSortChange">
+        <view class="sort-btn">
+          <text class="sort-text">{{sortOptions[sortIndex].label}}</text>
+          <text class="sort-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- 骨架屏加载状态 -->
+  <view wx:if="{{loading}}" class="skeleton-wrapper">
+    <!-- 统计卡片骨架 -->
+    <view class="skeleton-stats">
+      <view class="skeleton-card skeleton-animate"></view>
+      <view class="skeleton-card skeleton-animate"></view>
+      <view class="skeleton-card skeleton-animate"></view>
+    </view>
+    <!-- 用户卡片骨架 -->
+    <view class="skeleton-list">
+      <view class="skeleton-user-card skeleton-animate" wx:for="{{3}}" wx:key="*this">
+        <view class="skeleton-avatar"></view>
+        <view class="skeleton-info">
+          <view class="skeleton-name"></view>
+          <view class="skeleton-row"></view>
+          <view class="skeleton-row"></view>
+        </view>
+      </view>
+    </view>
   </view>
 
   <!-- 用户列表 -->
   <view wx:elif="{{!empty}}" class="user-list">
-    <view class="list-header">
-      <text class="list-title">用户列表</text>
-    </view>
-
-    <view class="user-card" wx:for="{{users}}" wx:key="_id">
-      <view class="user-avatar">
-        <image class="avatar-img" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+    <view class="list-section">
+      <view class="list-header">
+        <text class="list-title">用户列表</text>
+        <view class="list-count">
+          <text>{{filteredUsers.length}}</text>
+          <text class="count-label">/{{users.length}}</text>
+        </view>
       </view>
-      <view class="user-info">
-        <view class="user-header">
-          <text class="user-name">{{item.nickName}}</text>
-          <view wx:if="{{item.genderText}}" class="gender-badge {{item.gender === 1 ? 'male' : 'female'}}">
-            <text>{{item.genderText}}</text>
+
+      <view class="user-card {{item._expanded ? 'expanded' : ''}}" wx:for="{{filteredUsers}}" wx:key="_id">
+        <!-- 用户卡片头部 -->
+        <view class="user-card-header" bindtap="toggleUserExpand" data-index="{{index}}">
+          <!-- 头像区域 -->
+          <view class="user-avatar-wrapper">
+            <view class="avatar-ring {{item.activityLevel}}"></view>
+            <image class="avatar-img" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+            <view class="activity-dot {{item.activityLevel}}"></view>
+          </view>
+
+          <!-- 用户信息 -->
+          <view class="user-info">
+            <view class="user-header">
+              <text class="user-name">{{item.nickName}}</text>
+              <view class="activity-badge {{item.activityLevel}}">
+                <text>{{item.activityLevelText}}</text>
+              </view>
+            </view>
+
+            <!-- 用户资产统计 -->
+            <view class="user-asset-summary">
+              <view class="summary-item">
+                <text class="summary-icon">📦</text>
+                <text class="summary-value">{{item.assetCount}}件</text>
+              </view>
+              <view class="summary-item" wx:if="{{item.totalAssetPrice > 0}}">
+                <text class="summary-icon">💰</text>
+                <text class="summary-value">¥{{item.totalAssetPrice}}</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 展开/收起按钮 -->
+          <view class="expand-btn {{item._expanded ? 'expanded' : ''}}">
+            <text class="expand-icon">{{item._expanded ? '▼' : '▶'}}</text>
           </view>
         </view>
-        <view class="user-stats">
-          <view class="stat-row">
-            <text class="stat-label">首次访问</text>
-            <text class="stat-value">{{item.firstAccessText}}</text>
+
+        <!-- 用户资产列表（可展开） -->
+        <view wx:if="{{item._expanded && item.assets.length > 0}}" class="user-assets-section">
+          <view class="assets-header">
+            <text class="assets-title">资产列表</text>
+            <text class="assets-count">{{item.assets.length}}件</text>
           </view>
-          <view class="stat-row">
-            <text class="stat-label">最近访问</text>
-            <text class="stat-value">{{item.lastAccessText}}</text>
+
+          <view class="asset-item" wx:for="{{item.assets}}" wx:for-item="asset" wx:key="_id">
+            <view class="asset-icon-box">
+              <text class="asset-icon">{{asset.icon}}</text>
+            </view>
+            <view class="asset-info">
+              <view class="asset-header">
+                <text class="asset-name">{{asset.name}}</text>
+                <view class="asset-status-badge {{asset.status}}">
+                  <text>{{asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出'}}</text>
+                </view>
+              </view>
+              <view class="asset-stats-row">
+                <view class="asset-stat">
+                  <text class="stat-label">价格</text>
+                  <text class="stat-value">¥{{asset.price}}</text>
+                </view>
+                <view class="asset-stat">
+                  <text class="stat-label">服役时长</text>
+                  <text class="stat-value">{{asset.usedDaysText}}</text>
+                </view>
+                <view class="asset-stat">
+                  <text class="stat-label">日均成本</text>
+                  <text class="stat-value cost">¥{{asset.dailyCost}}/天</text>
+                </view>
+              </view>
+            </view>
           </view>
         </view>
+
+        <!-- 用户无资产提示 -->
+        <view wx:if="{{item._expanded && item.assets.length === 0}}" class="no-assets-tip">
+          <text class="no-assets-icon">📭</text>
+          <text class="no-assets-text">该用户暂无资产</text>
+        </view>
+
+        <!-- 卡片装饰 -->
+        <view class="card-decoration"></view>
       </view>
     </view>
 
@@ -66,8 +191,30 @@
 
   <!-- 空状态 -->
   <view wx:if="{{empty && !loading}}" class="empty-state">
-    <view class="empty-icon">📭</view>
+    <view class="empty-visual">
+      <view class="empty-circle">
+        <view class="empty-face">
+          <view class="face-eyes">
+            <view class="eye eye-left"><view class="eye-pupil"></view></view>
+            <view class="eye eye-right"><view class="eye-pupil"></view></view>
+          </view>
+          <view class="face-mouth"></view>
+        </view>
+      </view>
+      <view class="empty-waves">
+        <view class="wave wave-1"></view>
+        <view class="wave wave-2"></view>
+        <view class="wave wave-3"></view>
+      </view>
+    </view>
     <text class="empty-title">暂无用户数据</text>
     <text class="empty-desc">等待用户访问小程序</text>
+  </view>
+
+  <!-- 搜索无结果状态 -->
+  <view wx:if="{{!empty && filteredUsers.length === 0 && searchKeyword}}" class="search-empty">
+    <text class="search-empty-icon">🔍</text>
+    <text class="search-empty-title">未找到匹配用户</text>
+    <text class="search-empty-desc">换个关键词试试</text>
   </view>
 </view>
