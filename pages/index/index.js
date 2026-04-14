@@ -122,6 +122,7 @@ Page({
     showAuthModal: false,
     authNickName: '',
     authAvatarUrl: '',
+    nicknameFocus: false,
     authSubmitting: false
   },
 
@@ -174,25 +175,37 @@ Page({
 
   // 选择头像
   onChooseAvatar(e) {
+    if (this.data.authSubmitting) {
+      return;
+    }
     const avatarUrl = e.detail.avatarUrl;
     this.setData({ authAvatarUrl: avatarUrl });
   },
 
-  // 输入昵称
-  onNicknameInput(e) {
-    this.setData({ authNickName: e.detail.value });
+  // 点击按钮触发昵称选择
+  chooseNickname() {
+    if (this.data.authSubmitting) {
+      return;
+    }
+    this.setData({ nicknameFocus: true });
   },
 
-  // 昵称输入框失焦（微信昵称选择后自动填充）
+  // 微信官方昵称填写能力完成后回填
   onNicknameBlur(e) {
-    if (e.detail.value) {
-      this.setData({ authNickName: e.detail.value });
-    }
+    const nickName = (e.detail.value || '').trim();
+    this.setData({
+      authNickName: nickName,
+      nicknameFocus: false
+    });
   },
 
   // 提交用户信息
   submitUserInfo() {
     const { authNickName, authAvatarUrl } = this.data;
+
+    if (this.data.authSubmitting) {
+      return;
+    }
 
     if (!authAvatarUrl) {
       wx.showToast({ title: '请选择头像', icon: 'none' });

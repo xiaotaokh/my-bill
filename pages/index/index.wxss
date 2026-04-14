@@ -2775,7 +2775,7 @@ page {
   color: #9ca3af;
 }
 
-/* 用户授权弹窗 - 底部弹出样式 */
+/* 用户授权弹窗 */
 .auth-modal {
   position: fixed;
   top: 0;
@@ -2788,7 +2788,7 @@ page {
   justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.35s ease;
 }
 
 .auth-modal.show {
@@ -2802,16 +2802,17 @@ page {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .auth-panel {
   position: relative;
   width: 100%;
   background: #fff;
-  border-radius: 24rpx 24rpx 0 0;
+  border-radius: 32rpx 32rpx 0 0;
   transform: translateY(100%);
-  transition: transform 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.12);
 }
 
 .auth-modal.show .auth-panel {
@@ -2819,8 +2820,7 @@ page {
 }
 
 .auth-panel-header {
-  padding: 40rpx 30rpx;
-  border-bottom: 1rpx solid #eee;
+  padding: 36rpx 32rpx 24rpx;
 }
 
 .auth-panel-title {
@@ -2833,94 +2833,141 @@ page {
 
 .auth-panel-desc {
   display: block;
-  font-size: 26rpx;
-  color: #999;
+  font-size: 24rpx;
+  color: #888;
+  line-height: 1.6;
 }
 
 .auth-panel-body {
-  padding: 20rpx 30rpx;
+  padding: 16rpx 32rpx;
 }
 
 .auth-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 0;
-  border-bottom: 1rpx solid #f5f5f5;
+  padding: 24rpx 20rpx;
+  background: #f7f8fa;
+  border-radius: 16rpx;
+  margin-bottom: 12rpx;
 }
 
 .auth-row:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .auth-row-label {
-  font-size: 30rpx;
+  font-size: 28rpx;
   color: #333;
+  font-weight: 500;
 }
 
 .auth-avatar-btn-small {
   display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: flex-end;
   background: transparent;
   padding: 0;
   border: none;
+  flex: 1;
 }
 
 .auth-avatar-btn-small::after {
   border: none;
 }
 
-.auth-avatar-small {
+.auth-avatar-text {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.auth-avatar-preview {
   width: 60rpx;
   height: 60rpx;
-  border-radius: 30rpx;
-  background: #f5f5f5;
+  border-radius: 50%;
+  background: #e5e7eb;
+  flex-shrink: 0;
 }
 
 .auth-avatar-arrow {
   font-size: 32rpx;
-  color: #ccc;
+  color: #c0c0c0;
   margin-left: 16rpx;
 }
 
-.auth-nickname-wrap {
+.auth-nickname-btn {
   display: flex;
+  flex-direction: row;
   align-items: center;
-}
-
-.auth-nickname-input-small {
-  font-size: 30rpx;
-  color: #333;
-  text-align: right;
+  justify-content: flex-end;
   background: transparent;
-  min-width: 200rpx;
+  padding: 0;
+  border: none;
+  flex: 1;
 }
 
-.auth-nickname-input-small::placeholder {
-  color: #999;
+.auth-nickname-btn::after {
+  border: none;
+}
+
+.auth-nickname-text {
+  font-size: 28rpx;
+  font-weight: 600;
 }
 
 .auth-nickname-arrow {
   font-size: 32rpx;
-  color: #ccc;
+  color: #c0c0c0;
   margin-left: 16rpx;
+}
+
+.auth-nickname-hidden {
+  position: fixed;
+  top: -100px;
+  left: -100px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.auth-avatar-text.is-empty,
+.auth-nickname-text.is-empty {
+  color: #9ca3af;
+}
+
+.auth-avatar-text.is-filled,
+.auth-nickname-text.is-filled {
+  color: #764ba2;
+}
+
+.auth-tip {
+  display: block;
+  margin-top: 20rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #999;
 }
 
 .auth-panel-footer {
   display: flex;
-  padding: 30rpx;
-  gap: 20rpx;
-  border-top: 1rpx solid #eee;
+  padding: 24rpx 32rpx 40rpx;
+  gap: 16rpx;
 }
 
 .auth-cancel-btn {
   flex: 1;
-  height: 88rpx;
-  background: #f5f5f5;
-  border-radius: 44rpx;
-  font-size: 32rpx;
+  height: 84rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 42rpx;
+  font-size: 30rpx;
   color: #666;
   border: none;
+  font-weight: 500;
 }
 
 .auth-cancel-btn::after {
@@ -2929,12 +2976,17 @@ page {
 
 .auth-confirm-btn {
   flex: 2;
-  height: 88rpx;
-  background: #07c160;
-  border-radius: 44rpx;
-  font-size: 32rpx;
+  height: 84rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 42rpx;
+  font-size: 30rpx;
   color: #fff;
   border: none;
+  font-weight: 600;
+  box-shadow: 0 4rpx 16rpx rgba(102, 126, 234, 0.3);
 }
 
 .auth-confirm-btn::after {
@@ -2942,6 +2994,7 @@ page {
 }
 
 .auth-confirm-btn.disabled {
-  background: #a0e8b5;
+  background: #d8d8d8;
   color: #fff;
+  box-shadow: none;
 }

@@ -783,35 +783,31 @@
     <view class="auth-mask"></view>
     <view class="auth-panel">
       <view class="auth-panel-header">
-        <text class="auth-panel-title">获取你的昵称和头像</text>
-        <text class="auth-panel-desc">需要授权才能使用小程序，点击取消将退出</text>
+        <text class="auth-panel-title">完善你的昵称和头像</text>
+        <text class="auth-panel-desc">用于展示资料信息，完成后即可继续使用</text>
       </view>
-
       <view class="auth-panel-body">
-        <!-- 头像 -->
         <view class="auth-row">
           <text class="auth-row-label">头像</text>
-          <button class="auth-avatar-btn-small" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-            <image class="auth-avatar-small" src="{{authAvatarUrl || '/images/default-avatar.svg'}}" mode="aspectFill"></image>
+          <button class="auth-avatar-btn-small" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" disabled="{{authSubmitting}}">
+            <image wx:if="{{authAvatarUrl}}" class="auth-avatar-preview" src="{{authAvatarUrl}}" mode="aspectFill"></image>
+            <text wx:else class="auth-avatar-text is-empty">点击获取头像</text>
             <text class="auth-avatar-arrow">›</text>
           </button>
         </view>
-
-        <!-- 昵称 -->
         <view class="auth-row">
           <text class="auth-row-label">昵称</text>
-          <view class="auth-nickname-wrap">
-            <input class="auth-nickname-input-small" type="nickname" placeholder="点击使用微信昵称" value="{{authNickName}}" bindinput="onNicknameInput" bindblur="onNicknameBlur" maxlength="12" />
+          <button class="auth-nickname-btn" bindtap="chooseNickname" disabled="{{authSubmitting}}">
+            <text class="auth-nickname-text {{authNickName ? 'is-filled' : 'is-empty'}}">{{authNickName || '点击获取昵称'}}</text>
             <text class="auth-nickname-arrow">›</text>
-          </view>
+          </button>
+          <input class="auth-nickname-hidden" type="nickname" focus="{{nicknameFocus}}" bindblur="onNicknameBlur" />
         </view>
+        <text class="auth-tip">仅用于页面展示，不会公开你的微信号等敏感信息</text>
       </view>
-
       <view class="auth-panel-footer">
-        <button class="auth-cancel-btn" bindtap="cancelAuth">取消</button>
-        <button class="auth-confirm-btn {{(!authAvatarUrl || !authNickName) ? 'disabled' : ''}}" bindtap="submitUserInfo" disabled="{{!authAvatarUrl || !authNickName}}">
-          允许
-        </button>
+        <button class="auth-cancel-btn" bindtap="cancelAuth" disabled="{{authSubmitting}}">退出</button>
+        <button class="auth-confirm-btn {{(!authAvatarUrl || !authNickName || authSubmitting) ? 'disabled' : ''}}" bindtap="submitUserInfo" loading="{{authSubmitting}}" disabled="{{!authAvatarUrl || !authNickName || authSubmitting}}">{{authSubmitting ? '保存中...' : '允许并继续'}}</button>
       </view>
     </view>
   </view>
