@@ -160,7 +160,11 @@ Page({
                 // 缺少昵称头像，显示授权弹窗
                 this.setData({ showAuthModal: true });
               } else if (user && user.nickName && user.avatarUrl) {
-                // 用户已授权，更新访问时间
+                // 用户已授权，更新访问时间，同时保存到全局
+                app.globalData.userInfo = {
+                  nickName: user.nickName,
+                  avatarUrl: user.avatarUrl
+                };
                 wx.cloud.callFunction({
                   name: 'saveUserInfo',
                   data: { updateAccessTime: true }
@@ -891,6 +895,10 @@ Page({
 
   navigateToUserStats() {
     wx.navigateTo({ url: '/pages/user-stats/user-stats' });
+  },
+
+  navigateToAccount() {
+    wx.navigateTo({ url: '/pages/account/account' });
   },
 
   navigateToSetting() {

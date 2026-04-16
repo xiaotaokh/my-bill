@@ -593,6 +593,23 @@ page {
   font-weight: 500;
 }
 
+/* 访问时间（紧凑显示） */
+.access-time-compact {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.access-time-text {
+  font-size: 18rpx;
+  color: #999;
+}
+
+.access-time-divider {
+  font-size: 18rpx;
+  color: #ccc;
+}
+
 /* 展开/收起按钮 */
 .expand-btn {
   flex-shrink: 0;

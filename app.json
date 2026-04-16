@@ -4,7 +4,8 @@
     "pages/asset-add/asset-add",
     "pages/asset-detail/asset-detail",
     "pages/category-manage/category-manage",
-    "pages/user-stats/user-stats"
+    "pages/user-stats/user-stats",
+    "pages/account/account"
   ],
   "window": {
     "backgroundTextStyle": "light",

@@ -138,7 +138,6 @@ Page({
       success: async (res) => {
         if (res.result?.success) {
           const users = res.result.data || [];
-          console.log('获取到的用户数据:', users);
 
           // 处理头像链接
           const processedUsers = await Promise.all(users.map(async (user) => {

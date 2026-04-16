@@ -119,7 +119,7 @@
               </view>
             </view>
 
-            <!-- 用户资产统计 -->
+            <!-- 用户资产统计 + 访问时间 -->
             <view class="user-asset-summary">
               <view class="summary-item">
                 <text class="summary-icon">📦</text>
@@ -129,6 +129,13 @@
                 <text class="summary-icon">💰</text>
                 <text class="summary-value">¥{{item.totalAssetPrice}}</text>
               </view>
+            </view>
+
+            <!-- 访问时间（紧凑显示） -->
+            <view class="access-time-compact">
+              <text class="access-time-text">首: {{item.firstAccessText}}</text>
+              <text class="access-time-divider">|</text>
+              <text class="access-time-text">近: {{item.lastAccessText}}</text>
             </view>
           </view>
 
