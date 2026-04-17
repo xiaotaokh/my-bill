@@ -373,6 +373,20 @@
         </view>
       </view>
 
+      <!-- 意见与反馈 -->
+      <button class="setting-item-full setting-item-btn" open-type="contact" wx:if="{{!isAdmin}}">
+        <view class="setting-icon-box">
+          <text>💬</text>
+        </view>
+        <view class="setting-info">
+          <text class="setting-title-text">意见与反馈</text>
+          <text class="setting-desc">联系我们，提交建议或问题</text>
+        </view>
+        <view class="setting-arrow">
+          <text class="arrow">›</text>
+        </view>
+      </button>
+
       <!-- 关于 -->
       <view class="setting-item-full" bindtap="showAboutInfo">
         <view class="setting-icon-box">

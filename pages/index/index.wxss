@@ -1022,6 +1022,37 @@ page {
   margin-bottom: 0;
 }
 
+/* 设置项按钮（用于 open-type="contact"） */
+.setting-item-btn {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  border: none;
+  width: 100% !important;
+  max-width: 100%;
+  text-align: left;
+  line-height: 1.5;
+  font-size: 28rpx;
+  font-family: inherit;
+  border-radius: 16rpx;
+  margin: 0;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.setting-item-btn {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.setting-item-btn::after {
+  display: none;
+}
+
 .setting-icon-box {
   width: 60rpx;
   height: 60rpx;
