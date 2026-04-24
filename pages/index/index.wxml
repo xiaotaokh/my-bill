@@ -811,8 +811,8 @@
     <view class="auth-mask"></view>
     <view class="auth-panel">
       <view class="auth-panel-header">
-        <text class="auth-panel-title">完善你的昵称和头像</text>
-        <text class="auth-panel-desc">用于展示资料信息，完成后即可继续使用</text>
+        <text class="auth-panel-title">设置你的个人形象</text>
+        <text class="auth-panel-desc">头像和昵称仅用于小程序内展示使用，不会存储你的任何信息，无任何隐私泄漏风险，一经设置不可修改。</text>
       </view>
       <view class="auth-panel-body">
         <view class="auth-row">
@@ -829,13 +829,47 @@
             <text class="auth-nickname-text {{authNickName ? 'is-filled' : 'is-empty'}}">{{authNickName || '点击获取昵称'}}</text>
             <text class="auth-nickname-arrow">›</text>
           </button>
-          <input class="auth-nickname-hidden" type="nickname" focus="{{nicknameFocus}}" bindblur="onNicknameBlur" />
+          <input class="auth-nickname-hidden" type="nickname" focus="{{nicknameFocus}}" bindinput="onNicknameInput" bindblur="onNicknameBlur" />
         </view>
-        <text class="auth-tip">仅用于页面展示，不会公开你的微信号等敏感信息</text>
+        <view class="auth-random-option" bindtap="useRandomInfo">
+          <text class="auth-random-icon">🎲</text>
+          <text class="auth-random-text">不想填写？使用随机头像和昵称</text>
+        </view>
       </view>
       <view class="auth-panel-footer">
         <button class="auth-cancel-btn" bindtap="cancelAuth" disabled="{{authSubmitting}}">退出</button>
         <button class="auth-confirm-btn {{(!authAvatarUrl || !authNickName || authSubmitting) ? 'disabled' : ''}}" bindtap="submitUserInfo" loading="{{authSubmitting}}" disabled="{{!authAvatarUrl || !authNickName || authSubmitting}}">{{authSubmitting ? '保存中...' : '允许并继续'}}</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 随机信息确认弹窗 -->
+  <view class="random-confirm-modal {{showRandomConfirmModal ? 'show' : ''}}" wx:if="{{showRandomConfirmModal}}">
+    <view class="random-confirm-mask"></view>
+    <view class="random-confirm-panel">
+      <view class="random-confirm-header">
+        <text class="random-confirm-title">随机生成的形象</text>
+        <text class="random-confirm-desc">确认使用以下头像和昵称？</text>
+      </view>
+      <view class="random-confirm-body">
+        <view class="random-avatar-container">
+          <view class="random-avatar-wrapper">
+            <image class="random-avatar-img" src="{{randomAvatarUrl}}" mode="aspectFill"></image>
+          </view>
+          <view class="random-refresh-btn" bindtap="refreshRandomInfo">
+            <image class="random-refresh-svg" src="/images/refresh.svg" mode="aspectFit"></image>
+          </view>
+        </view>
+        <view class="random-nickname-row">
+          <text class="random-nickname-text">{{randomNickName}}</text>
+          <view class="random-nickname-refresh" bindtap="refreshRandomNickname">
+            <image class="random-refresh-svg-small" src="/images/refresh.svg" mode="aspectFit"></image>
+          </view>
+        </view>
+      </view>
+      <view class="random-confirm-footer">
+        <button class="random-cancel-btn" bindtap="cancelRandomInfo">取消</button>
+        <button class="random-confirm-btn" bindtap="confirmRandomInfo">确认</button>
       </view>
     </view>
   </view>

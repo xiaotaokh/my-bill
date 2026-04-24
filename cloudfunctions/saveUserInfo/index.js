@@ -50,11 +50,18 @@ exports.main = async (event, context) => {
         message: '用户信息更新成功'
       };
     } else {
-      // 新用户，创建记录
+      // 新用户，创建记录（必须有昵称和头像）
+      if (!nickName || !avatarUrl) {
+        return {
+          success: false,
+          error: '新用户必须提供昵称和头像'
+        };
+      }
+
       const newUser = {
         _openid: openid,
-        nickName: nickName || '',
-        avatarUrl: avatarUrl || '',
+        nickName: nickName,
+        avatarUrl: avatarUrl,
         firstAccessTime: now,
         lastAccessTime: now,
         createdAt: now,

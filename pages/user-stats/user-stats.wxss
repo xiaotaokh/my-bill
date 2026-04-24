@@ -703,6 +703,11 @@ page {
   font-size: 28rpx;
 }
 
+.asset-icon-img {
+  width: 36rpx;
+  height: 36rpx;
+}
+
 .asset-info {
   flex: 1;
   display: flex;

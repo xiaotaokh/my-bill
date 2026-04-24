@@ -165,10 +165,33 @@ Page({
             // 计算活跃度
             const activity = this.calculateActivityLevel(user.lastAccessTime);
 
-            // 处理资产列表
-            const assets = (user.assets || []).map(asset => ({
-              ...asset,
-              icon: asset.icon || '📦'
+            // 处理资产列表（需要转换云存储链接）
+            const assets = await Promise.all((user.assets || []).map(async (asset) => {
+              let assetIcon = asset.icon || '📦';
+              let displayIcon = '';
+
+              // 云存储链接需要转换为临时链接
+              if (assetIcon && assetIcon.startsWith('cloud://')) {
+                try {
+                  const fileRes = await wx.cloud.getTempFileURL({ fileList: [assetIcon] });
+                  if (fileRes.fileList && fileRes.fileList.length > 0) {
+                    const fileItem = fileRes.fileList[0];
+                    displayIcon = fileItem.tempFileURL || fileItem.fileURL || '';
+                    assetIcon = displayIcon || asset.icon;
+                  }
+                } catch (e) {
+                  console.error('资产图标云存储链接转换失败:', e);
+                }
+              } else if (assetIcon && assetIcon.startsWith('http')) {
+                // HTTP 链接直接使用
+                displayIcon = assetIcon;
+              }
+
+              return {
+                ...asset,
+                icon: assetIcon,
+                displayIcon: displayIcon  // 图片链接，用于 <image> 显示
+              };
             }));
 
             return {

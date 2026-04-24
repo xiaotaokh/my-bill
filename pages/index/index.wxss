@@ -2981,6 +2981,39 @@ page {
   color: #999;
 }
 
+.auth-tip-secondary {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #aaa;
+}
+
+.auth-random-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24rpx;
+  padding: 16rpx 24rpx;
+  background: rgba(102, 126, 234, 0.08);
+  border-radius: 12rpx;
+  transition: background 0.2s ease;
+}
+
+.auth-random-option:active {
+  background: rgba(102, 126, 234, 0.15);
+}
+
+.auth-random-icon {
+  font-size: 24rpx;
+  margin-right: 12rpx;
+}
+
+.auth-random-text {
+  font-size: 24rpx;
+  color: #667eea;
+}
+
 .auth-panel-footer {
   display: flex;
   padding: 24rpx 32rpx 40rpx;
@@ -3028,4 +3061,194 @@ page {
   background: #d8d8d8;
   color: #fff;
   box-shadow: none;
+}
+
+/* 随机信息确认弹窗 */
+.random-confirm-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.random-confirm-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.random-confirm-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.random-confirm-panel {
+  position: relative;
+  width: 520rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.2);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.random-confirm-modal.show .random-confirm-panel {
+  transform: scale(1);
+}
+
+.random-confirm-header {
+  padding: 32rpx 32rpx 24rpx;
+  text-align: center;
+}
+
+.random-confirm-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12rpx;
+}
+
+.random-confirm-desc {
+  display: block;
+  font-size: 26rpx;
+  color: #888;
+}
+
+.random-confirm-body {
+  padding: 24rpx 32rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.random-avatar-container {
+  position: relative;
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.random-avatar-wrapper {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx;
+  background: rgba(102, 126, 234, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.random-avatar-img {
+  width: 100%;
+  height: 100%;
+}
+
+.random-refresh-btn {
+  position: absolute;
+  top: -4rpx;
+  right: -4rpx;
+  width: 44rpx;
+  height: 44rpx;
+  background: #fff;
+  border-radius: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+}
+
+.random-refresh-btn:active {
+  background: #f5f5f5;
+}
+
+.random-refresh-svg {
+  width: 26rpx;
+  height: 26rpx;
+}
+
+.random-refresh-svg-small {
+  width: 22rpx;
+  height: 22rpx;
+}
+
+.random-nickname-text {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #667eea;
+}
+
+.random-nickname-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.random-nickname-refresh {
+  width: 36rpx;
+  height: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+}
+
+.random-nickname-refresh:active {
+  opacity: 1;
+}
+
+.random-confirm-footer {
+  display: flex;
+  padding: 24rpx 32rpx 40rpx;
+  gap: 16rpx;
+}
+
+.random-cancel-btn {
+  flex: 1;
+  height: 84rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 42rpx;
+  font-size: 30rpx;
+  color: #666;
+  border: none;
+  font-weight: 500;
+}
+
+.random-cancel-btn::after {
+  border: none;
+}
+
+.random-confirm-btn {
+  flex: 1;
+  height: 84rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 42rpx;
+  font-size: 30rpx;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 4rpx 16rpx rgba(102, 126, 234, 0.3);
+}
+
+.random-confirm-btn::after {
+  border: none;
 }

@@ -154,7 +154,8 @@
 
           <view class="asset-item" wx:for="{{item.assets}}" wx:for-item="asset" wx:key="_id">
             <view class="asset-icon-box">
-              <text class="asset-icon">{{asset.icon}}</text>
+              <image wx:if="{{asset.displayIcon}}" class="asset-icon-img" src="{{asset.displayIcon}}" mode="aspectFit"></image>
+              <text wx:else class="asset-icon">{{asset.icon || '📦'}}</text>
             </view>
             <view class="asset-info">
               <view class="asset-header">
