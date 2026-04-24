@@ -402,11 +402,7 @@
       </view>
     </view>
 
-    <!-- 版本信息 -->
-    <view class="version-info">
-      <text class="version-text">朝夕数计365 v1.4.0</text>
-    </view>
-  </view>
+      </view>
 
   <!-- 批量删除视图 -->
   <view class="batch-delete-content" style="{{showBatchDelete ? 'display: block;' : 'display: none;'}}">
@@ -870,6 +866,98 @@
       <view class="random-confirm-footer">
         <button class="random-cancel-btn" bindtap="cancelRandomInfo">取消</button>
         <button class="random-confirm-btn" bindtap="confirmRandomInfo">确认</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 关于弹窗 -->
+  <view class="about-modal {{showAboutModal ? 'show' : ''}}" wx:if="{{showAboutModal}}">
+    <view class="about-mask" bindtap="closeAboutModal"></view>
+    <view class="about-panel">
+      <!-- 头部装饰 -->
+      <view class="about-header-decor">
+        <view class="decor-ring ring-1"></view>
+        <view class="decor-ring ring-2"></view>
+        <view class="decor-ring ring-3"></view>
+        <view class="decor-dot dot-1"></view>
+        <view class="decor-dot dot-2"></view>
+        <view class="decor-dot dot-3"></view>
+      </view>
+
+      <!-- Logo区域 -->
+      <view class="about-logo-section">
+        <view class="about-logo-wrap">
+          <view class="logo-gradient-bg"></view>
+          <image class="logo-icon-svg" src="/images/about.svg" mode="aspectFit"></image>
+        </view>
+        <text class="about-app-name">朝夕数计365</text>
+        <text class="about-app-slogan">您的智能资产管理助手</text>
+      </view>
+
+      <!-- 功能卡片区域 -->
+      <view class="about-features">
+        <view class="feature-grid">
+          <view class="feature-card card-1">
+            <view class="feature-icon-wrap">
+              <text class="feature-icon">📦</text>
+            </view>
+            <view class="feature-info">
+              <text class="feature-title">资产记录</text>
+              <text class="feature-desc">追踪服役时长</text>
+            </view>
+          </view>
+          <view class="feature-card card-2">
+            <view class="feature-icon-wrap">
+              <text class="feature-icon">📈</text>
+            </view>
+            <view class="feature-info">
+              <text class="feature-title">日均成本</text>
+              <text class="feature-desc">消费更透明</text>
+            </view>
+          </view>
+          <view class="feature-card card-3">
+            <view class="feature-icon-wrap">
+              <text class="feature-icon">🔄</text>
+            </view>
+            <view class="feature-info">
+              <text class="feature-title">资产状态</text>
+              <text class="feature-desc">一目了然</text>
+            </view>
+          </view>
+          <view class="feature-card card-4">
+            <view class="feature-icon-wrap">
+              <text class="feature-icon">📅</text>
+            </view>
+            <view class="feature-info">
+              <text class="feature-title">订阅追踪</text>
+              <text class="feature-desc">掌握周期投入</text>
+            </view>
+          </view>
+          <view class="feature-card card-5">
+            <view class="feature-icon-wrap">
+              <text class="feature-icon">🏷️</text>
+            </view>
+            <view class="feature-info">
+              <text class="feature-title">分类管理</text>
+              <text class="feature-desc">井井有条</text>
+            </view>
+          </view>
+          <view class="feature-card card-6">
+            <view class="feature-icon-wrap">
+              <text class="feature-icon">📊</text>
+            </view>
+            <view class="feature-info">
+              <text class="feature-title">统计分析</text>
+              <text class="feature-desc">数据可视化</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 底部寄语 -->
+      <view class="about-footer">
+        <text class="about-message">愿您朝夕相伴，数计有方</text>
+        <button class="about-close-btn" bindtap="closeAboutModal">知道了</button>
       </view>
     </view>
   </view>
