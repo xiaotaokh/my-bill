@@ -118,20 +118,14 @@ Page({
     searchInputValue: '',
     searchInputFocus: false,
 
-    // 用户授权弹窗
-    showAuthModal: false,
-    authNickName: '',
-    authAvatarUrl: '',
-    nicknameFocus: false,
-    authSubmitting: false,
-
-    // 随机信息确认弹窗
-    showRandomConfirmModal: false,
-    randomNickName: '',
-    randomAvatarUrl: '',
-
     // 关于弹窗
     showAboutModal: false,
+
+    // 欢迎提示弹窗
+    showWelcomeToast: false,
+    welcomeMessage: '',
+    welcomeSubMessage: '',
+    welcomeDuration: 10,
 
     // 预设头像 SVG（20个不同风格和语义的头像）
     presetAvatars: [
@@ -211,29 +205,30 @@ Page({
     this.checkUserAuth();
   },
 
-  // 检查用户是否已授权
+  // 检查用户是否已授权 - 新用户自动分配随机头像昵称
   checkUserAuth() {
     const app = getApp();
     const ADMIN_OPENID = 'ofW_r4lPk806IqPSk4-gR9r_478g';
 
     app.getOpenid().then(openid => {
-      // 管理员不需要弹窗，也不需要记录到用户统计
+      // 管理员不需要记录到用户统计
       if (openid === ADMIN_OPENID) {
         return;
       }
 
-      // 直接查询数据库检查用户是否存在，不自动创建空记录
+      // 查询数据库检查用户是否存在
       wx.cloud.database().collection('users').where({ _openid: openid }).limit(1).get().then(dbRes => {
         if (dbRes.data.length === 0) {
-          // 用户不存在，显示授权弹窗（授权后才创建记录）
-          this.setData({ showAuthModal: true });
+          // 用户不存在，自动创建随机头像昵称（新用户）
+          this.createRandomUserInfo(true);
         } else {
           const user = dbRes.data[0];
           if (!user.nickName || !user.avatarUrl) {
-            // 存在记录但缺少昵称头像，显示授权弹窗
-            this.setData({ showAuthModal: true });
+            // 存在记录但缺少昵称头像，自动补充随机信息
+            this.updateUserInfoWithRandom(user._id, true);
           } else {
-            // 用户已授权，更新访问时间，同时保存到全局
+            // 用户已完善信息，显示欢迎回来提示
+            this.showWelcomeToast(`欢迎回来，${user.nickName}`, '继续记录您的资产吧');
             app.globalData.userInfo = {
               nickName: user.nickName,
               avatarUrl: user.avatarUrl
@@ -250,101 +245,38 @@ Page({
     });
   },
 
-  // 选择头像
-  onChooseAvatar(e) {
-    if (this.data.authSubmitting) {
-      return;
-    }
-    const avatarUrl = e.detail.avatarUrl;
-    this.setData({ authAvatarUrl: avatarUrl });
-  },
-
-  // 点击按钮触发昵称选择
-  chooseNickname() {
-    if (this.data.authSubmitting) {
-      return;
-    }
-    this.setData({ nicknameFocus: true });
-  },
-
-  // 微信官方昵称填写能力完成后回填
-  onNicknameBlur(e) {
-    const nickName = (e.detail.value || '').trim();
+  // 显示欢迎提示弹窗
+  showWelcomeToast(message, subMessage = '', duration = 10) {
+    const durationMs = duration * 1000;
     this.setData({
-      authNickName: nickName,
-      nicknameFocus: false
+      showWelcomeToast: true,
+      welcomeMessage: message,
+      welcomeSubMessage: subMessage,
+      welcomeDuration: duration
+    });
+
+    // 指定秒数后自动关闭
+    this.welcomeTimer = setTimeout(() => {
+      this.hideWelcomeToast();
+    }, durationMs);
+  },
+
+  // 手动关闭欢迎提示
+  hideWelcomeToast() {
+    if (this.welcomeTimer) {
+      clearTimeout(this.welcomeTimer);
+      this.welcomeTimer = null;
+    }
+    this.setData({
+      showWelcomeToast: false,
+      welcomeMessage: '',
+      welcomeSubMessage: '',
+      welcomeDuration: 10
     });
   },
 
-  // 提交用户信息
-  submitUserInfo() {
-    const { authNickName, authAvatarUrl } = this.data;
-
-    if (this.data.authSubmitting) {
-      return;
-    }
-
-    if (!authAvatarUrl) {
-      wx.showToast({ title: '请选择头像', icon: 'none' });
-      return;
-    }
-
-    if (!authNickName.trim()) {
-      wx.showToast({ title: '请输入昵称', icon: 'none' });
-      return;
-    }
-
-    this.setData({ authSubmitting: true });
-
-    // 处理头像上传
-    let uploadPromise;
-    if (authAvatarUrl.startsWith('http')) {
-      // HTTP 链接直接使用
-      uploadPromise = Promise.resolve(authAvatarUrl);
-    } else if (authAvatarUrl.startsWith('data:image')) {
-      // SVG data URL 需要先写入临时文件再上传
-      uploadPromise = this.uploadDataUrlAvatar(authAvatarUrl);
-    } else {
-      // 本地临时文件直接上传
-      uploadPromise = this.uploadAvatar(authAvatarUrl);
-    }
-
-    uploadPromise.then(finalAvatarUrl => {
-      wx.cloud.callFunction({
-        name: 'saveUserInfo',
-        data: {
-          nickName: authNickName.trim(),
-          avatarUrl: finalAvatarUrl
-        },
-        success: (res) => {
-          this.setData({ authSubmitting: false });
-          if (res.result?.success) {
-            this.setData({
-              showAuthModal: false,
-              authNickName: '',
-              authAvatarUrl: ''
-            });
-          } else {
-            wx.showToast({ title: res.result?.error || '保存失败', icon: 'none' });
-          }
-        },
-        fail: () => {
-          this.setData({ authSubmitting: false });
-          wx.showToast({ title: '网络错误', icon: 'none' });
-        }
-      });
-    }).catch(() => {
-      this.setData({ authSubmitting: false });
-      wx.showToast({ title: '头像上传失败', icon: 'none' });
-    });
-  },
-
-  // 使用随机头像和昵称 - 显示确认弹窗
-  useRandomInfo() {
-    if (this.data.authSubmitting) {
-      return;
-    }
-
+  // 为新用户自动创建随机头像昵称
+  createRandomUserInfo(isNewUser = false) {
     const { presetAvatars, presetNicknames } = this.data;
 
     // 随机选择头像
@@ -354,69 +286,98 @@ Page({
     const randomNickname = presetNicknames[Math.floor(Math.random() * presetNicknames.length)] +
                            Math.floor(Math.random() * 1000);
 
-    this.setData({
-      showRandomConfirmModal: true,
-      randomNickName: randomNickname,
-      randomAvatarUrl: randomAvatar
+    // 显示新用户欢迎提示
+    if (isNewUser) {
+      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 30);
+    }
+
+    // 上传 SVG 头像到云存储
+    this.uploadDataUrlAvatar(randomAvatar).then(finalAvatarUrl => {
+      wx.cloud.callFunction({
+        name: 'saveUserInfo',
+        data: {
+          nickName: randomNickname,
+          avatarUrl: finalAvatarUrl
+        },
+        success: (res) => {
+          if (res.result?.success) {
+            const app = getApp();
+            app.globalData.userInfo = {
+              nickName: randomNickname,
+              avatarUrl: finalAvatarUrl
+            };
+          }
+        },
+        fail: (err) => {
+          console.error('自动创建用户信息失败:', err);
+        }
+      });
+    }).catch(err => {
+      console.error('上传随机头像失败:', err);
+      // 上传失败时直接使用 data URL
+      wx.cloud.callFunction({
+        name: 'saveUserInfo',
+        data: {
+          nickName: randomNickname,
+          avatarUrl: randomAvatar
+        },
+        success: (res) => {
+          if (res.result?.success) {
+            const app = getApp();
+            app.globalData.userInfo = {
+              nickName: randomNickname,
+              avatarUrl: randomAvatar
+            };
+          }
+        }
+      });
     });
   },
 
-  // 确认使用随机信息
-  confirmRandomInfo() {
-    const { randomNickName, randomAvatarUrl } = this.data;
+  // 为已有用户补充随机头像昵称
+  updateUserInfoWithRandom(userId, isNewUser = false) {
+    const { presetAvatars, presetNicknames } = this.data;
 
-    // 填充到表单
-    this.setData({
-      authNickName: randomNickName,
-      authAvatarUrl: randomAvatarUrl,
-      showRandomConfirmModal: false,
-      randomNickName: '',
-      randomAvatarUrl: ''
-    });
-
-    // 直接提交（和"允许并继续"逻辑一致）
-    this.submitUserInfo();
-  },
-
-  // 刷新随机头像
-  refreshRandomInfo() {
-    const { presetAvatars } = this.data;
     const randomAvatar = presetAvatars[Math.floor(Math.random() * presetAvatars.length)];
-    this.setData({ randomAvatarUrl: randomAvatar });
-  },
-
-  // 刷新随机昵称
-  refreshRandomNickname() {
-    const { presetNicknames } = this.data;
     const randomNickname = presetNicknames[Math.floor(Math.random() * presetNicknames.length)] +
                            Math.floor(Math.random() * 1000);
-    this.setData({ randomNickName: randomNickname });
-  },
 
-  // 取消随机信息确认弹窗
-  cancelRandomInfo() {
-    this.setData({
-      showRandomConfirmModal: false,
-      randomNickName: '',
-      randomAvatarUrl: ''
-    });
-  },
+    // 显示新用户欢迎提示
+    if (isNewUser) {
+      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 30);
+    }
 
-  // 取消授权（退出小程序）
-  cancelAuth() {
-    wx.exitMiniProgram();
-  },
-
-  // 上传头像到云存储
-  uploadAvatar(tempFilePath) {
-    return new Promise((resolve, reject) => {
-      const timestamp = Date.now();
-      const cloudPath = `user-avatars/${timestamp}.jpg`;
-      wx.cloud.uploadFile({
-        cloudPath,
-        filePath: tempFilePath,
-        success: res => resolve(res.fileID),
-        fail: err => reject(err)
+    this.uploadDataUrlAvatar(randomAvatar).then(finalAvatarUrl => {
+      wx.cloud.database().collection('users').doc(userId).update({
+        data: {
+          nickName: randomNickname,
+          avatarUrl: finalAvatarUrl
+        },
+        success: () => {
+          const app = getApp();
+          app.globalData.userInfo = {
+            nickName: randomNickname,
+            avatarUrl: finalAvatarUrl
+          };
+        },
+        fail: (err) => {
+          console.error('更新用户信息失败:', err);
+        }
+      });
+    }).catch(err => {
+      console.error('上传随机头像失败:', err);
+      wx.cloud.database().collection('users').doc(userId).update({
+        data: {
+          nickName: randomNickname,
+          avatarUrl: randomAvatar
+        },
+        success: () => {
+          const app = getApp();
+          app.globalData.userInfo = {
+            nickName: randomNickname,
+            avatarUrl: randomAvatar
+          };
+        }
       });
     });
   },

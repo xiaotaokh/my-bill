@@ -25,29 +25,86 @@
 
   <!-- 账号信息卡片 -->
   <view wx:elif="{{userInfo}}" class="account-card">
-    <!-- 头像区域 -->
-    <view class="avatar-section">
-      <view class="avatar-wrapper">
-        <image
-          wx:if="{{userInfo.avatarUrl}}"
-          class="avatar-img"
-          src="{{userInfo.avatarUrl}}"
-          mode="aspectFill"
-        ></image>
-        <view wx:else class="avatar-placeholder">
-          <text class="placeholder-icon">👤</text>
+    <!-- 非编辑模式 -->
+    <view wx:if="{{!isEditing}}">
+      <!-- 头像区域 -->
+      <view class="avatar-section">
+        <view class="avatar-wrapper">
+          <image
+            wx:if="{{userInfo.avatarUrl}}"
+            class="avatar-img"
+            src="{{userInfo.avatarUrl}}"
+            mode="aspectFill"
+          ></image>
+          <view wx:else class="avatar-placeholder">
+            <text class="placeholder-icon">👤</text>
+          </view>
         </view>
       </view>
+
+      <!-- 昵称信息 -->
+      <view class="info-section">
+        <text class="info-label">昵称</text>
+        <text class="info-value">{{userInfo.nickName || '未设置'}}</text>
+      </view>
+
+      <!-- 分割线 -->
+      <view class="divider"></view>
+
+      <!-- 提示文字 -->
+      <view class="edit-tip">
+        <text class="tip-icon">💡</text>
+        <text class="tip-text">头像和昵称可随时修改</text>
+      </view>
+
+      <!-- 编辑按钮 -->
+      <button class="edit-btn" bindtap="startEdit">
+        <text class="btn-icon">✏️</text>
+        <text class="btn-text">修改头像昵称</text>
+      </button>
     </view>
 
-    <!-- 昵称信息 -->
-    <view class="info-section">
-      <text class="info-label">昵称</text>
-      <text class="info-value">{{userInfo.nickName || '未设置'}}</text>
-    </view>
+    <!-- 编辑模式 -->
+    <view wx:else class="edit-mode">
+      <!-- 提示信息 -->
+      <view class="edit-notice">
+        <text class="notice-text">点击右侧头像和昵称可选择微信头像和昵称，仅用于小程序内展示使用，不会泄漏任何隐私，请放心使用。</text>
+      </view>
 
-    <!-- 分割线 -->
-    <view class="divider"></view>
+      <!-- 头像选择 -->
+      <view class="edit-row">
+        <text class="edit-label">头像</text>
+        <button class="avatar-select-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" disabled="{{submitting}}">
+          <image wx:if="{{editAvatarUrl}}" class="avatar-preview" src="{{editAvatarUrl}}" mode="aspectFill"></image>
+          <text wx:else class="avatar-empty-text">点击获取头像</text>
+          <text class="select-arrow">›</text>
+        </button>
+      </view>
+
+      <!-- 昵称输入 -->
+      <view class="edit-row">
+        <text class="edit-label">昵称</text>
+        <button class="nickname-select-btn" bindtap="chooseNickname" disabled="{{submitting}}">
+          <text class="nickname-text {{editNickName ? 'filled' : 'empty'}}">{{editNickName || '点击获取昵称'}}</text>
+          <text class="select-arrow">›</text>
+        </button>
+        <input class="nickname-hidden-input" type="nickname" focus="{{nicknameFocus}}" bindinput="onNicknameInput" bindblur="onNicknameBlur" />
+      </view>
+
+      <!-- 随机选择提示 -->
+      <view class="random-tip" bindtap="showRandomPicker">
+        <text class="random-icon">🎲</text>
+        <text class="random-text">不想填写？使用随机头像和昵称</text>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="edit-actions">
+        <button class="cancel-btn" bindtap="cancelEdit" disabled="{{submitting}}">取消</button>
+        <button class="confirm-btn {{(!editAvatarUrl || !editNickName || submitting) ? 'disabled' : ''}}" bindtap="submitEdit" loading="{{submitting}}" disabled="{{!editAvatarUrl || !editNickName || submitting}}">
+          {{submitting ? '保存中...' : '保存'}}
+        </button>
+      </view>
+    </view>
   </view>
 
   <!-- 空状态 -->
@@ -58,4 +115,35 @@
 
   <!-- 底部留白 -->
   <view class="bottom-spacer"></view>
+</view>
+
+<!-- 随机信息选择弹窗 -->
+<view class="random-modal {{showRandomModal ? 'show' : ''}}" wx:if="{{showRandomModal}}">
+  <view class="random-mask" bindtap="cancelRandomModal"></view>
+  <view class="random-panel">
+    <view class="random-header">
+      <text class="random-title">随机生成的形象</text>
+      <text class="random-desc">确认使用以下头像和昵称？</text>
+    </view>
+    <view class="random-body">
+      <view class="random-avatar-container">
+        <view class="random-avatar-wrapper">
+          <image class="random-avatar-img" src="{{randomAvatarUrl}}" mode="aspectFill"></image>
+        </view>
+        <view class="random-refresh-btn" bindtap="refreshRandomAvatar">
+          <image class="refresh-icon" src="/images/refresh.svg" mode="aspectFit"></image>
+        </view>
+      </view>
+      <view class="random-nickname-row">
+        <text class="random-nickname-text">{{randomNickName}}</text>
+        <view class="random-nickname-refresh" bindtap="refreshRandomNickname">
+          <image class="refresh-icon-small" src="/images/refresh.svg" mode="aspectFit"></image>
+        </view>
+      </view>
+    </view>
+    <view class="random-footer">
+      <button class="random-cancel-btn" bindtap="cancelRandomModal">取消</button>
+      <button class="random-confirm-btn" bindtap="confirmRandomInfo">确认</button>
+    </view>
+  </view>
 </view>

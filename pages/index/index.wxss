@@ -11,6 +11,135 @@ page {
   --shadow-card: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
 }
 
+/* 欢迎提示弹窗 */
+.welcome-toast {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  padding: 40rpx 30rpx;
+  padding-top: calc(40rpx + env(safe-area-inset-top));
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-100%);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.welcome-toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.welcome-toast-inner {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx 32rpx;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+  backdrop-filter: blur(20px);
+  border-radius: 20rpx;
+  box-shadow:
+    0 8rpx 40rpx rgba(102, 126, 234, 0.25),
+    0 2rpx 10rpx rgba(0, 0, 0, 0.05),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
+  border: 1rpx solid rgba(102, 126, 234, 0.15);
+}
+
+.welcome-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48rpx;
+  height: 48rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.welcome-icon {
+  font-size: 24rpx;
+  color: #fff;
+}
+
+.welcome-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.welcome-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  letter-spacing: 1rpx;
+}
+
+.welcome-sub {
+  font-size: 24rpx;
+  color: #888;
+  letter-spacing: 0.5rpx;
+}
+
+.welcome-progress-bar {
+  height: 4rpx;
+  margin-top: 16rpx;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 2rpx;
+  overflow: hidden;
+  position: relative;
+  --duration: 10s;
+}
+
+.welcome-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #667eea 0%, #9b72e8 100%);
+  border-radius: 2rpx;
+  animation: progress-fill var(--duration) linear forwards;
+}
+
+.welcome-toast.show .welcome-progress-bar::after {
+  animation: progress-fill var(--duration) linear forwards;
+}
+
+@keyframes progress-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.welcome-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44rpx;
+  height: 44rpx;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.welcome-close-btn:active {
+  background: rgba(102, 126, 234, 0.2);
+}
+
+.welcome-close-icon {
+  font-size: 28rpx;
+  color: #667eea;
+  font-weight: 300;
+}
+
 .container {
   min-height: 100vh;
   background: linear-gradient(180deg, #f0f2f5 0%, #e8eaf6 100%);
