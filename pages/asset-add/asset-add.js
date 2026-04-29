@@ -40,6 +40,11 @@ Page({
     selectedIconIndex: 0, // 选中的图标索引
     uploadedImagePath: '', // 用户上传的图片路径
 
+    // 自定义emoji相关
+    emojiDialogVisible: false, // emoji输入弹窗是否显示
+    tempEmojiInput: '', // emoji输入框临时值
+    customEmojiValue: '', // 用户选择的自定义emoji
+
     // 内置图标分组数据
     builtinIconGroups: [
       {
@@ -345,6 +350,7 @@ Page({
           let selectedIconName = '默认';
           let selectedGroupName = '常用';
           let selectedIconIndex = 0;
+          let customEmojiValue = '';
 
           if (asset.icon) {
             if (asset.icon.startsWith('cloud://')) {
@@ -358,6 +364,7 @@ Page({
                   selectedIcon = ''; // 清空内置图标
                   selectedIconName = ''; // 清空图标名称
                   selectedGroupName = ''; // 清空分组名称，不选中任何内置图标
+                  customEmojiValue = ''; // 清空自定义emoji
                 }
               } catch (e) {
                 // 获取失败时使用 null
@@ -367,14 +374,25 @@ Page({
               selectedIcon = '';
               selectedIconName = ''; // 清空图标名称
               selectedGroupName = ''; // 清空分组名称，不选中任何内置图标
+              customEmojiValue = ''; // 清空自定义emoji
             } else {
               // emoji 图标
               selectedIcon = asset.icon;
-              // 查找对应的图标名称和索引，传入保存的图标名称和分组名称
-              const iconInfo = this.findIconInfoByValue(asset.icon, asset.iconName, asset.groupName);
-              selectedIconName = iconInfo.name;
-              selectedGroupName = iconInfo.groupName;
-              selectedIconIndex = iconInfo.iconIndex;
+
+              // 判断是否是自定义emoji（iconName为"自定义emoji"）
+              if (asset.iconName === '自定义emoji') {
+                customEmojiValue = asset.icon;
+                selectedIconName = '自定义emoji';
+                selectedGroupName = '';
+                selectedIconIndex = 0;
+              } else {
+                // 查找对应的图标名称和索引，传入保存的图标名称和分组名称
+                const iconInfo = this.findIconInfoByValue(asset.icon, asset.iconName, asset.groupName);
+                selectedIconName = iconInfo.name;
+                selectedGroupName = iconInfo.groupName;
+                selectedIconIndex = iconInfo.iconIndex;
+                customEmojiValue = '';
+              }
             }
           }
 
@@ -425,6 +443,7 @@ Page({
             selectedGroupName: selectedGroupName,
             selectedIconIndex: selectedIconIndex,
             uploadedImagePath: uploadedImagePath,
+            customEmojiValue: customEmojiValue,
             assetCategory: asset.category || '', // 保存类别，等待类别加载后选中
             // 订阅资产字段
             assetType: asset.assetType || 'fixed',
@@ -543,7 +562,8 @@ Page({
       selectedIcon: '📦',
       selectedIconName: '默认',
       selectedGroupName: '常用',
-      selectedIconIndex: 0
+      selectedIconIndex: 0,
+      customEmojiValue: ''
     });
   },
 
@@ -556,7 +576,155 @@ Page({
       selectedIconName: icon.name,
       selectedGroupName: groupName,
       selectedIconIndex: iconIdx,
-      uploadedImagePath: '' // 清空之前上传的图片
+      uploadedImagePath: '', // 清空之前上传的图片
+      customEmojiValue: '' // 清空自定义emoji
+    });
+  },
+
+  // ========== 自定义Emoji相关方法 ==========
+
+  // 显示emoji输入弹窗
+  showEmojiInput: function() {
+    this.setData({
+      emojiDialogVisible: true,
+      tempEmojiInput: this.data.customEmojiValue || '' // 回显已有的emoji
+    });
+  },
+
+  // 关闭emoji输入弹窗
+  closeEmojiDialog: function() {
+    this.setData({
+      emojiDialogVisible: false,
+      tempEmojiInput: ''
+    });
+  },
+
+  // 监听emoji输入，只允许一个emoji，第二个替换第一个
+  onEmojiInput: function(e) {
+    const input = e.detail.value;
+
+    // 检测所有emoji
+    const emojis = this.findAllEmojis(input);
+
+    if (emojis.length === 0) {
+      // 没有emoji，清空
+      this.setData({ tempEmojiInput: '' });
+    } else {
+      // 取最后一个emoji，实现替换效果（新emoji替换旧的）
+      this.setData({ tempEmojiInput: emojis[emojis.length - 1] });
+    }
+  },
+
+  // 找出所有单个emoji字符
+  findAllEmojis: function(str) {
+    if (!str) return [];
+
+    const result = [];
+    const chars = [...str]; // 正确分割Unicode字符
+
+    for (const char of chars) {
+      const code = char.codePointAt(0);
+      // 单个emoji的范围检测
+      if (
+        (code >= 0x1F600 && code <= 0x1F64F) || // Emoticons
+        (code >= 0x1F300 && code <= 0x1F5FF) || // Misc Symbols and Pictographs
+        (code >= 0x1F680 && code <= 0x1F6FF) || // Transport and Map
+        (code >= 0x1F700 && code <= 0x1F77F) || // Alchemical
+        (code >= 0x1F780 && code <= 0x1F7FF) || // Geometric Shapes Extended
+        (code >= 0x1F800 && code <= 0x1F8FF) || // Supplemental Arrows-C
+        (code >= 0x1F900 && code <= 0x1F9FF) || // Supplemental Symbols and Pictographs
+        (code >= 0x1FA00 && code <= 0x1FA6F) || // Chess Symbols
+        (code >= 0x1FA70 && code <= 0x1FAFF) || // Symbols and Pictographs Extended-A
+        (code >= 0x2600 && code <= 0x26FF) ||   // Misc symbols
+        (code >= 0x2700 && code <= 0x27BF) ||   // Dingbats
+        (code >= 0x1F1E0 && code <= 0x1F1FF)    // Flags (区域指示符号)
+      ) {
+        result.push(char);
+      }
+    }
+
+    return result;
+  },
+
+  // 选择示例emoji
+  selectExampleEmoji: function(e) {
+    const emoji = e.currentTarget.dataset.emoji;
+    if (emoji) {
+      // 示例emoji可能包含组合emoji，取第一个字符
+      const chars = [...emoji];
+      const firstChar = chars[0];
+      const code = firstChar.codePointAt(0);
+
+      // 检测是否是单个emoji
+      if (
+        (code >= 0x1F600 && code <= 0x1F64F) ||
+        (code >= 0x1F300 && code <= 0x1F5FF) ||
+        (code >= 0x1F680 && code <= 0x1F6FF) ||
+        (code >= 0x1F700 && code <= 0x1F77F) ||
+        (code >= 0x1F780 && code <= 0x1F7FF) ||
+        (code >= 0x1F800 && code <= 0x1F8FF) ||
+        (code >= 0x1F900 && code <= 0x1F9FF) ||
+        (code >= 0x1FA00 && code <= 0x1FA6F) ||
+        (code >= 0x1FA70 && code <= 0x1FAFF) ||
+        (code >= 0x2600 && code <= 0x26FF) ||
+        (code >= 0x2700 && code <= 0x27BF) ||
+        (code >= 0x1F1E0 && code <= 0x1F1FF)
+      ) {
+        this.setData({ tempEmojiInput: firstChar });
+      }
+    }
+  },
+
+  // 确认emoji输入
+  confirmEmojiInput: function() {
+    const { tempEmojiInput } = this.data;
+
+    if (!tempEmojiInput) {
+      wx.showToast({
+        title: '请输入emoji',
+        icon: 'none'
+      });
+      return;
+    }
+
+    // 验证是否包含有效emoji
+    const emojis = this.findAllEmojis(tempEmojiInput);
+    if (emojis.length === 0) {
+      wx.showToast({
+        title: '请输入有效的emoji图标',
+        icon: 'none'
+      });
+      return;
+    }
+
+    // 设置自定义emoji
+    this.setData({
+      customEmojiValue: emojis[0],
+      selectedIcon: emojis[0],
+      selectedIconName: '自定义emoji',
+      selectedGroupName: '',
+      selectedIconIndex: 0,
+      uploadedImagePath: '', // 清除上传的图片
+      emojiDialogVisible: false,
+      tempEmojiInput: ''
+    });
+
+    wx.showToast({
+      title: '已选择emoji',
+      icon: 'success',
+      duration: 1000
+    });
+  },
+
+  // 删除自定义emoji
+  removeCustomEmoji: function() {
+    this.setData({
+      customEmojiValue: '',
+      uploadedImagePath: '', // 清除上传的图片（保险）
+      selectedIcon: '📦',
+      selectedIconName: '默认',
+      selectedGroupName: '常用',
+      selectedIconIndex: 0
     });
   },
 
@@ -686,7 +854,8 @@ Page({
       success: (res) => {
         // 上传成功后，更新selectedIcon为云存储路径，保持缩略图显示
         this.setData({
-          uploadedImagePath: res.fileID // 使用uploadedImagePath存储云存储路径
+          uploadedImagePath: res.fileID, // 使用uploadedImagePath存储云存储路径
+          customEmojiValue: '' // 清除自定义emoji
         });
         wx.hideLoading();
         wx.showToast({
@@ -1049,9 +1218,8 @@ Page({
       price: this.data.assetType === 'subscription' ? this.data.periodAmount : this.data.price,
       purchaseDate: this.data.purchaseDate,
       remark: this.data.remark,
-      // 优先使用上传的图片，如果有的话；否则使用选择的内置图标
-      // 如果两者都没有，使用默认图标
-      icon: this.data.uploadedImagePath || this.data.selectedIcon || '📦'
+      // 优先使用上传的图片，其次自定义emoji，最后内置图标
+      icon: this.data.uploadedImagePath || this.data.customEmojiValue || this.data.selectedIcon || '📦'
     };
 
     // 获取选中的类别（单选模式）
@@ -1089,8 +1257,8 @@ Page({
       purchaseDate: formData.purchaseDate,
       category: formData.category,
       icon: formData.icon, // 传递缩略图字段
-      iconName: this.data.uploadedImagePath ? '' : (this.data.selectedIconName || '默认'), // 保存图标名称用于回显（上传图片时为空）
-      groupName: this.data.uploadedImagePath ? '' : (this.data.selectedGroupName || '常用'), // 保存分组名称用于回显
+      iconName: this.data.uploadedImagePath ? '' : (this.data.customEmojiValue ? '自定义emoji' : (this.data.selectedIconName || '默认')),
+      groupName: this.data.uploadedImagePath ? '' : (this.data.customEmojiValue ? '' : (this.data.selectedGroupName || '常用')),
       remark: formData.remark || '',
       status: status,
       retiredDate: this.data.isRetired ? this.data.retiredDate : '',

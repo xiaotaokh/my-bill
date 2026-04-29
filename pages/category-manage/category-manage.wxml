@@ -174,6 +174,7 @@ module.exports = {
           <input
             class="item-input"
             placeholder="请输入分类名称"
+            placeholder-class="input-placeholder"
             value="{{tempCategoryName}}"
             bindinput="onCategoryNameInput"
             maxlength="10"
@@ -191,10 +192,10 @@ module.exports = {
           <textarea
             class="item-textarea"
             placeholder="请输入分类描述（可选）"
+            placeholder-class="textarea-placeholder"
             value="{{tempDescription}}"
             bindinput="onDescriptionInput"
             maxlength="120"
-            auto-height
           />
         </view>
       </view>
@@ -210,7 +211,7 @@ module.exports = {
           <!-- 内置图标选择 -->
           <view class="icon-grid">
             <view
-              class="icon-option {{selectedIcon == item.icon && !uploadedImagePath ? 'selected' : ''}}"
+              class="icon-option {{selectedIcon == item.icon && !uploadedImagePath && !customEmojiValue ? 'selected' : ''}}"
               wx:for="{{builtinIcons}}"
               wx:key="index"
               bindtap="selectBuiltinIcon"
@@ -221,24 +222,39 @@ module.exports = {
             </view>
           </view>
 
-          <!-- 上传自定义图标 -->
-          <view class="upload-box {{uploadedImagePath ? 'has-image' : ''}}" bindtap="chooseImage">
-            <view wx:if="{{!uploadedImagePath}}" class="upload-placeholder">
-              <text class="upload-icon">📷</text>
-              <text class="upload-text">上传自定义图标</text>
-              <text class="upload-hint">支持jpg/png，不超过2M</text>
-            </view>
-            <view wx:else class="upload-preview">
-              <image class="preview-img" src="{{uploadedImagePath}}" mode="aspectFill"></image>
-              <view class="preview-overlay">
-                <text class="preview-text">点击更换</text>
+          <!-- 自定义图标区域：左右分布 -->
+          <view class="custom-icon-row">
+            <!-- 左：上传自定义图片 -->
+            <view class="upload-box {{uploadedImagePath ? 'has-image' : ''}}" bindtap="chooseImage">
+              <!-- 删除按钮在右上角 -->
+              <view class="delete-corner-btn" wx:if="{{uploadedImagePath}}" catchtap="removeUploadedImage">
+                <text>✕</text>
+              </view>
+              <view wx:if="{{!uploadedImagePath}}" class="upload-placeholder">
+                <text class="upload-icon">📷</text>
+                <text class="upload-text">上传图片</text>
+                <text class="upload-hint">jpg/png，≤2M</text>
+              </view>
+              <view wx:else class="upload-preview">
+                <image class="preview-img" src="{{uploadedImagePath}}" mode="aspectFill"></image>
               </view>
             </view>
-          </view>
 
-          <!-- 已上传图片删除 -->
-          <view class="remove-btn" wx:if="{{uploadedImagePath}}" bindtap="removeUploadedImage">
-            <text>删除图片</text>
+            <!-- 右：自定义emoji -->
+            <view class="emoji-input-box {{customEmojiValue ? 'has-emoji' : ''}}" bindtap="showEmojiInput">
+              <!-- 删除按钮在右上角 -->
+              <view class="delete-corner-btn" wx:if="{{customEmojiValue}}" catchtap="removeCustomEmoji">
+                <text>✕</text>
+              </view>
+              <view wx:if="{{!customEmojiValue}}" class="emoji-placeholder">
+                <text class="emoji-icon">😊</text>
+                <text class="emoji-text">自定义emoji</text>
+                <text class="emoji-hint">手动输入</text>
+              </view>
+              <view wx:else class="emoji-preview">
+                <text class="preview-emoji">{{customEmojiValue}}</text>
+              </view>
+            </view>
           </view>
         </view>
       </view>
@@ -249,6 +265,60 @@ module.exports = {
       <button class="dialog-btn cancel" bindtap="closeDialog">取消</button>
       <button class="dialog-btn confirm" bindtap="confirmCategoryOperation">
         <text>{{operationType === 'add' ? '🌱 添加' : '✨ 保存'}}</text>
+      </button>
+    </view>
+  </view>
+</view>
+
+<!-- Emoji输入弹窗 -->
+<view class="emoji-dialog-mask {{emojiDialogVisible ? 'show' : ''}}" wx:if="{{emojiDialogVisible}}" bindtap="closeEmojiDialog"></view>
+<view class="emoji-dialog-container {{emojiDialogVisible ? 'show' : ''}}" wx:if="{{emojiDialogVisible}}">
+  <view class="emoji-dialog-content">
+    <!-- 标题 -->
+    <view class="emoji-dialog-header">
+      <view class="emoji-dialog-title-wrap">
+        <text class="emoji-dialog-emoji">😊</text>
+        <text class="emoji-dialog-title">输入 Emoji</text>
+      </view>
+      <view class="emoji-dialog-close" bindtap="closeEmojiDialog">✕</view>
+    </view>
+
+    <!-- 输入提示 -->
+    <view class="emoji-dialog-body">
+      <view class="emoji-tip">
+        <text class="emoji-tip-icon">💡</text>
+        <text class="emoji-tip-text">点击输入框后，使用输入法的 emoji 面板选择图标，只支持一个 Emoji</text>
+      </view>
+
+      <!-- 输入框 -->
+      <view class="emoji-input-wrap">
+        <input
+          class="emoji-input"
+          placeholder="请输入 emoji..."
+          value="{{tempEmojiInput}}"
+          bindinput="onEmojiInput"
+          bindconfirm="confirmEmojiInput"
+          focus="{{emojiDialogVisible}}"
+          maxlength="20"
+        />
+      </view>
+
+      <!-- 输入示例 -->
+      <view class="emoji-examples">
+        <text class="emoji-examples-label">示例：</text>
+        <text class="emoji-example" bindtap="selectExampleEmoji" data-emoji="😂">😂</text>
+        <text class="emoji-example" bindtap="selectExampleEmoji" data-emoji="🦄">🦄</text>
+        <text class="emoji-example" bindtap="selectExampleEmoji" data-emoji="🍕">🍕</text>
+        <text class="emoji-example" bindtap="selectExampleEmoji" data-emoji="🐱">🐱</text>
+        <text class="emoji-example" bindtap="selectExampleEmoji" data-emoji="⭐">⭐</text>
+      </view>
+    </view>
+
+    <!-- 底部按钮 -->
+    <view class="emoji-dialog-footer">
+      <button class="emoji-dialog-btn cancel" bindtap="closeEmojiDialog">取消</button>
+      <button class="emoji-dialog-btn confirm" bindtap="confirmEmojiInput">
+        <text>✨ 确定</text>
       </button>
     </view>
   </view>

@@ -249,7 +249,7 @@
             <view class="group-title {{idx === 0 ? 'first' : ''}}">{{group.name}}</view>
             <!-- 分组图标列表 -->
             <view class="group-icons">
-              <view class="group-icon-item {{selectedGroupName === group.name && selectedIconIndex === index ? 'selected' : ''}}"
+              <view class="group-icon-item {{selectedGroupName === group.name && selectedIconIndex === index && !uploadedImagePath && !customEmojiValue ? 'selected' : ''}}"
                     wx:for="{{group.icons}}"
                     wx:key="name"
                     bindtap="selectBuiltinIcon"
@@ -263,18 +263,38 @@
           </view>
         </view>
 
-        <!-- 上传组件 -->
-        <view class="upload-area-large" bindtap="chooseIcon">
-          <text class="upload-icon-large">📷</text>
-          <text class="upload-text-large">上传自定义缩略图</text>
-          <text class="upload-desc-large">支持jpg/png/webp/svg格式，不超过2M</text>
-        </view>
+        <!-- 自定义图标区域：左右分布 -->
+        <view class="custom-icon-row">
+          <!-- 左：上传自定义缩略图 -->
+          <view class="upload-box-asset {{uploadedImagePath ? 'has-image' : ''}}" bindtap="chooseIcon">
+            <!-- 删除按钮在右上角 -->
+            <view class="delete-corner-btn" wx:if="{{uploadedImagePath}}" catchtap="removeUploadedImage">
+              <text>✕</text>
+            </view>
+            <view wx:if="{{!uploadedImagePath}}" class="upload-placeholder-asset">
+              <text class="upload-icon-asset">📷</text>
+              <text class="upload-text-asset">上传图片</text>
+              <text class="upload-hint-asset">jpg/png，≤2M</text>
+            </view>
+            <view wx:else class="upload-preview-asset">
+              <image class="preview-img-asset" src="{{uploadedImagePath}}" mode="aspectFill"></image>
+            </view>
+          </view>
 
-        <!-- 用户上传的缩略图预览区域 -->
-        <view class="uploaded-preview-area" wx:if="{{uploadedImagePath}}">
-          <view class="image-container">
-            <image class="uploaded-preview-image" src="{{uploadedImagePath}}" mode="aspectFill"></image>
-            <view class="remove-upload" bindtap="removeUploadedImage">✕</view>
+          <!-- 右：自定义emoji -->
+          <view class="emoji-input-box-asset {{customEmojiValue ? 'has-emoji' : ''}}" bindtap="showEmojiInput">
+            <!-- 删除按钮在右上角 -->
+            <view class="delete-corner-btn" wx:if="{{customEmojiValue}}" catchtap="removeCustomEmoji">
+              <text>✕</text>
+            </view>
+            <view wx:if="{{!customEmojiValue}}" class="emoji-placeholder-asset">
+              <text class="emoji-icon-asset">😊</text>
+              <text class="emoji-text-asset">自定义emoji</text>
+              <text class="emoji-hint-asset">手动输入</text>
+            </view>
+            <view wx:else class="emoji-preview-asset">
+              <text class="preview-emoji-asset">{{customEmojiValue}}</text>
+            </view>
           </view>
         </view>
       </view>
@@ -431,6 +451,60 @@
   <view class="submit-bar">
     <view class="submit-btn" bindtap="onSubmit">
       <text class="submit-text">保存资产</text>
+    </view>
+  </view>
+
+  <!-- Emoji输入弹窗 -->
+  <view class="emoji-dialog-mask {{emojiDialogVisible ? 'show' : ''}}" wx:if="{{emojiDialogVisible}}" bindtap="closeEmojiDialog"></view>
+  <view class="emoji-dialog-container {{emojiDialogVisible ? 'show' : ''}}" wx:if="{{emojiDialogVisible}}">
+    <view class="emoji-dialog-content">
+      <!-- 标题 -->
+      <view class="emoji-dialog-header">
+        <view class="emoji-dialog-title-wrap">
+          <text class="emoji-dialog-emoji">😊</text>
+          <text class="emoji-dialog-title">输入 Emoji</text>
+        </view>
+        <view class="emoji-dialog-close" bindtap="closeEmojiDialog">✕</view>
+      </view>
+
+      <!-- 输入提示 -->
+      <view class="emoji-dialog-body">
+        <view class="emoji-tip">
+          <text class="emoji-tip-icon">💡</text>
+          <text class="emoji-tip-text">点击输入框后，使用输入法的 emoji 面板选择图标，只支持一个 Emoji</text>
+        </view>
+
+        <!-- 输入框 -->
+        <view class="emoji-input-wrap">
+          <input
+            class="emoji-input"
+            placeholder="请输入 emoji..."
+            value="{{tempEmojiInput}}"
+            bindinput="onEmojiInput"
+            bindconfirm="confirmEmojiInput"
+            focus="{{emojiDialogVisible}}"
+            maxlength="20"
+          />
+        </view>
+
+        <!-- 输入示例 -->
+        <view class="emoji-examples">
+          <text class="emoji-examples-label">示例：</text>
+          <text class="emoji-example" bindtap="selectExampleEmoji" data-emoji="😂">😂</text>
+          <text class="emoji-example" bindtap="selectExampleEmoji" data-emoji="🦄">🦄</text>
+          <text class="emoji-example" bindtap="selectExampleEmoji" data-emoji="🍕">🍕</text>
+          <text class="emoji-example" bindtap="selectExampleEmoji" data-emoji="🐱">🐱</text>
+          <text class="emoji-example" bindtap="selectExampleEmoji" data-emoji="⭐">⭐</text>
+        </view>
+      </view>
+
+      <!-- 底部按钮 -->
+      <view class="emoji-dialog-footer">
+        <button class="emoji-dialog-btn cancel" bindtap="closeEmojiDialog">取消</button>
+        <button class="emoji-dialog-btn confirm" bindtap="confirmEmojiInput">
+          <text>✨ 确定</text>
+        </button>
+      </view>
     </view>
   </view>
 </view>
