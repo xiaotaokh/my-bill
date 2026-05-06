@@ -95,7 +95,7 @@
         </view>
         <view class="stat-item {{activeStatus === 'active' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="active">
           <view class="stat-icon active-icon">
-            <text class="iconfont">🚀</text>
+            <image class="stat-icon-svg" src="/images/active.svg" mode="aspectFit"></image>
           </view>
           <view class="stat-content">
             <text class="stat-number">{{activeCount}}</text>
@@ -104,7 +104,7 @@
         </view>
         <view class="stat-item {{activeStatus === 'retired' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="retired">
           <view class="stat-icon retired-icon">
-            <text class="iconfont">🏠</text>
+            <image class="stat-icon-svg" src="/images/retired.svg" mode="aspectFit"></image>
           </view>
           <view class="stat-content">
             <text class="stat-number">{{retiredCount}}</text>
@@ -113,7 +113,7 @@
         </view>
         <view class="stat-item {{activeStatus === 'sold' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="sold">
           <view class="stat-icon sold-icon">
-            <text class="iconfont">💰</text>
+            <image class="stat-icon-svg" src="/images/sold.svg" mode="aspectFit"></image>
           </view>
           <view class="stat-content">
             <text class="stat-number">{{soldCount}}</text>
@@ -643,7 +643,7 @@
         <!-- 次要数据网格 -->
         <view class="overview-grid">
           <view class="overview-item">
-            <view class="overview-icon">📦</view>
+            <view class="overview-icon">🗂️</view>
             <view class="overview-info">
               <view class="overview-value">{{reportTotalAssets}}<text class="overview-unit">件</text></view>
               <view class="overview-label">资产总数</view>
@@ -661,14 +661,18 @@
         <!-- 日均成本和不计入 -->
         <view class="overview-grid">
           <view class="overview-item daily">
-            <view class="overview-icon">📊</view>
+            <view class="overview-icon">
+              <image class="overview-icon-svg" src="/images/daily-cost.svg" mode="aspectFit" aria-label="日均成本"></image>
+            </view>
             <view class="overview-info">
               <view class="overview-value">¥{{reportDailyCost}}<text class="overview-unit">/天</text></view>
               <view class="overview-label">日均成本(全部资产)</view>
             </view>
           </view>
           <view class="overview-item exclude">
-            <view class="overview-icon">🔒</view>
+            <view class="overview-icon">
+              <image class="overview-icon-svg" src="/images/exclude.svg" mode="aspectFit" aria-label="不计入总资产"></image>
+            </view>
             <view class="overview-info">
               <view class="overview-value">¥{{reportExcludedPrice}}</view>
               <view class="overview-label">不计入总资产 ({{reportExcludedCount}}件)</view>
@@ -684,7 +688,9 @@
         <!-- 资产状态网格 -->
         <view class="status-grid">
           <view class="status-item active">
-            <view class="status-icon">🚀</view>
+            <view class="status-icon">
+              <image class="status-icon-svg" src="/images/active.svg" mode="aspectFit"></image>
+            </view>
             <view class="status-info">
               <view class="status-count">{{reportActiveCount}}<text class="status-unit">件</text></view>
               <view class="status-label">服役中</view>
@@ -692,7 +698,9 @@
             <view class="status-price">¥{{reportActivePrice}}</view>
           </view>
           <view class="status-item retired">
-            <view class="status-icon">🏠</view>
+            <view class="status-icon">
+              <image class="status-icon-svg" src="/images/retired.svg" mode="aspectFit"></image>
+            </view>
             <view class="status-info">
               <view class="status-count">{{reportRetiredCount}}<text class="status-unit">件</text></view>
               <view class="status-label">已退役</view>
@@ -700,7 +708,9 @@
             <view class="status-price">¥{{reportRetiredPrice}}</view>
           </view>
           <view class="status-item sold">
-            <view class="status-icon">💰</view>
+            <view class="status-icon">
+              <image class="status-icon-svg" src="/images/sold.svg" mode="aspectFit"></image>
+            </view>
             <view class="status-info">
               <view class="status-count">{{reportSoldCount}}<text class="status-unit">件</text></view>
               <view class="status-label">已卖出</view>

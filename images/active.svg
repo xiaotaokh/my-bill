@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- 齿轮主体（表示运转中） -->
+  <circle cx="12" cy="12" r="8" fill="#22C55E"/>
+  <!-- 齿轮中心孔 -->
+  <circle cx="12" cy="12" r="3" fill="#fff"/>
+  <!-- 齿轮齿（6个） -->
+  <rect x="11" y="2" width="2" height="4" rx="0.5" fill="#22C55E"/>
+  <rect x="11" y="18" width="2" height="4" rx="0.5" fill="#22C55E"/>
+  <rect x="2" y="11" width="4" height="2" rx="0.5" fill="#22C55E"/>
+  <rect x="18" y="11" width="4" height="2" rx="0.5" fill="#22C55E"/>
+  <rect x="4" y="4" width="2" height="4" rx="0.5" fill="#22C55E" transform="rotate(45 5 6)"/>
+  <rect x="18" y="16" width="2" height="4" rx="0.5" fill="#22C55E" transform="rotate(45 19 18)"/>
+  <!-- 运转指示点（表示正在运行） -->
+  <circle cx="15" cy="9" r="1.5" fill="#fff"/>
+</svg>

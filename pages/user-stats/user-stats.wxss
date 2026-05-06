@@ -1,25 +1,67 @@
 /* pages/user-stats/user-stats.wxss */
 /* 用户统计页面 - 轻奢数据仪表板风格 */
 
-/* CSS 变量 */
+/* CSS 变量定义 - Design Tokens */
 page {
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --accent-purple: #9b72e8;
-  --accent-blue: #667eea;
+  /* Primary */
+  --primary-700: #1E4A6E;
+  --primary-600: #2F5E8A;
+  --primary-500: #3E739F;
+  --primary-400: #5C8BB5;
+  --primary-200: #C5D9E8;
+  --primary-100: #E6EFF6;
+  --primary-soft: #F3F7FA;
+
+  /* Neutral */
+  --neutral-900: #1E2A36;
+  --neutral-700: #5F6B7A;
+  --neutral-500: #8B929E;
+  --neutral-300: #D1D6DE;
+  --neutral-200: #E3E8EE;
+  --neutral-100: #F4F7FA;
+  --neutral-50: #FAFBFD;
+
+  /* Background */
+  --bg-base: #FAFBFD;
+  --bg-card: #FFFFFF;
+  --bg-subtle: #F4F7FA;
+  --bg-hover: #F0F4F8;
+
+  /* Border */
+  --border-default: #E3E8EE;
+  --border-light: #EEF2F6;
+  --border-focus: #3E739F;
+
+  /* Text */
+  --text-default: #1E2A36;
+  --text-muted: #5F6B7A;
+  --text-hint: #8B929E;
+  --text-inverse: #FFFFFF;
+
+  /* Status */
+  --success: #0F8F6F;
+  --success-bg: #E7F5F1;
+  --error: #C24141;
+  --error-bg: #FBECEC;
+  --warning: #C27A2C;
+  --warning-bg: #FFF6E9;
+
+  /* 派生变量 */
+  --primary-gradient: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
   --glass-bg: rgba(255, 255, 255, 0.92);
   --glass-border: rgba(255, 255, 255, 0.5);
-  --shadow-soft: 0 8rpx 32rpx rgba(102, 126, 234, 0.12);
+  --shadow-soft: 0 8rpx 32rpx rgba(47, 94, 138, 0.12);
   --shadow-card: 0 4rpx 24rpx rgba(0, 0, 0, 0.08);
 
   /* 活跃度颜色 */
   --activity-high: #10b981;
   --activity-medium: #f59e0b;
-  --activity-low: #9ca3af;
+  --activity-low: #8B929E;
 }
 
 .container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f0f2f5 0%, #e8eaf6 50%, #f5f7fa 100%);
+  background: linear-gradient(180deg, var(--bg-subtle) 0%, var(--primary-100) 50%, var(--bg-base) 100%);
   padding: 0;
   position: relative;
   overflow: hidden;
@@ -34,7 +76,7 @@ page {
   left: 0;
   right: 0;
   height: 280rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #9b72e8 100%);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-400) 100%);
   border-radius: 0 0 48rpx 48rpx;
   z-index: 0;
 }
@@ -64,7 +106,7 @@ page {
   height: 200rpx;
   top: -40rpx;
   right: 40rpx;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(47, 94, 138, 0.3) 0%, transparent 70%);
   animation: float 8s ease-in-out infinite;
 }
 
@@ -91,7 +133,7 @@ page {
   height: 80rpx;
   bottom: 100rpx;
   left: 60rpx;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(47, 94, 138, 0.15) 0%, transparent 70%);
   animation: float 12s ease-in-out infinite reverse;
 }
 
@@ -184,7 +226,7 @@ page {
   position: absolute;
   width: 120rpx;
   height: 120rpx;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(47, 94, 138, 0.12) 0%, transparent 70%);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -284,7 +326,7 @@ page {
   padding: 12rpx 20rpx;
   background: var(--primary-gradient);
   border-radius: 32rpx;
-  box-shadow: 0 4rpx 16rpx rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4rpx 16rpx rgba(47, 94, 138, 0.3);
   transition: transform 0.2s ease;
 }
 
@@ -410,7 +452,7 @@ page {
 .list-count text:first-child {
   font-size: 28rpx;
   font-weight: 600;
-  color: #667eea;
+  color: var(--primary-600);
 }
 
 .count-label {
@@ -444,7 +486,7 @@ page {
 .user-card:nth-child(5) { animation-delay: 0.25s; }
 
 .user-card.expanded {
-  box-shadow: 0 8rpx 32rpx rgba(102, 126, 234, 0.15);
+  box-shadow: 0 8rpx 32rpx rgba(47, 94, 138, 0.15);
 }
 
 /* 用户卡片头部 - 可点击展开 */
@@ -457,7 +499,7 @@ page {
 }
 
 .user-card-header:active {
-  background: rgba(102, 126, 234, 0.05);
+  background: rgba(47, 94, 138, 0.05);
 }
 
 /* 头像区域 */
@@ -618,18 +660,18 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(102, 126, 234, 0.08);
+  background: rgba(47, 94, 138, 0.08);
   border-radius: 20rpx;
   transition: all 0.3s ease;
 }
 
 .expand-btn.expanded {
-  background: rgba(102, 126, 234, 0.15);
+  background: rgba(47, 94, 138, 0.15);
 }
 
 .expand-icon {
   font-size: 24rpx;
-  color: #667eea;
+  color: var(--primary-600);
   transition: transform 0.3s ease;
 }
 
@@ -657,14 +699,14 @@ page {
   justify-content: space-between;
   align-items: center;
   padding: 12rpx 0;
-  border-top: 1rpx dashed rgba(102, 126, 234, 0.2);
+  border-top: 1rpx dashed rgba(47, 94, 138, 0.2);
   margin-top: 8rpx;
 }
 
 .assets-title {
   font-size: 26rpx;
   font-weight: 600;
-  color: #667eea;
+  color: var(--primary-600);
 }
 
 .assets-count {
@@ -678,14 +720,14 @@ page {
   align-items: flex-start;
   gap: 16rpx;
   padding: 16rpx;
-  background: rgba(102, 126, 234, 0.04);
+  background: rgba(47, 94, 138, 0.04);
   border-radius: 16rpx;
   margin-top: 12rpx;
   transition: background 0.2s ease;
 }
 
 .asset-item:active {
-  background: rgba(102, 126, 234, 0.08);
+  background: rgba(47, 94, 138, 0.08);
 }
 
 .asset-icon-box {
@@ -748,8 +790,8 @@ page {
 }
 
 .asset-status-badge.sold {
-  background: rgba(102, 126, 234, 0.12);
-  color: #667eea;
+  background: rgba(47, 94, 138, 0.12);
+  color: var(--primary-600);
 }
 
 .asset-stats-row {
@@ -776,7 +818,7 @@ page {
 }
 
 .asset-stat .stat-value.cost {
-  color: #667eea;
+  color: var(--primary-600);
 }
 
 /* 无资产提示 */
@@ -787,7 +829,7 @@ page {
   justify-content: center;
   padding: 32rpx;
   margin-top: 12rpx;
-  background: rgba(102, 126, 234, 0.04);
+  background: rgba(47, 94, 138, 0.04);
   border-radius: 16rpx;
 }
 
@@ -846,7 +888,7 @@ page {
   right: 0;
   width: 60rpx;
   height: 60rpx;
-  background: radial-gradient(circle at top right, rgba(102, 126, 234, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle at top right, rgba(47, 94, 138, 0.08) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -877,7 +919,7 @@ page {
   width: 160rpx;
   height: 160rpx;
   border-radius: 80rpx;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.1) 100%);
+  background: linear-gradient(135deg, rgba(47, 94, 138, 0.15) 0%, rgba(118, 75, 162, 0.1) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -899,7 +941,7 @@ page {
   width: 24rpx;
   height: 24rpx;
   border-radius: 12rpx;
-  background: #667eea;
+  background: var(--primary-600);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -916,7 +958,7 @@ page {
   width: 32rpx;
   height: 16rpx;
   border-radius: 16rpx 16rpx 0 0;
-  border: 3rpx solid #667eea;
+  border: 3rpx solid var(--primary-600);
   border-bottom: none;
 }
 
@@ -933,7 +975,7 @@ page {
   width: 20rpx;
   height: 20rpx;
   border-radius: 50%;
-  background: rgba(102, 126, 234, 0.3);
+  background: rgba(47, 94, 138, 0.3);
   animation: wave-float 2s ease-in-out infinite;
 }
 

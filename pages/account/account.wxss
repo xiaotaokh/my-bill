@@ -1,7 +1,54 @@
 /* pages/account/account.wxss */
+
+/* CSS 变量定义 - Design Tokens */
+page {
+  /* Primary */
+  --primary-700: #1E4A6E;
+  --primary-600: #2F5E8A;
+  --primary-500: #3E739F;
+  --primary-400: #5C8BB5;
+  --primary-200: #C5D9E8;
+  --primary-100: #E6EFF6;
+  --primary-soft: #F3F7FA;
+
+  /* Neutral */
+  --neutral-900: #1E2A36;
+  --neutral-700: #5F6B7A;
+  --neutral-500: #8B929E;
+  --neutral-300: #D1D6DE;
+  --neutral-200: #E3E8EE;
+  --neutral-100: #F4F7FA;
+  --neutral-50: #FAFBFD;
+
+  /* Background */
+  --bg-base: #FAFBFD;
+  --bg-card: #FFFFFF;
+  --bg-subtle: #F4F7FA;
+  --bg-hover: #F0F4F8;
+
+  /* Border */
+  --border-default: #E3E8EE;
+  --border-light: #EEF2F6;
+  --border-focus: #3E739F;
+
+  /* Text */
+  --text-default: #1E2A36;
+  --text-muted: #5F6B7A;
+  --text-hint: #8B929E;
+  --text-inverse: #FFFFFF;
+
+  /* Status */
+  --success: #0F8F6F;
+  --success-bg: #E7F5F1;
+  --error: #C24141;
+  --error-bg: #FBECEC;
+  --warning: #C27A2C;
+  --warning-bg: #FFF6E9;
+}
+
 .container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f5f7fa 0%, #e8ecf1 100%);
+  background: linear-gradient(180deg, var(--bg-base) 0%, var(--bg-subtle) 100%);
   position: relative;
   overflow: hidden;
 }
@@ -13,7 +60,7 @@
   left: 0;
   right: 0;
   height: 280rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
   border-radius: 0 0 50% 50% / 0 0 30rpx 30rpx;
 }
 
@@ -112,8 +159,8 @@
 .loading-spinner {
   width: 60rpx;
   height: 60rpx;
-  border: 4rpx solid rgba(102, 126, 234, 0.2);
-  border-top-color: #667eea;
+  border: 4rpx solid rgba(47, 94, 138, 0.2);
+  border-top-color: var(--primary-600);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -124,7 +171,7 @@
 
 .loading-text {
   font-size: 26rpx;
-  color: #999;
+  color: var(--text-muted);
   margin-top: 20rpx;
 }
 
@@ -157,7 +204,7 @@
   height: 180rpx;
   border-radius: 50%;
   border: 6rpx solid #fff;
-  box-shadow: 0 8rpx 30rpx rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8rpx 30rpx rgba(47, 94, 138, 0.3);
 }
 
 .avatar-placeholder {
@@ -186,7 +233,7 @@
 .info-label {
   display: block;
   font-size: 24rpx;
-  color: #999;
+  color: var(--text-muted);
   margin-bottom: 10rpx;
 }
 
@@ -194,13 +241,13 @@
   display: block;
   font-size: 36rpx;
   font-weight: 600;
-  color: #333;
+  color: var(--text-default);
 }
 
 /* 分割线 */
 .divider {
   height: 1rpx;
-  background: linear-gradient(90deg, transparent, #eee, transparent);
+  background: linear-gradient(90deg, transparent, var(--border-default), transparent);
   margin: 30rpx 0;
 }
 
@@ -211,7 +258,7 @@
   justify-content: center;
   padding: 20rpx;
   margin-bottom: 20rpx;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  background: linear-gradient(135deg, rgba(47, 94, 138, 0.1) 0%, rgba(62, 115, 159, 0.1) 100%);
   border-radius: 12rpx;
 }
 
@@ -222,7 +269,7 @@
 
 .tip-text {
   font-size: 26rpx;
-  color: #667eea;
+  color: var(--primary-600);
 }
 
 /* 编辑按钮 */
@@ -236,9 +283,9 @@
   font-size: 30rpx;
   font-weight: 500;
   border: none;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
   color: #fff;
-  box-shadow: 0 8rpx 25rpx rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8rpx 25rpx rgba(47, 94, 138, 0.4);
 }
 
 .btn-icon {
@@ -259,14 +306,14 @@
 .edit-notice {
   padding: 20rpx 24rpx;
   margin-bottom: 20rpx;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  background: linear-gradient(135deg, rgba(47, 94, 138, 0.08) 0%, rgba(62, 115, 159, 0.08) 100%);
   border-radius: 12rpx;
-  border-left: 4rpx solid #667eea;
+  border-left: 4rpx solid var(--primary-600);
 }
 
 .notice-text {
   font-size: 24rpx;
-  color: #666;
+  color: var(--text-muted);
   line-height: 1.6;
 }
 
@@ -274,13 +321,13 @@
   display: flex;
   align-items: center;
   padding: 24rpx 0;
-  border-bottom: 1rpx solid #eee;
+  border-bottom: 1rpx solid var(--border-default);
 }
 
 .edit-label {
   width: 100rpx;
   font-size: 28rpx;
-  color: #333;
+  color: var(--text-default);
   font-weight: 500;
 }
 
@@ -300,12 +347,12 @@
   width: 80rpx;
   height: 80rpx;
   border-radius: 50%;
-  border: 2rpx solid #eee;
+  border: 2rpx solid var(--border-default);
 }
 
 .avatar-empty-text {
   font-size: 26rpx;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .nickname-select-btn {
@@ -325,16 +372,16 @@
 }
 
 .nickname-text.filled {
-  color: #333;
+  color: var(--text-default);
 }
 
 .nickname-text.empty {
-  color: #999;
+  color: var(--text-muted);
 }
 
 .select-arrow {
   font-size: 28rpx;
-  color: #ccc;
+  color: var(--text-hint);
   margin-left: 10rpx;
 }
 
@@ -354,7 +401,7 @@
   margin: 30rpx 0 20rpx;
   background: rgba(255, 255, 255, 0.8);
   border-radius: 16rpx;
-  border: 1rpx dashed #667eea;
+  border: 1rpx dashed var(--primary-600);
 }
 
 .random-icon {
@@ -364,7 +411,7 @@
 
 .random-text {
   font-size: 26rpx;
-  color: #667eea;
+  color: var(--primary-600);
 }
 
 /* 操作按钮 */
@@ -380,8 +427,8 @@
   line-height: 88rpx;
   border-radius: 44rpx;
   font-size: 30rpx;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-  color: #666;
+  background: linear-gradient(135deg, var(--bg-base) 0%, var(--bg-subtle) 100%);
+  color: var(--text-muted);
   border: none;
   display: flex;
   align-items: center;
@@ -399,10 +446,10 @@
   line-height: 88rpx;
   border-radius: 44rpx;
   font-size: 30rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
   color: #fff;
   border: none;
-  box-shadow: 0 8rpx 25rpx rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8rpx 25rpx rgba(47, 94, 138, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -414,7 +461,7 @@
 }
 
 .confirm-btn.disabled {
-  background: #ccc;
+  background: var(--text-hint);
   box-shadow: none;
 }
 
@@ -435,7 +482,7 @@
 
 .empty-text {
   font-size: 28rpx;
-  color: #999;
+  color: var(--text-muted);
 }
 
 /* 底部留白 */
@@ -490,13 +537,13 @@
 .random-title {
   font-size: 34rpx;
   font-weight: 600;
-  color: #333;
+  color: var(--text-default);
   margin-bottom: 10rpx;
 }
 
 .random-desc {
   font-size: 26rpx;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .random-body {
@@ -520,13 +567,13 @@
   width: 120rpx;
   height: 120rpx;
   border-radius: 50%;
-  border: 4rpx solid #667eea;
+  border: 4rpx solid var(--primary-600);
 }
 
 .random-refresh-btn {
   width: 50rpx;
   height: 50rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -548,18 +595,18 @@
 .random-nickname-text {
   font-size: 32rpx;
   font-weight: 500;
-  color: #333;
+  color: var(--text-default);
 }
 
 .random-nickname-refresh {
   width: 40rpx;
   height: 40rpx;
-  background: #f5f7fa;
+  background: var(--bg-base);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1rpx solid #eee;
+  border: 1rpx solid var(--border-default);
 }
 
 .refresh-icon-small {
@@ -579,8 +626,8 @@
   line-height: 80rpx;
   border-radius: 40rpx;
   font-size: 28rpx;
-  background: #f5f7fa;
-  color: #666;
+  background: var(--bg-base);
+  color: var(--text-muted);
   border: none;
   display: flex;
   align-items: center;
@@ -598,7 +645,7 @@
   line-height: 80rpx;
   border-radius: 40rpx;
   font-size: 28rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
   color: #fff;
   border: none;
   display: flex;

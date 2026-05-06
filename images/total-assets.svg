@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- 文件柜/分类文件夹 - 和 🗂️ emoji 一致 -->
+  <!-- 第一层文件夹 -->
+  <rect x="2" y="2" width="20" height="6" rx="1.5" fill="#FBBF24"/>
+  <rect x="3" y="3" width="6" height="3" rx="0.8" fill="#F59E0B"/>
+  <!-- 第二层文件夹 -->
+  <rect x="2" y="8" width="20" height="6" rx="1.5" fill="#FBBF24"/>
+  <rect x="3" y="9" width="6" height="3" rx="0.8" fill="#F59E0B"/>
+  <!-- 第三层文件夹 -->
+  <rect x="2" y="14" width="20" height="6" rx="1.5" fill="#FBBF24"/>
+  <rect x="3" y="15" width="6" height="3" rx="0.8" fill="#F59E0B"/>
+  <!-- 文件夹上的标签标记 -->
+  <rect x="12" y="3.5" width="8" height="1.5" rx="0.5" fill="#D97706"/>
+  <rect x="12" y="9.5" width="8" height="1.5" rx="0.5" fill="#D97706"/>
+  <rect x="12" y="15.5" width="8" height="1.5" rx="0.5" fill="#D97706"/>
+</svg>
