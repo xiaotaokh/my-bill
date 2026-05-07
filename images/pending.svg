@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- 时钟主体 - 商务黑白灰风格 -->
+  <circle cx="12" cy="12" r="9" fill="none" stroke="#D48806" stroke-width="2"/>
+  <!-- 时钟内部 -->
+  <circle cx="12" cy="12" r="7" fill="#FFFBE6"/>
+  <!-- 时钟刻度 -->
+  <circle cx="12" cy="5" r="1" fill="#D48806"/>
+  <circle cx="12" cy="19" r="1" fill="#D48806"/>
+  <circle cx="5" cy="12" r="1" fill="#D48806"/>
+  <circle cx="19" cy="12" r="1" fill="#D48806"/>
+  <!-- 时钟指针 -->
+  <rect x="11" y="6" width="2" height="6" rx="0.5" fill="#D48806"/>
+  <!-- 暂停符号 -->
+  <rect x="9" y="14" width="2" height="4" rx="0.5" fill="#D48806"/>
+  <rect x="13" y="14" width="2" height="4" rx="0.5" fill="#D48806"/>
+</svg>

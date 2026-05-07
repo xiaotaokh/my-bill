@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- 循环箭头外圈 - 商务黑白灰风格 -->
+  <circle cx="12" cy="12" r="9" fill="none" stroke="#333333" stroke-width="2"/>
+  <!-- 循环箭头缺口 -->
+  <path d="M12 3 A9 9 0 0 1 21 12" fill="none" stroke="#333333" stroke-width="2"/>
+  <!-- 循环箭头头部 -->
+  <polygon points="21,9 24,12 21,15" fill="#333333"/>
+  <!-- 循环箭头尾部 -->
+  <polygon points="3,9 0,12 3,15" fill="#333333"/>
+  <!-- 中心订阅标记 -->
+  <circle cx="12" cy="12" r="4" fill="#E5E5E5"/>
+  <!-- ¥符号表示付费订阅 -->
+  <rect x="9" y="10" width="6" height="1.2" rx="0.4" fill="#333333"/>
+  <rect x="10" y="12.5" width="4" height="1" rx="0.3" fill="#333333"/>
+</svg>

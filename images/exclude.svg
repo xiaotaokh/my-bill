@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <!-- 左侧：计入统计的蓝色钱币 -->
-  <circle cx="4" cy="6" r="3" fill="#2F5E8A"/>
-  <circle cx="4" cy="14" r="3" fill="#3E739F"/>
-  <circle cx="9" cy="10" r="3" fill="#2F5E8A"/>
+  <!-- 左侧：计入统计的灰色钱币 - 商务黑白灰风格 -->
+  <circle cx="4" cy="6" r="3" fill="#333333"/>
+  <circle cx="4" cy="14" r="3" fill="#555555"/>
+  <circle cx="9" cy="10" r="3" fill="#333333"/>
   <!-- 钱币上的小点装饰 -->
   <circle cx="4" cy="6" r="1" fill="#fff" opacity="0.8"/>
   <circle cx="4" cy="14" r="1" fill="#fff" opacity="0.8"/>
@@ -11,12 +11,12 @@
   <!-- 右侧：被排除的红色钱币 -->
   <circle cx="18" cy="12" r="6" fill="#FBECEC"/>
   <!-- 红色钱币边框 -->
-  <circle cx="18" cy="12" r="6" fill="#C24141"/>
+  <circle cx="18" cy="12" r="6" fill="#CF1322"/>
   <circle cx="18" cy="12" r="4" fill="#FBECEC"/>
 
   <!-- 叉号（直接用两个倾斜矩形，不用transform） -->
   <!-- 叉号左半边 -->
-  <polygon points="15,9 17,9 21,15 19,15" fill="#C24141"/>
+  <polygon points="15,9 17,9 21,15 19,15" fill="#CF1322"/>
   <!-- 叉号右半边 -->
-  <polygon points="21,9 19,9 15,15 17,15" fill="#C24141"/>
+  <polygon points="21,9 19,9 15,15 17,15" fill="#CF1322"/>
 </svg>

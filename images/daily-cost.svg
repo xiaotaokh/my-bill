@@ -1,20 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <!-- 日历框架 -->
-  <rect x="2" y="4" width="20" height="18" rx="2" fill="#10B981"/>
+  <!-- 日历框架 - 商务黑白灰风格 -->
+  <rect x="2" y="4" width="20" height="18" rx="2" fill="#333333"/>
   <!-- 日历内部 -->
-  <rect x="3" y="9" width="18" height="12" rx="1" fill="#fff"/>
+  <rect x="3" y="9" width="18" height="12" rx="1" fill="#F5F5F5"/>
   <!-- 日历挂钩 -->
-  <rect x="7" y="2" width="2" height="4" rx="1" fill="#10B981"/>
-  <rect x="15" y="2" width="2" height="4" rx="1" fill="#10B981"/>
-  <!-- 日期格子（5天） -->
-  <rect x="4" y="11" width="3" height="3" rx="0.5" fill="#10B981" opacity="0.9"/>
-  <rect x="8" y="11" width="3" height="3" rx="0.5" fill="#10B981" opacity="0.7"/>
-  <rect x="12" y="11" width="3" height="3" rx="0.5" fill="#10B981" opacity="0.5"/>
-  <rect x="16" y="11" width="3" height="3" rx="0.5" fill="#10B981" opacity="0.3"/>
-  <rect x="20" y="11" width="1" height="3" rx="0.5" fill="#10B981" opacity="0.15"/>
-  <!-- 向下消耗箭头（表示每日消耗递减） -->
-  <path d="M6 16 L10 16 L10 19 L8 17 L6 19 Z" fill="#F97316"/>
+  <rect x="7" y="2" width="2" height="4" rx="1" fill="#333333"/>
+  <rect x="15" y="2" width="2" height="4" rx="1" fill="#333333"/>
+  <!-- 日期格子 -->
+  <rect x="4" y="11" width="3" height="3" rx="0.5" fill="#333333" opacity="0.9"/>
+  <rect x="8" y="11" width="3" height="3" rx="0.5" fill="#333333" opacity="0.7"/>
+  <rect x="12" y="11" width="3" height="3" rx="0.5" fill="#333333" opacity="0.5"/>
+  <rect x="16" y="11" width="3" height="3" rx="0.5" fill="#333333" opacity="0.3"/>
+  <!-- 向下消耗箭头 -->
+  <path d="M6 16 L10 16 L10 19 L8 17 L6 19 Z" fill="#D48806"/>
   <!-- ¥符号 -->
-  <rect x="12" y="16" width="6" height="1" rx="0.3" fill="#10B981"/>
-  <rect x="13" y="18" width="4" height="1" rx="0.3" fill="#10B981"/>
+  <rect x="12" y="16" width="6" height="1" rx="0.3" fill="#333333"/>
+  <rect x="13" y="18" width="4" height="1" rx="0.3" fill="#333333"/>
 </svg>

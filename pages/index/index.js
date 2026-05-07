@@ -718,7 +718,7 @@ Page({
     if (asset.assetType !== 'subscription' || !asset.periodAmount) return { amount: '', period: '' };
     const periodTypeText = this.getPeriodTypeText(asset.periodType, asset.periodDays);
     return {
-      amount: `¥${asset.periodAmount}元/`,
+      amount: asset.periodAmount,
       period: periodTypeText
     };
   },
@@ -1035,7 +1035,15 @@ Page({
   },
 
   switchToReport() {
-    this.setData({ showReport: true, showSetting: false });
+    // 切换到统计页面时关闭搜索功能
+    this.setData({
+      showReport: true,
+      showSetting: false,
+      showSearchInput: false,
+      searchKeyword: '',
+      searchInputValue: '',
+      searchInputFocus: false
+    });
     setTimeout(() => this.loadReportData(), 100);
   },
 
@@ -1053,7 +1061,15 @@ Page({
   },
 
   navigateToSetting() {
-    this.setData({ showSetting: true, showReport: false });
+    // 切换到设置页面时关闭搜索功能
+    this.setData({
+      showSetting: true,
+      showReport: false,
+      showSearchInput: false,
+      searchKeyword: '',
+      searchInputValue: '',
+      searchInputFocus: false
+    });
   },
 
   showAboutInfo() {

@@ -1,18 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-  <!-- 渐变定义 -->
-  <defs>
-    <linearGradient id="bagGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#60a5fa"/>
-      <stop offset="100%" style="stop-color:#a78bfa"/>
-    </linearGradient>
-  </defs>
-  <!-- 购物袋手柄 - 圆润可爱 -->
-  <path d="M7 7 Q7 3 12 3 Q17 3 17 7" stroke="url(#bagGrad)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-  <!-- 购物袋主体 - 圆角矩形 -->
-  <rect x="5" y="7" width="14" height="13" rx="3" fill="url(#bagGrad)"/>
-  <!-- 可爱的小星星装饰 -->
-  <circle cx="9" cy="13" r="2" fill="#fff" opacity="0.7"/>
-  <circle cx="15" cy="13" r="2" fill="#fff" opacity="0.7"/>
-  <!-- 小爱心或笑脸 -->
-  <path d="M12 16 Q10 14 12 12 Q14 14 12 16" fill="#fff" opacity="0.6"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- 盒子主体 - 商务黑白灰风格 -->
+  <rect x="4" y="6" width="16" height="14" rx="2" fill="#333333"/>
+  <!-- 盒子顶部盖子 -->
+  <rect x="3" y="4" width="18" height="3" rx="1" fill="#555555"/>
+  <!-- 盒子内部 -->
+  <rect x="5" y="8" width="14" height="10" rx="1" fill="#F5F5F5"/>
+  <!-- 盒子物品轮廓 -->
+  <rect x="7" y="10" width="4" height="6" rx="1" fill="#E5E5E5"/>
+  <rect x="13" y="10" width="4" height="6" rx="1" fill="#E5E5E5"/>
+  <!-- 单次付款标记 -->
+  <circle cx="18" cy="5" r="4" fill="#52C41A"/>
+  <rect x="15" y="4" width="6" height="1.5" rx="0.5" fill="#FFFFFF"/>
+  <rect x="16" y="6.5" width="4" height="1" rx="0.3" fill="#FFFFFF"/>
 </svg>

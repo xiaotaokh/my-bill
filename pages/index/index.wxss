@@ -3,51 +3,51 @@
 /* CSS 变量定义 - Design Tokens */
 page {
   /* Primary */
-  --primary-700: #1E4A6E;
-  --primary-600: #2F5E8A;
-  --primary-500: #3E739F;
+  --primary-700: #333333;
+  --primary-600: #333333;
+  --primary-500: #555555;
   --primary-400: #5C8BB5;
   --primary-200: #C5D9E8;
-  --primary-100: #E6EFF6;
+  --primary-100: #E5E5E5;
   --primary-soft: #F3F7FA;
 
   /* Neutral */
-  --neutral-900: #1E2A36;
-  --neutral-700: #5F6B7A;
-  --neutral-500: #8B929E;
-  --neutral-300: #D1D6DE;
-  --neutral-200: #E3E8EE;
-  --neutral-100: #F4F7FA;
-  --neutral-50: #FAFBFD;
+  --neutral-900: #1A1A1A;
+  --neutral-700: #555555;
+  --neutral-500: #888888;
+  --neutral-300: #CCCCCC;
+  --neutral-200: #CCCCCC;
+  --neutral-100: #E5E5E5;
+  --neutral-50: #F5F5F5;
 
   /* Background */
-  --bg-base: #FAFBFD;
+  --bg-base: #F5F5F5;
   --bg-card: #FFFFFF;
-  --bg-subtle: #F4F7FA;
+  --bg-subtle: #E5E5E5;
   --bg-hover: #F0F4F8;
 
   /* Border */
-  --border-default: #E3E8EE;
+  --border-default: #CCCCCC;
   --border-light: #EEF2F6;
-  --border-focus: #3E739F;
+  --border-focus: #555555;
 
   /* Text */
-  --text-default: #1E2A36;
-  --text-muted: #5F6B7A;
-  --text-hint: #8B929E;
+  --text-default: #1A1A1A;
+  --text-muted: #555555;
+  --text-hint: #888888;
   --text-inverse: #FFFFFF;
 
   /* Status */
-  --success: #0F8F6F;
+  --success: #52C41A;
   --success-bg: #E7F5F1;
-  --error: #C24141;
+  --error: #CF1322;
   --error-bg: #FBECEC;
-  --warning: #C27A2C;
+  --warning: #D48806;
   --warning-bg: #FFF6E9;
 
   /* Legacy aliases for compatibility */
-  --primary-gradient: linear-gradient(135deg, #2F5E8A 0%, #3E739F 100%);
-  --accent-color: #2F5E8A;
+  --primary-gradient: linear-gradient(135deg, #333333 0%, #555555 100%);
+  --accent-color: #333333;
   --glass-bg: rgba(255, 255, 255, 0.95);
   --glass-border: rgba(255, 255, 255, 0.3);
   --shadow-soft: 0 8rpx 32rpx rgba(47, 94, 138, 0.12);
@@ -80,14 +80,10 @@ page {
   align-items: center;
   gap: 20rpx;
   padding: 24rpx 32rpx;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
-  backdrop-filter: blur(20px);
+  background: #FFFFFF;
   border-radius: 20rpx;
-  box-shadow:
-    0 8rpx 40rpx rgba(47, 94, 138, 0.15),
-    0 2rpx 10rpx rgba(0, 0, 0, 0.05),
-    inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
-  border: 1rpx solid rgba(47, 94, 138, 0.1);
+  box-shadow: 0 2rpx 8rpx rgba(30, 42, 54, 0.08);
+  border: 1rpx solid #CCCCCC;
 }
 
 .welcome-icon-wrapper {
@@ -96,7 +92,7 @@ page {
   justify-content: center;
   width: 48rpx;
   height: 48rpx;
-  background: linear-gradient(135deg, #2F5E8A 0%, #3E739F 100%);
+  background: #333333;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -143,7 +139,7 @@ page {
   left: 0;
   height: 100%;
   width: 0;
-  background: linear-gradient(90deg, var(--primary-600) 0%, var(--primary-400) 100%);
+  background: #333333;
   border-radius: 2rpx;
   animation: progress-fill var(--duration) linear forwards;
 }
@@ -165,27 +161,25 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44rpx;
-  height: 44rpx;
-  background: rgba(47, 94, 138, 0.1);
-  border-radius: 50%;
+  width: 40rpx;
+  height: 40rpx;
   flex-shrink: 0;
-  transition: background 0.2s ease;
+  transition: opacity 0.15s ease;
 }
 
 .welcome-close-btn:active {
-  background: rgba(47, 94, 138, 0.2);
+  opacity: 0.5;
 }
 
 .welcome-close-icon {
-  font-size: 28rpx;
-  color: var(--primary-600);
-  font-weight: 300;
+  font-size: 32rpx;
+  color: #888888;
+  line-height: 1;
 }
 
 .container {
   min-height: 100vh;
-  background: linear-gradient(180deg, var(--bg-base) 0%, var(--bg-subtle) 100%);
+  background: #F5F5F5;
   position: relative;
 }
 
@@ -200,7 +194,7 @@ page {
   left: 0;
   right: 0;
   height: 320rpx;
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-400) 100%);
+  background: #333333;
   border-radius: 0 0 40rpx 40rpx;
   z-index: 0;
 }
@@ -315,9 +309,10 @@ page {
   position: relative;
   margin: 0 20rpx 24rpx;
   padding: 24rpx 40rpx;
-  background: linear-gradient(135deg, #ffffff 0%, var(--bg-subtle) 100%);
+  background: #FFFFFF;
   border-radius: 32rpx;
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 2rpx 8rpx rgba(30, 42, 54, 0.08);
+  border: 1rpx solid #CCCCCC;
   z-index: 1;
   display: flex;
   align-items: center;
@@ -334,16 +329,14 @@ page {
 
 .total-label {
   font-size: 24rpx;
-  color: var(--text-muted);
+  color: #555555;
   font-weight: 500;
   letter-spacing: 2rpx;
 }
 
 .total-value {
   font-weight: 800;
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #333333;
   background-clip: text;
   letter-spacing: 2rpx;
   line-height: 1.2;
@@ -383,14 +376,7 @@ page {
 }
 
 .total-glow {
-  position: absolute;
-  width: 200rpx;
-  height: 200rpx;
-  background: radial-gradient(circle, rgba(47, 94, 138, 0.15) 0%, transparent 70%);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
+  display: none;
 }
 
 /* 统计指标卡片 */
@@ -444,19 +430,19 @@ page {
 }
 
 .active-icon {
-  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  background: #E7F5F1;
 }
 
 .retired-icon {
-  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  background: #FFF6E9;
 }
 
 .sold-icon {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  background: #E5E5E5;
 }
 
 .total-icon {
-  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+  background: #E5E5E5;
 }
 
 .stat-content {
@@ -705,9 +691,10 @@ page {
   align-items: center;
   gap: 16rpx;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1rpx solid rgba(255, 255, 255, 0.8);
+  border: 2rpx solid rgba(200, 200, 200, 0.9);
   width: 100%;
   box-sizing: border-box;
+  position: relative;
 }
 
 .asset-card:active {
@@ -740,6 +727,24 @@ page {
 .card-content {
   flex: 1;
   min-width: 0;
+}
+
+/* 资产类型角标 - 卡片左上角 */
+.asset-type-corner {
+  position: absolute;
+  top: 10rpx;
+  left: 10rpx;
+  width: 32rpx;
+  height: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.type-corner-icon {
+  width: 32rpx;
+  height: 32rpx;
 }
 
 .card-header {
@@ -808,30 +813,20 @@ page {
 .period-amount-text {
   display: flex;
   align-items: baseline;
-  font-size: 20rpx;
-  font-weight: 600;
-  color: #00838f;
-  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
-  padding: 4rpx 12rpx;
-  border-radius: 10rpx;
   flex-shrink: 0;
   margin-left: 8rpx;
 }
 
-.period-type-small {
+.period-symbol {
   font-size: 16rpx;
   font-weight: 500;
+  color: #555555;
 }
 
-/* 订阅资产标签 */
-.subscription-badge {
-  padding: 4rpx 12rpx;
-  border-radius: 12rpx;
-  font-size: 18rpx;
-  font-weight: 500;
-  flex-shrink: 0;
-  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
-  color: #7b1fa2;
+.period-number {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #333333;
 }
 
 /* 待生效标签 */
@@ -841,8 +836,19 @@ page {
   font-size: 18rpx;
   font-weight: 500;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-  color: #f57f17;
+  background: #FFF6E9;
+  color: #9B5C1A;
+}
+
+/* 订阅中标签 */
+.subscribing-badge {
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+  font-size: 18rpx;
+  font-weight: 500;
+  flex-shrink: 0;
+  background: #E5E5E5;
+  color: #333333;
 }
 
 /* 已结束标签 */
@@ -852,8 +858,8 @@ page {
   font-size: 18rpx;
   font-weight: 500;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
-  color: #c2185b;
+  background: #FBECEC;
+  color: #CF1322;
 }
 
 .card-info {
@@ -969,13 +975,13 @@ page {
 }
 
 .exclude-tag.total {
-  color: #f59e0b;
-  background: #fef3c7;
+  color: #9B5C1A;
+  background: #FFF6E9;
 }
 
 .exclude-tag.daily {
-  color: #10b981;
-  background: #d1fae5;
+  color: #0A6B52;
+  background: #E7F5F1;
 }
 
 /* 资产名后面的分类标签 */
@@ -992,12 +998,12 @@ page {
 .tag-icon-inline {
   width: 20rpx;
   height: 20rpx;
-  margin-right: 4rpx;
+  margin-right: 10rpx;
 }
 
 .tag-icon-text-inline {
   font-size: 18rpx;
-  margin-right: 4rpx;
+  margin-right: 10rpx;
 }
 
 .tag-text-inline {
@@ -1385,12 +1391,11 @@ page {
 .fab-group {
   display: flex;
   gap: 12rpx;
-  /* 使用紫色渐变透明背景与首页主题一致 */
-  background: linear-gradient(135deg, rgba(47, 94, 138, 0.15) 0%, rgba(62, 115, 159, 0.15) 100%);
+  /* 商务黑白灰风格透明背景 */
+  background: rgba(51, 51, 51, 0.08);
   border-radius: 50rpx;
   padding: 16rpx 24rpx;
-  box-shadow: 0 6rpx 20rpx rgba(47, 94, 138, 0.2);
-  border: 1rpx solid rgba(47, 94, 138, 0.3);
+  border: 1rpx solid rgba(51, 51, 51, 0.15);
 }
 
 .fab-item {
@@ -1402,22 +1407,19 @@ page {
   padding: 12rpx 8rpx;
   border-radius: 32rpx;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--primary-600);
-  /* 半透明背景与整体风格一致 */
-  background: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 2rpx 8rpx rgba(47, 94, 138, 0.15);
-  border: 1rpx solid rgba(47, 94, 138, 0.2);
+  color: #333333;
+  /* 透明背景 */
+  background: transparent;
 }
 
 .fab-item:active {
   transform: scale(0.92);
+  background: rgba(51, 51, 51, 0.12);
 }
 
 .fab-item.active {
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
+  background: #333333;
   color: #fff;
-  box-shadow: 0 4rpx 16rpx rgba(47, 94, 138, 0.4);
-  border-color: transparent;
 }
 
 .fab-item.active .fab-icon {
@@ -1434,7 +1436,7 @@ page {
 
 .fab-icon {
   font-size: 28rpx;
-  color: var(--primary-600);
+  color: #333333;
   line-height: 1;
   margin-bottom: 4rpx;
 }
@@ -1447,222 +1449,183 @@ page {
 
 .fab-label {
   font-size: 16rpx;
-  color: var(--primary-600);
+  color: #333333;
   line-height: 1;
 }
 
-/* 新增资产悬浮按钮 - 自然生态风格扁平化样式 */
+/* 新增资产悬浮按钮 */
 .add-asset-fab {
-  width: 90rpx;
-  height: 90rpx;
-  position: relative;
-}
-
-.add-asset-fab .fab-inner {
-  width: 100%;
-  height: 100%;
-  /* 使用自然生态风格的绿色渐变 */
-  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
-  border-radius: 50%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* 自然生态风格阴影 */
-  box-shadow: 0 6rpx 16rpx rgba(76, 175, 80, 0.25);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 12rpx 16rpx;
+  position: relative;
 }
 
-.add-asset-fab .fab-inner:active {
-  transform: scale(0.92);
-}
-
-.add-asset-fab .fab-icon {
-  font-size: 52rpx;
-  color: #fff;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.add-asset-fab .fab-label {
-  font-size: 20rpx;
-  color: #fff;
-  font-weight: 600;
-  line-height: 1;
-}
-
-.add-asset-fab .fab-glow {
+.add-asset-fab.has-divider::after {
+  content: '';
   position: absolute;
-  width: 160rpx;
-  height: 160rpx;
-  background: radial-gradient(circle, rgba(76, 175, 80, 0.15) 0%, transparent 70%);
+  right: 0;
   top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
+  transform: translateY(-50%);
+  width: 1rpx;
+  height: 60%;
+  background: rgba(51, 51, 51, 0.35);
 }
 
-/* 搜索和新增资产按钮组 */
+.add-asset-fab .fab-icon-img {
+  width: 28rpx;
+  height: 28rpx;
+  margin-bottom: 4rpx;
+}
+
+/* 搜索和新增资产按钮组 - 与左侧风格统一 */
 .action-fab-group {
   display: flex;
-  gap: 16rpx;
+  gap: 8rpx;
   align-items: center;
   pointer-events: auto;
+  background: rgba(51, 51, 51, 0.08);
+  border-radius: 50rpx;
+  padding: 16rpx 20rpx;
+  border: 1rpx solid rgba(51, 51, 51, 0.15);
 }
 
-/* 搜索资产悬浮按钮 - 与新增资产按钮样式保持一致 */
+/* 搜索资产悬浮按钮 */
 .search-asset-fab {
-  width: 90rpx;
-  height: 90rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 16rpx;
   position: relative;
+}
+
+.search-asset-fab.has-divider::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rpx;
+  height: 60%;
+  background: rgba(51, 51, 51, 0.35);
 }
 
 .search-asset-fab .fab-inner {
-  width: 100%;
-  height: 100%;
-  /* 使用蓝色渐变 */
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6rpx 16rpx rgba(59, 130, 246, 0.25);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-asset-fab .fab-inner:active {
-  transform: scale(0.92);
+  background: rgba(51, 51, 51, 0.12);
 }
 
 .search-asset-fab .fab-icon {
-  font-size: 44rpx;
-  color: #fff;
+  font-size: 40rpx;
+  color: #333333;
   line-height: 1;
-  transition: transform 0.3s ease;
 }
 
 .search-asset-fab .fab-icon-img {
-  width: 44rpx;
-  height: 44rpx;
+  width: 28rpx;
+  height: 28rpx;
+  margin-bottom: 4rpx;
 }
 
 .search-asset-fab .fab-glow {
-  position: absolute;
-  width: 160rpx;
-  height: 160rpx;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  transition: all 0.3s ease;
+  display: none;
 }
 
-/* 搜索按钮激活状态 - 输入框显示时 */
-.search-asset-fab.active .fab-inner {
-  background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
-  box-shadow: 0 6rpx 16rpx rgba(244, 114, 182, 0.3);
-}
-
+/* 搜索按钮激活状态 */
 .search-asset-fab.active .fab-icon {
-  font-size: 36rpx;
-  font-weight: bold;
+  color: #CF1322;
 }
 
-.search-asset-fab.active .fab-glow {
-  background: radial-gradient(circle, rgba(244, 114, 182, 0.15) 0%, transparent 70%);
-}
-
-/* 搜索输入框容器 */
+/* 搜索输入框容器 - 商务黑白灰风格 */
 .search-bar-container {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  padding: 20rpx 20rpx;
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 50%, var(--primary-400) 100%);
+  padding: 16rpx 20rpx;
+  background: #F5F5F5;
   z-index: 1000;
 }
 
-/* 搜索输入框 */
+/* 搜索输入框 - 商务黑白灰风格 */
 .search-bar {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 40rpx;
-  padding: 16rpx 20rpx;
-  gap: 12rpx;
-  box-shadow: 0 4rpx 20rpx rgba(47, 94, 138, 0.2);
+  background: #FFFFFF;
+  border: 1rpx solid #CCCCCC;
+  border-radius: 12rpx;
+  padding: 14rpx 16rpx;
+  gap: 10rpx;
 }
 
 .search-icon {
-  font-size: 32rpx;
-  color: var(--primary-600);
+  font-size: 28rpx;
+  color: #888888;
 }
 
 .search-icon-img {
-  width: 32rpx;
-  height: 32rpx;
+  width: 28rpx;
+  height: 28rpx;
 }
 
 .search-input {
   flex: 1;
   font-size: 28rpx;
-  color: var(--text-default);
+  color: #1A1A1A;
   background: transparent;
 }
 
 .search-input::placeholder {
-  color: var(--text-muted);
+  color: #888888;
 }
 
 .search-clear {
   font-size: 28rpx;
-  color: var(--text-muted);
+  color: #888888;
   padding: 8rpx;
 }
 
 .search-cancel {
-  font-size: 26rpx;
-  color: var(--primary-600);
+  font-size: 28rpx;
+  color: #333333;
   font-weight: 500;
-  padding: 8rpx 12rpx;
+  padding: 10rpx 16rpx;
 }
 
-/* 回到顶部悬浮按钮 */
+/* 回到顶部按钮 - 在按钮组内 */
 .back-to-top-fab {
-  position: fixed;
-  right: 40rpx;
-  bottom: 150rpx;
-  width: 90rpx;
-  height: 90rpx;
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
-  border-radius: 50%;
-  display: flex;
+  display: none;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6rpx 20rpx rgba(47, 94, 138, 0.35);
-  opacity: 0;
-  transform: scale(0.6);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-  z-index: 998;
+  padding: 12rpx 16rpx;
 }
 
 .back-to-top-fab.show {
-  opacity: 1;
-  transform: scale(1);
-  pointer-events: auto;
+  display: flex;
 }
 
 .back-to-top-fab:active {
-  transform: scale(0.92);
-  box-shadow: 0 4rpx 12rpx rgba(47, 94, 138, 0.25);
+  background: rgba(51, 51, 51, 0.12);
 }
 
 .back-top-icon {
-  font-size: 40rpx;
-  color: #fff;
-  font-weight: bold;
+  width: 28rpx;
+  height: 28rpx;
+  margin-bottom: 4rpx;
+}
+
+.back-top-icon-emoji {
+  font-size: 36rpx;
+  color: #333333;
   line-height: 1;
 }
 
@@ -1704,7 +1667,7 @@ page {
 /* 批量删除页面容器 */
 .batch-delete-content {
   min-height: 100vh;
-  background: #FAFBFD;
+  background: #F5F5F5;
   position: relative;
   overflow: hidden;
 }
@@ -1720,7 +1683,7 @@ page {
   align-items: center;
   justify-content: space-between;
   padding: 30rpx 20rpx;
-  background: #C24141;
+  background: #CF1322;
   position: relative;
   z-index: 1;
 }
@@ -1786,7 +1749,7 @@ page {
   padding: 16rpx 24rpx;
   box-shadow: 0 2rpx 8rpx rgba(30, 42, 54, 0.04);
   gap: 16rpx;
-  border: 1rpx solid #E3E8EE;
+  border: 1rpx solid #CCCCCC;
 }
 
 .batch-search-icon {
@@ -1828,7 +1791,7 @@ page {
   position: relative;
   z-index: 1;
   box-shadow: 0 2rpx 8rpx rgba(30, 42, 54, 0.04);
-  border: 1rpx solid #E3E8EE;
+  border: 1rpx solid #CCCCCC;
 }
 
 .select-all-btn {
@@ -1836,13 +1799,13 @@ page {
   align-items: center;
   gap: 16rpx;
   padding: 12rpx 24rpx;
-  background: #F4F7FA;
+  background: #E5E5E5;
   border-radius: 12rpx;
   transition: all 0.2s ease;
 }
 
 .select-all-btn.selected {
-  background: #C24141;
+  background: #CF1322;
 }
 
 .select-all-btn:active {
@@ -1853,7 +1816,7 @@ page {
   width: 40rpx;
   height: 40rpx;
   border-radius: 50%;
-  border: 2rpx solid #D1D6DE;
+  border: 2rpx solid #CCCCCC;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1862,7 +1825,7 @@ page {
 }
 
 .checkbox.checked {
-  background: #C24141;
+  background: #CF1322;
   border-color: transparent;
 }
 
@@ -1875,7 +1838,7 @@ page {
 .select-all-text {
   font-size: 26rpx;
   font-weight: 600;
-  color: #1E2A36;
+  color: #1A1A1A;
 }
 
 .select-all-btn.selected .select-all-text {
@@ -1912,7 +1875,7 @@ page {
   position: relative;
   box-shadow: 0 2rpx 8rpx rgba(30, 42, 54, 0.04);
   transition: all 0.2s ease;
-  border: 1rpx solid #E3E8EE;
+  border: 1rpx solid #CCCCCC;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -1922,7 +1885,7 @@ page {
 }
 
 .batch-asset-card.selected {
-  border-color: #C24141;
+  border-color: #CF1322;
   background: #FBECEC;
 }
 
@@ -1941,7 +1904,7 @@ page {
   width: 44rpx;
   height: 44rpx;
   border-radius: 50%;
-  border: 2rpx solid #D1D6DE;
+  border: 2rpx solid #CCCCCC;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1950,7 +1913,7 @@ page {
 }
 
 .select-circle.checked {
-  background: #C24141;
+  background: #CF1322;
   border-color: transparent;
 }
 
@@ -1965,7 +1928,7 @@ page {
   width: 72rpx;
   height: 72rpx;
   flex-shrink: 0;
-  background: #F4F7FA;
+  background: #E5E5E5;
   border-radius: 12rpx;
   display: flex;
   align-items: center;
@@ -2026,8 +1989,8 @@ page {
 }
 
 .batch-status-badge.sold {
-  background: #E6EFF6;
-  color: #1E4A6E;
+  background: #E5E5E5;
+  color: #333333;
 }
 
 .batch-asset-meta {
@@ -2039,12 +2002,12 @@ page {
 .batch-asset-price {
   font-size: 24rpx;
   font-weight: 700;
-  color: #1E2A36;
+  color: #1A1A1A;
 }
 
 .batch-asset-divider {
   font-size: 20rpx;
-  color: #D1D6DE;
+  color: #CCCCCC;
 }
 
 .batch-asset-date {
@@ -2076,13 +2039,13 @@ page {
 .batch-empty .empty-title {
   font-size: 32rpx;
   font-weight: 600;
-  color: #1E2A36;
+  color: #1A1A1A;
   margin-bottom: 12rpx;
 }
 
 .batch-empty .empty-desc {
   font-size: 26rpx;
-  color: #5F6B7A;
+  color: #555555;
 }
 
 /* 底部留白 */
@@ -2102,7 +2065,7 @@ page {
   padding: 24rpx 30rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   background: #FFFFFF;
-  border-top: 1rpx solid #E3E8EE;
+  border-top: 1rpx solid #CCCCCC;
   z-index: 100;
 }
 
@@ -2114,13 +2077,13 @@ page {
 
 .summary-text {
   font-size: 26rpx;
-  color: #5F6B7A;
+  color: #555555;
 }
 
 .summary-count {
   font-size: 40rpx;
   font-weight: 800;
-  color: #C24141;
+  color: #CF1322;
   min-width: 40rpx;
   text-align: center;
 }
@@ -2128,7 +2091,7 @@ page {
 .summary-price {
   font-size: 28rpx;
   font-weight: 600;
-  color: #C24141;
+  color: #CF1322;
   margin-left: 16rpx;
 }
 
@@ -2148,7 +2111,7 @@ page {
 }
 
 .delete-btn.active {
-  background: #C24141;
+  background: #CF1322;
   box-shadow: 0 4rpx 12rpx rgba(155, 44, 44, 0.2);
 }
 
@@ -2157,7 +2120,7 @@ page {
 }
 
 .delete-btn.disabled {
-  background: #E3E8EE;
+  background: #CCCCCC;
   box-shadow: none;
 }
 
@@ -2204,11 +2167,7 @@ page {
 }
 
 .decor-circle {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.4;
-  background: radial-gradient(circle, rgba(47, 94, 138, 0.15) 0%, transparent 70%);
-  animation: floatDecor 12s ease-in-out infinite;
+  display: none;
 }
 
 .decor-1 {
@@ -2459,13 +2418,7 @@ page {
 }
 
 .main-asset-glow {
-  position: absolute;
-  right: -40rpx;
-  bottom: -40rpx;
-  width: 160rpx;
-  height: 160rpx;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-  border-radius: 50%;
+  display: none;
 }
 
 /* 次要数据网格 */

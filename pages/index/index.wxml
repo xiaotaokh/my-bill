@@ -190,6 +190,13 @@
           bindtap="goToDetail"
           data-id="{{item._id}}"
         >
+          <!-- 资产类型角标 - 卡片左上角 -->
+          <view class="asset-type-corner" wx:if="{{item.assetType === 'subscription'}}">
+            <image class="type-corner-icon" src="/images/subscription-asset.svg" mode="aspectFit"></image>
+          </view>
+          <view class="asset-type-corner" wx:else>
+            <image class="type-corner-icon" src="/images/fixed-asset.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-left">
             <view class="asset-avatar">
               <image wx:if="{{item.displayIcon}}" class="avatar-img" src="{{item.displayIcon}}" mode="aspectFit"></image>
@@ -202,18 +209,18 @@
                 <text class="asset-name">{{item.name}}</text>
                 <!-- 每期金额显示 -->
                 <view wx:if="{{item.assetType === 'subscription' && item.periodAmountDisplay}}" class="period-amount-text">
-                  <text>{{item.periodAmountDisplay}}</text>
-                  <text class="period-type-small">(</text>
-                  <text class="period-type-small">{{item.periodTypeDisplay}}</text>
-                  <text class="period-type-small">)</text>
-                </view>
-                <!-- 订阅标签 -->
-                <view class="subscription-badge" wx:if="{{item.assetType === 'subscription'}}">
-                  <text>订阅</text>
+                  <text class="period-symbol">¥</text>
+                  <text class="period-number">{{item.periodAmountDisplay}}</text>
+                  <text class="period-symbol">元/</text>
+                  <text class="period-symbol">{{item.periodTypeDisplay}}</text>
                 </view>
                 <!-- 待生效标签 -->
                 <view class="pending-badge" wx:if="{{item.subscriptionStatus === 'pending'}}">
                   <text>待生效</text>
+                </view>
+                <!-- 订阅中标签 -->
+                <view class="subscribing-badge" wx:if="{{item.assetType === 'subscription' && (item.subscriptionStatus === 'active' || !item.subscriptionStatus)}}">
+                  <text>订阅中</text>
                 </view>
                 <!-- 已结束标签 -->
                 <view class="ended-badge" wx:if="{{item.subscriptionStatus === 'ended'}}">
@@ -579,22 +586,24 @@
     </view>
 
     <!-- 搜索和新增资产按钮组 -->
-    <view class="action-fab-group">
-      <!-- 搜索资产悬浮按钮 -->
-      <view class="search-asset-fab {{showSearchInput ? 'active' : ''}}" bindtap="toggleSearchInput">
-        <view class="fab-inner search-fab-inner">
-          <text class="fab-icon">{{showSearchInput ? '✕' : ''}}</text>
-          <image wx:if="{{!showSearchInput}}" class="fab-icon-img" src="/images/search-icon.svg" mode="aspectFit"></image>
-        </view>
-        <view class="fab-glow search-glow"></view>
+    <view wx:if="{{!showSetting && !showReport && !showBatchDelete}}" class="action-fab-group">
+      <!-- 新增资产悬浮按钮 -->
+      <view class="add-asset-fab {{statsTotalCount > 0 ? 'has-divider' : ''}}" bindtap="goToAdd">
+        <image class="fab-icon-img" src="/images/add.svg" mode="aspectFit"></image>
+        <text class="fab-label">新增</text>
       </view>
 
-      <!-- 新增资产悬浮按钮 -->
-      <view class="add-asset-fab" bindtap="goToAdd">
-        <view class="fab-inner">
-          <text class="fab-icon">+</text>
-        </view>
-        <view class="fab-glow"></view>
+      <!-- 搜索资产悬浮按钮 - 有资产时显示 -->
+      <view wx:if="{{statsTotalCount > 0}}" class="search-asset-fab {{showSearchInput ? 'active' : ''}} {{showBackToTop ? 'has-divider' : ''}}" bindtap="toggleSearchInput">
+        <image wx:if="{{showSearchInput}}" class="fab-icon-img" src="/images/close.svg" mode="aspectFit"></image>
+        <image wx:else class="fab-icon-img" src="/images/search.svg" mode="aspectFit"></image>
+        <text class="fab-label">{{showSearchInput ? '取消' : '搜索'}}</text>
+      </view>
+
+      <!-- 回到顶部按钮 -->
+      <view class="back-to-top-fab {{showBackToTop ? 'show' : ''}}" bindtap="scrollToTop">
+        <image class="back-top-icon" src="/images/back-top.svg" mode="aspectFit"></image>
+        <text class="fab-label">顶部</text>
       </view>
     </view>
   </view>
@@ -824,12 +833,6 @@
     </view>
   </view>
 
-  <!-- 回到顶部悬浮按钮 -->
-  <view class="back-to-top-fab {{showBackToTop && !showBatchDelete ? 'show' : ''}}" bindtap="scrollToTop" catchtouchmove="preventTouchMove">
-    <text class="back-top-icon">↑</text>
-  </view>
-
-  
   <!-- 关于弹窗 -->
   <view class="about-modal {{showAboutModal ? 'show' : ''}}" wx:if="{{showAboutModal}}">
     <view class="about-mask" bindtap="closeAboutModal"></view>

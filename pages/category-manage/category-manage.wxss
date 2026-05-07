@@ -3,7 +3,7 @@
 /* ========== 页面容器 ========== */
 .container {
   min-height: 100vh;
-  background: #FAFBFD;
+  background: #F5F5F5;
   padding: 24rpx;
   padding-bottom: 200rpx;
   box-sizing: border-box;
@@ -33,13 +33,13 @@
 .header-title {
   font-size: 48rpx;
   font-weight: 700;
-  color: #1E2A36;
+  color: #1A1A1A;
   letter-spacing: 4rpx;
 }
 
 .header-subtitle {
   font-size: 26rpx;
-  color: #5F6B7A;
+  color: #555555;
   margin-top: 16rpx;
 }
 
@@ -49,16 +49,16 @@
   top: 50%;
   transform: translateY(-50%);
   padding: 12rpx 24rpx;
-  background: #F4F7FA;
+  background: #E5E5E5;
   border-radius: 12rpx;
   font-size: 26rpx;
-  color: #2F5E8A;
+  color: #333333;
   font-weight: 500;
-  border: 1rpx solid #E3E8EE;
+  border: 1rpx solid #CCCCCC;
 }
 
 .batch-toggle-btn:active {
-  background: #E6EFF6;
+  background: #E5E5E5;
 }
 
 /* ========== 分类列表区域 ========== */
@@ -83,7 +83,7 @@
   gap: 12rpx;
   font-size: 32rpx;
   font-weight: 600;
-  color: #1E2A36;
+  color: #1A1A1A;
 }
 
 .title-icon {
@@ -92,7 +92,7 @@
 
 .category-count {
   font-size: 28rpx;
-  color: #8B929E;
+  color: #888888;
   font-weight: 400;
 }
 
@@ -107,18 +107,18 @@
   align-items: center;
   gap: 6rpx;
   padding: 12rpx 20rpx;
-  background: #F4F7FA;
+  background: #E5E5E5;
   border-radius: 12rpx;
   font-size: 26rpx;
-  color: #5F6B7A;
+  color: #555555;
   transition: all 0.2s ease;
-  border: 1rpx solid #E3E8EE;
+  border: 1rpx solid #CCCCCC;
 }
 
 .sort-pill.active {
-  background: #2F5E8A;
+  background: #333333;
   color: #FFFFFF;
-  border-color: #2F5E8A;
+  border-color: #333333;
 }
 
 .sort-pill:active {
@@ -127,7 +127,7 @@
 
 .sort-pill .sort-arrow {
   font-size: 20rpx;
-  color: #8B929E;
+  color: #888888;
   transition: transform 0.2s ease;
 }
 
@@ -157,7 +157,7 @@
   background: #FFFFFF;
   border-radius: 12rpx;
   box-shadow: 0 2rpx 8rpx rgba(30, 42, 54, 0.04);
-  border: 1rpx solid #E3E8EE;
+  border: 1rpx solid #CCCCCC;
   transition: all 0.2s ease;
 }
 
@@ -169,7 +169,7 @@
   min-width: 36rpx;
   height: 36rpx;
   padding: 0 10rpx;
-  background: #2F5E8A;
+  background: #333333;
   color: #FFFFFF;
   font-size: 22rpx;
   font-weight: 600;
@@ -185,8 +185,8 @@
 }
 
 .category-card.selected {
-  border-color: #2F5E8A;
-  background: #E6EFF6;
+  border-color: #333333;
+  background: #E5E5E5;
 }
 
 .category-card.disabled {
@@ -208,7 +208,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #F4F7FA;
+  background: #E5E5E5;
   border-radius: 12rpx;
 }
 
@@ -233,7 +233,7 @@
 .category-name {
   font-size: 32rpx;
   font-weight: 600;
-  color: #1E2A36;
+  color: #1A1A1A;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -249,7 +249,7 @@
   display: inline-flex;
   align-items: center;
   padding: 4rpx 12rpx;
-  background: #2F5E8A;
+  background: #333333;
   color: #FFFFFF;
   font-size: 22rpx;
   font-weight: 500;
@@ -258,12 +258,12 @@
 
 .category-date {
   font-size: 24rpx;
-  color: #8B929E;
+  color: #888888;
 }
 
 .category-desc {
   font-size: 24rpx;
-  color: #5F6B7A;
+  color: #555555;
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -277,12 +277,12 @@
   width: 100%;
   margin-top: 16rpx;
   padding-top: 16rpx;
-  border-top: 1rpx solid #E3E8EE;
+  border-top: 1rpx solid #CCCCCC;
 }
 
 .card-footer .category-desc {
   font-size: 24rpx;
-  color: #5F6B7A;
+  color: #555555;
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -321,10 +321,10 @@
 }
 
 .action-btn.move {
-  background: #E6EFF6;
+  background: #E5E5E5;
   font-size: 24rpx;
   font-weight: bold;
-  color: #2F5E8A;
+  color: #333333;
 }
 
 .action-btn.info {
@@ -342,7 +342,7 @@
   width: 48rpx;
   height: 48rpx;
   border-radius: 50%;
-  border: 2rpx solid #D1D6DE;
+  border: 2rpx solid #CCCCCC;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -353,13 +353,13 @@
 }
 
 .checkbox.checked {
-  background: #2F5E8A;
-  border-color: #2F5E8A;
+  background: #333333;
+  border-color: #333333;
 }
 
 .checkbox.disabled {
-  background: #F4F7FA;
-  border-color: #E3E8EE;
+  background: #E5E5E5;
+  border-color: #CCCCCC;
 }
 
 /* 空状态 */
@@ -371,7 +371,7 @@
   padding: 80rpx 40rpx;
   background: #FFFFFF;
   border-radius: 12rpx;
-  border: 1rpx dashed #E3E8EE;
+  border: 1rpx dashed #CCCCCC;
 }
 
 .empty-illustration {
@@ -386,13 +386,13 @@
 .empty-title {
   font-size: 32rpx;
   font-weight: 600;
-  color: #1E2A36;
+  color: #1A1A1A;
   margin-bottom: 12rpx;
 }
 
 .empty-desc {
   font-size: 26rpx;
-  color: #8B929E;
+  color: #888888;
   text-align: center;
 }
 
@@ -413,7 +413,7 @@
 
 .add-btn {
   padding: 8rpx;
-  background: #2F5E8A;
+  background: #333333;
   border-radius: 60rpx;
   box-shadow: 0 4rpx 12rpx rgba(47, 94, 138, 0.2);
   transition: all 0.2s ease;
@@ -438,7 +438,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #2F5E8A;
+  background: #333333;
   border-radius: 50%;
   font-size: 32rpx;
   font-weight: 700;
@@ -448,7 +448,7 @@
 .add-text {
   font-size: 32rpx;
   font-weight: 700;
-  color: #1E2A36;
+  color: #1A1A1A;
   letter-spacing: 2rpx;
 }
 
@@ -484,25 +484,25 @@
 }
 
 .batch-action-btn.select-all {
-  background: #F4F7FA;
-  color: #2F5E8A;
-  border: 1rpx solid #E3E8EE;
+  background: #E5E5E5;
+  color: #333333;
+  border: 1rpx solid #CCCCCC;
 }
 
 .batch-action-btn.select-all:active {
-  background: #E6EFF6;
+  background: #E5E5E5;
 }
 
 .batch-action-btn.delete {
-  background: #F4F7FA;
-  color: #8B929E;
-  border: 1rpx solid #E3E8EE;
+  background: #E5E5E5;
+  color: #888888;
+  border: 1rpx solid #CCCCCC;
 }
 
 .batch-action-btn.delete.active {
-  background: #C24141;
+  background: #CF1322;
   color: #FFFFFF;
-  border-color: #C24141;
+  border-color: #CF1322;
 }
 
 .batch-action-btn:active {
@@ -555,7 +555,7 @@
   display: flex;
   align-items: center;
   padding: 32rpx;
-  border-bottom: 1rpx solid #E3E8EE;
+  border-bottom: 1rpx solid #CCCCCC;
   position: relative;
 }
 
@@ -565,7 +565,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #F4F7FA;
+  background: #E5E5E5;
   border-radius: 12rpx;
   overflow: hidden;
   margin-right: 20rpx;
@@ -588,7 +588,7 @@
 .detail-title {
   font-size: 36rpx;
   font-weight: 700;
-  color: #1E2A36;
+  color: #1A1A1A;
 }
 
 .detail-close {
@@ -598,13 +598,13 @@
   align-items: center;
   justify-content: center;
   font-size: 32rpx;
-  color: #8B929E;
+  color: #888888;
   border-radius: 50%;
   transition: all 0.2s ease;
 }
 
 .detail-close:active {
-  background: #F4F7FA;
+  background: #E5E5E5;
 }
 
 .detail-body {
@@ -623,13 +623,13 @@
 
 .detail-label {
   font-size: 24rpx;
-  color: #8B929E;
+  color: #888888;
   margin-bottom: 8rpx;
 }
 
 .detail-value {
   font-size: 30rpx;
-  color: #1E2A36;
+  color: #1A1A1A;
 }
 
 .detail-value.desc {
@@ -642,7 +642,7 @@
   display: flex;
   gap: 20rpx;
   padding: 24rpx 32rpx 32rpx;
-  border-top: 1rpx solid #E3E8EE;
+  border-top: 1rpx solid #CCCCCC;
 }
 
 .detail-btn {
@@ -662,12 +662,12 @@
 }
 
 .detail-btn.edit {
-  background: #2F5E8A;
+  background: #333333;
   color: #FFFFFF;
 }
 
 .detail-btn.delete {
-  background: #C24141;
+  background: #CF1322;
   color: #FFFFFF;
 }
 
@@ -733,7 +733,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 36rpx 32rpx 28rpx;
-  border-bottom: 1rpx solid #E3E8EE;
+  border-bottom: 1rpx solid #CCCCCC;
   flex-shrink: 0;
 }
 
@@ -750,7 +750,7 @@
 .dialog-title {
   font-size: 38rpx;
   font-weight: 700;
-  color: #1E2A36;
+  color: #1A1A1A;
 }
 
 .dialog-close {
@@ -760,14 +760,14 @@
   align-items: center;
   justify-content: center;
   font-size: 32rpx;
-  color: #8B929E;
+  color: #888888;
   border-radius: 50%;
   transition: all 0.2s ease;
 }
 
 .dialog-close:active {
-  background: #F4F7FA;
-  color: #1E2A36;
+  background: #E5E5E5;
+  color: #1A1A1A;
 }
 
 .dialog-form {
@@ -793,7 +793,7 @@
   gap: 10rpx;
   font-size: 28rpx;
   font-weight: 600;
-  color: #1E2A36;
+  color: #1A1A1A;
   margin-bottom: 16rpx;
 }
 
@@ -802,7 +802,7 @@
 }
 
 .required {
-  color: #C24141;
+  color: #CF1322;
   font-size: 28rpx;
   font-weight: bold;
 }
@@ -815,11 +815,11 @@
   width: 100%;
   height: 96rpx;
   padding: 0 28rpx;
-  background: #F4F7FA;
-  border: 1rpx solid #E3E8EE;
+  background: #E5E5E5;
+  border: 1rpx solid #CCCCCC;
   border-radius: 12rpx;
   font-size: 30rpx;
-  color: #1E2A36;
+  color: #1A1A1A;
   box-sizing: border-box;
   transition: background 0.2s ease, border-color 0.2s ease;
   display: flex;
@@ -828,12 +828,12 @@
 
 .item-input:focus {
   background: #FFFFFF;
-  border-color: #3E739F;
+  border-color: #555555;
 }
 
 .input-placeholder {
   font-size: 30rpx;
-  color: #8B929E;
+  color: #888888;
   padding-top: 2rpx;
 }
 
@@ -841,11 +841,11 @@
   width: 100%;
   height: 220rpx;
   padding: 30rpx 28rpx;
-  background: #F4F7FA;
-  border: 1rpx solid #E3E8EE;
+  background: #E5E5E5;
+  border: 1rpx solid #CCCCCC;
   border-radius: 12rpx;
   font-size: 30rpx;
-  color: #1E2A36;
+  color: #1A1A1A;
   box-sizing: border-box;
   transition: background 0.2s ease, border-color 0.2s ease;
   line-height: 1.5;
@@ -853,12 +853,12 @@
 
 .item-textarea:focus {
   background: #FFFFFF;
-  border-color: #3E739F;
+  border-color: #555555;
 }
 
 .textarea-placeholder {
   font-size: 30rpx;
-  color: #8B929E;
+  color: #888888;
 }
 
 /* 图标选择器 */
@@ -883,9 +883,9 @@
   align-items: center;
   justify-content: center;
   padding: 40rpx 20rpx;
-  border: 1rpx dashed #E3E8EE;
+  border: 1rpx dashed #CCCCCC;
   border-radius: 12rpx;
-  background: #F4F7FA;
+  background: #E5E5E5;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
@@ -893,7 +893,7 @@
 .upload-box.has-image {
   padding: 24rpx;
   border-style: solid;
-  border-color: #2F5E8A;
+  border-color: #333333;
 }
 
 /* 自定义emoji输入区域 */
@@ -906,22 +906,22 @@
   align-items: center;
   justify-content: center;
   padding: 40rpx 20rpx;
-  border: 1rpx dashed #E3E8EE;
+  border: 1rpx dashed #CCCCCC;
   border-radius: 12rpx;
-  background: #F4F7FA;
+  background: #E5E5E5;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
 .emoji-input-box:active {
   background: #FFFFFF;
-  border-color: #3E739F;
+  border-color: #555555;
 }
 
 .emoji-input-box.has-emoji {
   padding: 24rpx;
   border-style: solid;
-  border-color: #2F5E8A;
+  border-color: #333333;
 }
 
 .emoji-placeholder {
@@ -938,12 +938,12 @@
 .emoji-text {
   font-size: 28rpx;
   font-weight: 600;
-  color: #1E2A36;
+  color: #1A1A1A;
 }
 
 .emoji-hint {
   font-size: 22rpx;
-  color: #8B929E;
+  color: #888888;
 }
 
 .emoji-preview {
@@ -963,7 +963,7 @@
   grid-template-columns: repeat(5, 1fr);
   gap: 12rpx;
   padding: 20rpx;
-  background: #F4F7FA;
+  background: #E5E5E5;
   border-radius: 12rpx;
 }
 
@@ -975,7 +975,7 @@
   padding: 16rpx 8rpx;
   border-radius: 12rpx;
   background: #FFFFFF;
-  border: 1rpx solid #E3E8EE;
+  border: 1rpx solid #CCCCCC;
   transition: all 0.2s ease;
 }
 
@@ -984,8 +984,8 @@
 }
 
 .icon-option.selected {
-  border-color: #2F5E8A;
-  background: #E6EFF6;
+  border-color: #333333;
+  background: #E5E5E5;
 }
 
 .icon-emoji {
@@ -995,7 +995,7 @@
 
 .icon-name {
   font-size: 20rpx;
-  color: #5F6B7A;
+  color: #555555;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1004,7 +1004,7 @@
 
 .upload-box:active {
   background: #FFFFFF;
-  border-color: #3E739F;
+  border-color: #555555;
 }
 
 /* 右上角删除按钮 */
@@ -1014,7 +1014,7 @@
   right: -8rpx;
   width: 44rpx;
   height: 44rpx;
-  background: #C24141;
+  background: #CF1322;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1043,12 +1043,12 @@
 .upload-text {
   font-size: 28rpx;
   font-weight: 600;
-  color: #1E2A36;
+  color: #1A1A1A;
 }
 
 .upload-hint {
   font-size: 22rpx;
-  color: #8B929E;
+  color: #888888;
 }
 
 .upload-preview {
@@ -1094,7 +1094,7 @@
   display: flex;
   gap: 20rpx;
   padding: 24rpx 32rpx 32rpx;
-  border-top: 1rpx solid #E3E8EE;
+  border-top: 1rpx solid #CCCCCC;
   flex-shrink: 0;
 }
 
@@ -1116,17 +1116,17 @@
 }
 
 .dialog-btn.cancel {
-  background: #F4F7FA;
-  color: #5F6B7A;
+  background: #E5E5E5;
+  color: #555555;
 }
 
 .dialog-btn.cancel:active {
-  background: #E6EFF6;
+  background: #E5E5E5;
   transform: scale(0.98);
 }
 
 .dialog-btn.confirm {
-  background: #2F5E8A;
+  background: #333333;
   color: #FFFFFF;
 }
 
@@ -1187,7 +1187,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 32rpx;
-  border-bottom: 1rpx solid #E3E8EE;
+  border-bottom: 1rpx solid #CCCCCC;
 }
 
 .emoji-dialog-title-wrap {
@@ -1203,7 +1203,7 @@
 .emoji-dialog-title {
   font-size: 34rpx;
   font-weight: 700;
-  color: #1E2A36;
+  color: #1A1A1A;
 }
 
 .emoji-dialog-close {
@@ -1213,14 +1213,14 @@
   align-items: center;
   justify-content: center;
   font-size: 32rpx;
-  color: #8B929E;
+  color: #888888;
   border-radius: 50%;
   transition: all 0.2s ease;
 }
 
 .emoji-dialog-close:active {
-  background: #F4F7FA;
-  color: #1E2A36;
+  background: #E5E5E5;
+  color: #1A1A1A;
 }
 
 .emoji-dialog-body {
@@ -1257,11 +1257,11 @@
   width: 100%;
   height: 96rpx;
   padding: 0 28rpx;
-  background: #F4F7FA;
-  border: 1rpx solid #E3E8EE;
+  background: #E5E5E5;
+  border: 1rpx solid #CCCCCC;
   border-radius: 12rpx;
   font-size: 30rpx;
-  color: #1E2A36;
+  color: #1A1A1A;
   box-sizing: border-box;
   transition: all 0.2s ease;
   display: flex;
@@ -1270,11 +1270,11 @@
 
 .emoji-input:focus {
   background: #FFFFFF;
-  border-color: #3E739F;
+  border-color: #555555;
 }
 
 .emoji-input::placeholder {
-  color: #8B929E;
+  color: #888888;
 }
 
 .emoji-examples {
@@ -1283,13 +1283,13 @@
   flex-wrap: nowrap;
   gap: 16rpx;
   padding: 20rpx;
-  background: #F4F7FA;
+  background: #E5E5E5;
   border-radius: 12rpx;
 }
 
 .emoji-examples-label {
   font-size: 26rpx;
-  color: #8B929E;
+  color: #888888;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -1311,7 +1311,7 @@
   display: flex;
   gap: 20rpx;
   padding: 24rpx 32rpx 32rpx;
-  border-top: 1rpx solid #E3E8EE;
+  border-top: 1rpx solid #CCCCCC;
 }
 
 .emoji-dialog-btn {
@@ -1332,17 +1332,17 @@
 }
 
 .emoji-dialog-btn.cancel {
-  background: #F4F7FA;
-  color: #5F6B7A;
+  background: #E5E5E5;
+  color: #555555;
 }
 
 .emoji-dialog-btn.cancel:active {
-  background: #E6EFF6;
+  background: #E5E5E5;
   transform: scale(0.98);
 }
 
 .emoji-dialog-btn.confirm {
-  background: #2F5E8A;
+  background: #333333;
   color: #FFFFFF;
 }
 

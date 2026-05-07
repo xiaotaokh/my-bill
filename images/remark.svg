@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- 笔记本主体 - 商务黑白灰风格 -->
+  <rect x="4" y="4" width="16" height="16" rx="2" fill="#333333"/>
+  <!-- 笔记本内部 -->
+  <rect x="5" y="5" width="14" height="14" rx="1" fill="#F5F5F5"/>
+  <!-- 笔记本线条 -->
+  <rect x="7" y="8" width="10" height="1" rx="0.3" fill="#CCCCCC"/>
+  <rect x="7" y="11" width="10" height="1" rx="0.3" fill="#CCCCCC"/>
+  <rect x="7" y="14" width="8" height="1" rx="0.3" fill="#CCCCCC"/>
+  <!-- 笔记本侧边装饰 -->
+  <rect x="4" y="7" width="1" height="2" rx="0.2" fill="#555555"/>
+  <rect x="4" y="11" width="1" height="2" rx="0.2" fill="#555555"/>
+  <rect x="4" y="15" width="1" height="2" rx="0.2" fill="#555555"/>
+  <!-- 笔尖 -->
+  <path d="M19 6 L22 3 L22 6 Z" fill="#D48806"/>
+  <rect x="18" y="6" width="2" height="6" rx="0.3" fill="#D48806"/>
+</svg>

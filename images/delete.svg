@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- 删除垃圾桶图标 - 商务风格红色 -->
+  <path d="M6 8 L6 20 Q6 22 8 22 L16 22 Q18 22 18 20 L18 8" fill="#CF1322"/>
+  <!-- 垃圾桶盖子 -->
+  <rect x="4" y="5" width="16" height="3" rx="1" fill="#CF1322"/>
+  <!-- 垃圾桶把手 -->
+  <rect x="9" y="3" width="6" height="3" rx="1" fill="#CF1322"/>
+  <!-- 垃圾桶内部线条 -->
+  <rect x="9" y="11" width="2" height="8" rx="0.5" fill="#FFF1F0"/>
+  <rect x="13" y="11" width="2" height="8" rx="0.5" fill="#FFF1F0"/>
+</svg>

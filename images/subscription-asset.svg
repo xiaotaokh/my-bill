@@ -1,23 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-  <!-- 渐变定义 -->
-  <defs>
-    <linearGradient id="calGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f472b6"/>
-      <stop offset="100%" style="stop-color:#c084fc"/>
-    </linearGradient>
-  </defs>
-  <!-- 日历主体 - 圆润可爱 -->
-  <rect x="3" y="5" width="18" height="16" rx="4" fill="url(#calGrad)"/>
-  <!-- 日历顶部波浪装饰 -->
-  <path d="M3 8 Q6 6 9 8 Q12 10 15 8 Q18 6 21 8" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.5"/>
-  <!-- 可爱的挂环 - 圆形 -->
-  <circle cx="8" cy="4" r="2" fill="#fff"/>
-  <circle cx="16" cy="4" r="2" fill="#fff"/>
-  <!-- 日历格子 - 圆润可爱 -->
-  <rect x="6" y="11" width="4" height="3" rx="1" fill="#fff" opacity="0.8"/>
-  <rect x="10" y="11" width="4" height="3" rx="1" fill="#fff" opacity="0.8"/>
-  <rect x="14" y="11" width="4" height="3" rx="1" fill="#fff" opacity="0.8"/>
-  <!-- 循环小箭头表示订阅 -->
-  <path d="M20 17 Q20 15 18 15" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.7"/>
-  <path d="M4 17 Q4 15 6 15" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.7"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- 循环外圈 - 商务黑白灰风格 -->
+  <circle cx="12" cy="12" r="9" fill="none" stroke="#333333" stroke-width="2"/>
+  <!-- 循环箭头 -->
+  <path d="M12 3 A9 9 0 0 1 21 12" fill="none" stroke="#333333" stroke-width="2"/>
+  <!-- 箭头头部 -->
+  <polygon points="21,9 24,12 21,15" fill="#333333"/>
+  <!-- 箭头尾部 -->
+  <polygon points="3,9 0,12 3,15" fill="#333333"/>
+  <!-- 中心时钟 -->
+  <circle cx="12" cy="12" r="5" fill="#E5E5E5"/>
+  <!-- 时钟指针 -->
+  <rect x="11" y="8" width="2" height="4" rx="0.5" fill="#333333"/>
+  <rect x="11" y="12" width="2" height="3" rx="0.5" fill="#555555" transform="rotate(90 12 12)"/>
+  <!-- 时钟刻度 -->
+  <circle cx="12" cy="7" r="0.8" fill="#333333"/>
+  <circle cx="12" cy="17" r="0.8" fill="#333333"/>
+  <circle cx="7" cy="12" r="0.8" fill="#333333"/>
+  <circle cx="17" cy="12" r="0.8" fill="#333333"/>
+  <!-- ¥符号 -->
+  <rect x="9" y="10" width="6" height="1.2" rx="0.4" fill="#333333"/>
+  <rect x="10" y="12.5" width="4" height="1" rx="0.3" fill="#333333"/>
 </svg>

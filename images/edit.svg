@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- 编辑铅笔图标 - 商务黑白灰风格 -->
+  <path d="M4 20 L8 16 L20 4 L20 8 L8 20 L4 20" fill="#333333"/>
+  <!-- 铅笔尖 -->
+  <polygon points="4,20 6,18 4,16" fill="#333333"/>
+  <!-- 铅笔橡皮擦 -->
+  <rect x="18" y="3" width="4" height="6" rx="1" fill="#333333"/>
+  <!-- 铅笔内部线条 -->
+  <line x1="8" y1="16" x2="18" y2="6" stroke="#F5F5F5" stroke-width="1.5"/>
+</svg>

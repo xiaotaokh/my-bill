@@ -10,11 +10,19 @@
 
   <!-- 主卡片 -->
   <view class="detail-card">
+    <!-- 资产类型图标和文案 -->
+    <view class="asset-type-badge" wx:if="{{asset.assetType === 'subscription'}}">
+      <image class="type-badge-icon" src="/images/subscription-asset.svg" mode="aspectFit"></image>
+      <text class="type-badge-text">订阅</text>
+    </view>
+    <view class="asset-type-badge" wx:else>
+      <image class="type-badge-icon" src="/images/fixed-asset.svg" mode="aspectFit"></image>
+      <text class="type-badge-text">普通</text>
+    </view>
+
     <!-- 资产名称 -->
     <view class="asset-name">
       <text>{{asset.name}}</text>
-      <!-- 订阅标签 -->
-      <text class="subscription-tag" wx:if="{{asset.assetType === 'subscription'}}">订阅</text>
     </view>
 
     <!-- 价格展示 -->
@@ -32,49 +40,49 @@
       <text class="period-type">/{{displayInfo.periodTypeText}}</text>
     </view>
 
-    <!-- 图标和状态/分类同行 -->
-    <view class="icon-status-row">
-      <!-- 资产图标 -->
-      <view class="asset-icon-wrapper">
-        <view class="asset-icon-container">
-          <image wx:if="{{displayIcon}}" class="asset-icon-img" src="{{displayIcon}}" mode="aspectFit" bindtap="previewIcon"></image>
-          <text wx:else class="asset-icon">{{asset.icon || '📦'}}</text>
+    <!-- 资产头像 - 圆形居中 -->
+    <view class="asset-avatar-section">
+      <view class="avatar-wrapper">
+        <view class="avatar-ring"></view>
+        <view class="avatar-container">
+          <image wx:if="{{displayIcon}}" class="avatar-img" src="{{displayIcon}}" mode="aspectFit" bindtap="previewIcon"></image>
+          <text wx:else class="avatar-emoji">{{asset.icon || '📦'}}</text>
         </view>
-        <view class="icon-shine"></view>
+        <view class="avatar-glow"></view>
       </view>
+    </view>
 
-      <!-- 右侧：状态和分类 -->
-      <view class="status-category-wrapper">
-        <!-- 订阅资产状态标签 -->
-        <block wx:if="{{asset.assetType === 'subscription'}}">
-          <view class="status-pill pending" wx:if="{{asset.subscriptionStatus === 'pending'}}">
-            <text class="status-dot"></text>
-            ⏳ 待生效
-          </view>
-          <view class="status-pill active" wx:elif="{{asset.subscriptionStatus === 'active' || !asset.subscriptionStatus}}">
-            <text class="status-dot"></text>
-            🔄 订阅中
-          </view>
-          <view class="status-pill ended" wx:else>
-            <text class="status-dot"></text>
-            ⏹️ 已结束
-          </view>
-        </block>
-        <!-- 普通资产状态标签 -->
-        <block wx:else>
-          <view class="status-pill {{asset.status}}">
-            <text class="status-dot"></text>
-            {{asset.status === 'active' ? '💪 服役中' : asset.status === 'retired' ? '😴 已退役' : '💰 已卖出'}}
-          </view>
-        </block>
-
-        <!-- 类别标签 -->
-        <view class="category-tag">
-          <image wx:if="{{categoryIcon}}" class="tag-icon-img" src="{{categoryIcon}}" mode="aspectFit"></image>
-          <text wx:elif="{{categoryIconEmoji}}" class="tag-icon">{{categoryIconEmoji}}</text>
-          <text wx:else class="tag-icon">🏷️</text>
-          <text class="tag-text">{{asset.category}}</text>
+    <!-- 状态和分类标签行 -->
+    <view class="status-category-row">
+      <!-- 订阅资产状态标签 -->
+      <block wx:if="{{asset.assetType === 'subscription'}}">
+        <view class="status-pill pending" wx:if="{{asset.subscriptionStatus === 'pending'}}">
+          <image class="status-pill-icon" src="/images/pending.svg" mode="aspectFit"></image>
+          待生效
         </view>
+        <view class="status-pill active" wx:elif="{{asset.subscriptionStatus === 'active' || !asset.subscriptionStatus}}">
+          <image class="status-pill-icon" src="/images/subscribing.svg" mode="aspectFit"></image>
+          订阅中
+        </view>
+        <view class="status-pill ended" wx:else>
+          <image class="status-pill-icon" src="/images/subscription-ended.svg" mode="aspectFit"></image>
+          已结束
+        </view>
+      </block>
+      <!-- 普通资产状态标签 -->
+      <block wx:else>
+        <view class="status-pill {{asset.status}}">
+          <image class="status-pill-icon" src="/images/{{asset.status}}.svg" mode="aspectFit"></image>
+          {{asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出'}}
+        </view>
+      </block>
+
+      <!-- 类别标签 -->
+      <view class="category-tag">
+        <image wx:if="{{categoryIcon}}" class="tag-icon-img" src="{{categoryIcon}}" mode="aspectFit"></image>
+        <text wx:elif="{{categoryIconEmoji}}" class="tag-icon">{{categoryIconEmoji}}</text>
+        <text wx:else class="tag-icon">🏷️</text>
+        <text class="tag-text">{{asset.category}}</text>
       </view>
     </view>
 
@@ -84,7 +92,9 @@
       <block wx:if="{{asset.assetType === 'subscription'}}">
         <!-- 周期类型 -->
         <view class="info-card subscription-card">
-          <view class="card-icon">🔄</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/period-type.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">周期类型</view>
             <view class="card-value">{{displayInfo.periodTypeText}}</view>
@@ -93,7 +103,9 @@
 
         <!-- 订阅开始日期 -->
         <view class="info-card" wx:if="{{asset.subscriptionStartDate}}">
-          <view class="card-icon">📅</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/start-date.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">开始日期</view>
             <view class="card-value">{{displayInfo.subscriptionStartDateFormatted}}</view>
@@ -102,7 +114,9 @@
 
         <!-- 订阅结束日期 -->
         <view class="info-card" wx:if="{{asset.subscriptionEndDate}}">
-          <view class="card-icon">🏁</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/end-date.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">结束日期</view>
             <view class="card-value">{{displayInfo.subscriptionEndDateFormatted}}</view>
@@ -111,7 +125,9 @@
 
         <!-- 已订阅时长 -->
         <view class="info-card highlight" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
-          <view class="card-icon">⏰</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/subscription-duration.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">已订阅时长</view>
             <view class="card-value highlight-value">{{displayInfo.usedDays}} 天</view>
@@ -121,7 +137,9 @@
 
         <!-- 日均成本 -->
         <view class="info-card highlight" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
-          <view class="card-icon">📊</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/daily-cost.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">日均成本</view>
             <view class="card-value highlight-value">¥{{displayInfo.dailyCost}}/天</view>
@@ -131,7 +149,9 @@
 
         <!-- 总投入 -->
         <view class="info-card highlight" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
-          <view class="card-icon">💰</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/total-investment.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">总投入</view>
             <view class="card-value highlight-value">¥{{displayInfo.totalInvestment}}</view>
@@ -144,7 +164,9 @@
       <block wx:else>
         <!-- 购买日期 -->
         <view class="info-card" wx:if="{{asset.purchaseDate}}">
-          <view class="card-icon">📅</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/purchase-date.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">购买日期</view>
             <view class="card-value">{{displayInfo.purchaseDateFormatted}}</view>
@@ -153,7 +175,9 @@
 
         <!-- 添加时间 -->
         <view class="info-card" wx:if="{{asset.createdAt}}">
-          <view class="card-icon">✨</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/add-time.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">添加时间</view>
             <view class="card-value">{{displayInfo.createdAtFormatted}}</view>
@@ -162,7 +186,9 @@
 
         <!-- 退役日期 -->
         <view class="info-card" wx:if="{{asset.status === 'retired' && asset.retiredDate}}">
-          <view class="card-icon">🏁</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/retired-date.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">退役日期</view>
             <view class="card-value">{{displayInfo.retiredDateFormatted}}</view>
@@ -171,34 +197,42 @@
 
         <!-- 卖出日期 -->
         <view class="info-card" wx:if="{{asset.status === 'sold' && asset.soldDate}}">
-          <view class="card-icon">💵</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/sold-date.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">卖出日期</view>
             <view class="card-value">{{displayInfo.soldDateFormatted}}</view>
           </view>
         </view>
 
-        <!-- 使用时长 (退役/卖出状态显示) -->
+        <!-- 服役时长 (退役/卖出状态显示) -->
         <view class="info-card" wx:if="{{(asset.status === 'retired' || asset.status === 'sold') && asset.purchaseDate}}">
-          <view class="card-icon">📆</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/active-duration.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
-            <view class="card-label">使用时长</view>
+            <view class="card-label">服役时长</view>
             <view class="card-value">{{displayInfo.usedDays}} 天</view>
           </view>
         </view>
 
-        <!-- 折合每日 (退役/卖出状态显示) -->
+        <!-- 日均成本 (退役/卖出状态显示) -->
         <view class="info-card" wx:if="{{(asset.status === 'retired' || asset.status === 'sold') && asset.price && asset.purchaseDate}}">
-          <view class="card-icon">📊</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/daily-cost.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
-            <view class="card-label">折合每日</view>
+            <view class="card-label">日均成本</view>
             <view class="card-value">¥{{displayInfo.dailyEquivalent}}/天</view>
           </view>
         </view>
 
         <!-- 服役时长 (服役中状态显示) -->
         <view class="info-card highlight" wx:if="{{asset.status === 'active' && asset.purchaseDate}}">
-          <view class="card-icon">⏰</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/active-duration.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">服役时长</view>
             <view class="card-value highlight-value">{{displayInfo.usedDays}} 天</view>
@@ -208,7 +242,9 @@
 
         <!-- 日均成本 (服役中状态显示) -->
         <view class="info-card highlight" wx:if="{{asset.status === 'active' && asset.price && asset.purchaseDate}}">
-          <view class="card-icon">📊</view>
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/daily-cost.svg" mode="aspectFit"></image>
+          </view>
           <view class="card-content">
             <view class="card-label">日均成本</view>
             <view class="card-value highlight-value">¥{{displayInfo.dailyCost}}/天</view>
@@ -221,17 +257,17 @@
     <!-- 特殊设置 -->
     <view class="special-tags" wx:if="{{asset.excludeTotal || asset.excludeDaily}}">
       <view class="special-tag total" wx:if="{{asset.excludeTotal}}">
-        <text>🚫 不计入总资产</text>
+        <text>不计入总资产</text>
       </view>
       <view class="special-tag daily" wx:if="{{asset.excludeDaily}}">
-        <text>🚫 不计入总日均</text>
+        <text>不计入总日均</text>
       </view>
     </view>
 
     <!-- 备注区域 -->
     <view class="remark-section" wx:if="{{asset.remark}}">
       <view class="remark-header">
-        <text class="remark-icon">📝</text>
+        <image class="remark-icon-svg" src="/images/remark.svg" mode="aspectFit"></image>
         <text class="remark-title">备注</text>
       </view>
       <view class="remark-content">{{asset.remark}}</view>
@@ -240,11 +276,11 @@
     <!-- 操作按钮 -->
     <view class="action-buttons">
       <button class="btn edit-btn" bindtap="editAsset">
-        <text class="btn-icon">✏️</text>
+        <image class="btn-icon-svg" src="/images/edit.svg" mode="aspectFit"></image>
         <text class="btn-text">编辑</text>
       </button>
       <button class="btn delete-btn" bindtap="deleteAsset">
-        <text class="btn-icon">🗑️</text>
+        <image class="btn-icon-svg" src="/images/delete.svg" mode="aspectFit"></image>
         <text class="btn-text">删除</text>
       </button>
     </view>
