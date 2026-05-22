@@ -255,5 +255,16 @@ Page({
     const hour = String(date.getHours()).padStart(2, '0');
     const minute = String(date.getMinutes()).padStart(2, '0');
     return `${year}-${month}-${day} ${hour}:${minute}`;
+  },
+
+  // 预览资产图标原图
+  previewIcon(e) {
+    const iconUrl = e.currentTarget.dataset.icon;
+    if (iconUrl) {
+      wx.previewImage({
+        current: iconUrl,
+        urls: [iconUrl]
+      });
+    }
   }
 });

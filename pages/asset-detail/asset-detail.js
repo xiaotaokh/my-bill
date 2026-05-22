@@ -1,4 +1,5 @@
 // asset-detail.js
+import { theme } from '../../utils/theme';
 Page({
   data: {
     asset: {},
@@ -365,7 +366,7 @@ Page({
     wx.showModal({
       title: '确认删除',
       content: '确定要删除此资产吗？删除后无法恢复',
-      confirmColor: '#f44336',
+      confirmColor: theme.error,
       success: (res) => {
         if (res.confirm) {
           this.confirmDelete();

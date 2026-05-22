@@ -48,7 +48,7 @@
           <switch
             checked="{{pendingSubscription}}"
             bindchange="onPendingSubscriptionChange"
-            color="#333333"
+            class="switch-primary"
           />
         </view>
       </view>
@@ -182,7 +182,7 @@
           <switch
             checked="{{endSubscription}}"
             bindchange="onEndSubscriptionChange"
-            color="#CF1322"
+            class="switch-error"
           />
         </view>
         <!-- 订阅结束日期（结束订阅开启时显示） -->
@@ -221,7 +221,7 @@
           <switch
             checked="{{excludeTotal}}"
             bindchange="onExcludeTotalChange"
-            color="#333333"
+            class="switch-primary"
           />
         </view>
         <view class="switch-item">
@@ -229,7 +229,7 @@
           <switch
             checked="{{excludeDaily}}"
             bindchange="onExcludeDailyChange"
-            color="#333333"
+            class="switch-primary"
             disabled="{{endSubscription}}"
           />
         </view>
@@ -372,7 +372,7 @@
           <switch
             checked="{{isRetired}}"
             bindchange="onRetiredChange"
-            color="#52C41A"
+            class="switch-primary"
           />
         </view>
         <!-- 退役日期选择器 -->
@@ -400,7 +400,7 @@
           <switch
             checked="{{isSold}}"
             bindchange="onSoldChange"
-            color="#D48806"
+            class="switch-warning"
           />
         </view>
         <!-- 卖出日期选择器 -->
@@ -428,7 +428,7 @@
           <switch
             checked="{{excludeTotal}}"
             bindchange="onExcludeTotalChange"
-            color="#333333"
+            class="switch-primary"
           />
         </view>
         <view class="switch-item">
@@ -436,7 +436,7 @@
           <switch
             checked="{{excludeDaily}}"
             bindchange="onExcludeDailyChange"
-            color="#333333"
+            class="switch-primary"
             disabled="{{isRetired || isSold}}"
           />
         </view>

@@ -1,46 +1,28 @@
-/* asset-detail.wxss - 商务黑白灰风格 */
-
-/* 变量定义 */
-page {
-  --dark: #333333;
-  --gray-900: #1A1A1A;
-  --gray-700: #555555;
-  --gray-500: #888888;
-  --gray-300: #CCCCCC;
-  --gray-200: #E5E5E5;
-  --gray-100: #F5F5F5;
-  --white: #FFFFFF;
-  --success: #52C41A;
-  --success-100: #F6FFED;
-  --error: #CF1322;
-  --error-100: #FFF1F0;
-  --warning: #D48806;
-  --warning-100: #FFFBE6;
-}
+/* asset-detail.wxss - 温暖极简浅色主题 */
 
 .container {
   min-height: 100vh;
-  background: #F5F5F5;
+  background: var(--bg-base);
   padding: 30rpx;
   position: relative;
 }
 
-/* 动态背景装饰 - 移除 */
+/* 动态背景装饰 */
 .bg-decoration {
   display: none;
 }
 
 /* 主卡片 */
 .detail-card {
-  background: #FFFFFF;
-  border-radius: 16rpx;
+  background: var(--bg-card);
+  border-radius: 28rpx;
   padding: 40rpx 32rpx;
-  box-shadow: 0 4rpx 12rpx rgba(30, 42, 54, 0.08);
+  box-shadow: -3rpx -3rpx 8rpx rgba(255, 255, 255, 0.6), 3rpx 3rpx 12rpx rgba(var(--shadow-rgb), 0.1);
   position: relative;
-  border: 1rpx solid #CCCCCC;
+  border: 1rpx solid var(--border-light);
 }
 
-/* 资产类型角标 - 卡片左上角 */
+/* 资产类型角标 */
 .asset-type-badge {
   position: absolute;
   top: 20rpx;
@@ -50,10 +32,10 @@ page {
   gap: 10rpx;
   z-index: 10;
   line-height: 1;
-  padding: 6rpx 12rpx;
-  background: var(--primary-100);
-  border-radius: 8rpx;
-  border: 1rpx solid var(--primary-200);
+  padding: 6rpx 14rpx;
+  background: var(--primary-soft);
+  border-radius: 10rpx;
+  border: 1rpx solid var(--primary-100);
 }
 
 .type-badge-icon {
@@ -73,45 +55,105 @@ page {
 .asset-avatar-section {
   display: flex;
   justify-content: center;
-  padding: 24rpx 0 16rpx;
+  padding: 16rpx 0 20rpx;
 }
 
 .avatar-wrapper {
   position: relative;
-  width: 200rpx;
-  height: 200rpx;
+  width: 180rpx;
+  height: 180rpx;
 }
 
 .avatar-container {
-  width: 200rpx;
-  height: 200rpx;
+  width: 180rpx;
+  height: 180rpx;
   border-radius: 50%;
-  background: var(--bg-card);
+  background: var(--bg-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 20rpx rgba(30, 42, 54, 0.15);
+  box-shadow: -2rpx -2rpx 6rpx rgba(255, 255, 255, 0.5), 2rpx 2rpx 12rpx rgba(var(--shadow-rgb), 0.12);
 }
 
 .avatar-emoji {
-  font-size: 100rpx;
+  font-size: 80rpx;
   line-height: 1;
 }
 
 .avatar-img {
-  width: 120rpx;
-  height: 120rpx;
+  width: 110rpx;
+  height: 110rpx;
   border-radius: 50%;
 }
 
 .avatar-glow {
-  position: absolute;
-  top: -30rpx;
-  left: -30rpx;
-  width: 260rpx;
-  height: 260rpx;
-  background: radial-gradient(circle, rgba(62, 115, 159, 0.1) 0%, transparent 70%);
-  pointer-events: none;
+  display: none;
+}
+
+.avatar-ring {
+  display: none;
+}
+
+/* 资产名称 */
+.asset-name {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--text-default);
+  text-align: center;
+  margin-top: 8rpx;
+  margin-bottom: 20rpx;
+  letter-spacing: 2rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+}
+
+/* 价格展示 */
+.price-wrapper {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin-bottom: 24rpx;
+}
+
+.currency {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-right: 4rpx;
+}
+
+.asset-price {
+  font-size: 60rpx;
+  font-weight: 800;
+  color: var(--text-default);
+  letter-spacing: 2rpx;
+}
+
+/* 订阅：每期金额 */
+.period-amount-wrapper {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin-bottom: 24rpx;
+  gap: 4rpx;
+}
+
+.period-label {
+  font-size: 24rpx;
+  color: var(--text-muted);
+}
+
+.period-amount {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--primary-600);
+}
+
+.period-type {
+  font-size: 24rpx;
+  color: var(--text-hint);
 }
 
 /* 状态和分类标签行 */
@@ -120,7 +162,7 @@ page {
   align-items: center;
   justify-content: center;
   gap: 16rpx;
-  margin-bottom: 24rpx;
+  margin-bottom: 28rpx;
 }
 
 /* 状态药丸 */
@@ -129,22 +171,27 @@ page {
   align-items: center;
   justify-content: center;
   gap: 6rpx;
-  padding: 8rpx 16rpx;
-  border-radius: 20rpx;
+  padding: 8rpx 18rpx;
+  border-radius: 24rpx;
   font-size: 24rpx;
   font-weight: 500;
   background: var(--bg-subtle);
   color: var(--text-muted);
 }
 
+.status-pill-icon {
+  width: 20rpx;
+  height: 20rpx;
+}
+
 .status-pill.active {
-  color: var(--success-700);
-  background: var(--success-100);
+  color: var(--success);
+  background: var(--success-bg);
 }
 
 .status-pill.pending {
-  color: var(--warning-700);
-  background: var(--warning-100);
+  color: var(--warning);
+  background: var(--warning-bg);
 }
 
 .status-pill.ended {
@@ -153,18 +200,13 @@ page {
 }
 
 .status-pill.retired {
-  color: var(--gray-700, #555555);
-  background: var(--gray-200, #E5E5E5);
+  color: var(--text-muted);
+  background: var(--bg-subtle);
 }
 
 .status-pill.sold {
-  color: var(--error-700);
-  background: var(--error-100);
-}
-
-.status-pill-icon {
-  width: 20rpx;
-  height: 20rpx;
+  color: var(--error);
+  background: var(--error-bg);
 }
 
 /* 类别标签 */
@@ -172,11 +214,11 @@ page {
   display: flex;
   align-items: center;
   gap: 6rpx;
-  padding: 8rpx 16rpx;
-  border-radius: 20rpx;
+  padding: 8rpx 18rpx;
+  border-radius: 24rpx;
   font-size: 24rpx;
   font-weight: 500;
-  background: var(--primary-100);
+  background: var(--primary-soft);
   color: var(--primary-600);
 }
 
@@ -195,67 +237,32 @@ page {
   line-height: 1;
 }
 
-/* 资产名称 */
-.asset-name {
-  font-size: 44rpx;
-  font-weight: 800;
-  color: #1A1A1A;
-  text-align: center;
-  margin-top: 20rpx;
-  margin-bottom: 24rpx;
-  letter-spacing: 1rpx;
-}
-
-/* 价格包装 - 价格高亮显示 */
-.price-wrapper {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  margin-bottom: 24rpx;
-}
-
-.currency {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333333;
-  margin-right: 4rpx;
-}
-
-.asset-price {
-  font-size: 64rpx;
-  font-weight: 800;
-  color: #333333;
-}
-
-/* 信息卡片区域 */
+/* 信息卡片网格 */
 .info-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16rpx;
-  margin-bottom: 24rpx;
+  margin-bottom: 28rpx;
 }
 
+/* 信息卡片 */
 .info-card {
-  background: #FFFFFF;
-  border-radius: 12rpx;
-  padding: 20rpx 24rpx;
+  background: var(--bg-subtle);
+  border-radius: 18rpx;
+  padding: 20rpx 20rpx;
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 14rpx;
   position: relative;
   overflow: hidden;
-  border: 1rpx solid #CCCCCC;
-  box-shadow: 0 2rpx 6rpx rgba(30, 42, 54, 0.04);
+  border: 1rpx solid var(--border-light);
+  box-shadow: -1rpx -1rpx 4rpx rgba(255, 255, 255, 0.4), 1rpx 1px 6rpx rgba(var(--shadow-rgb), 0.06);
 }
 
 .info-card.highlight {
-  background: #FFFFFF;
-  border: 1rpx solid #CCCCCC;
-}
-
-.card-value.highlight-value {
-  color: #333333;
-  font-weight: 700;
+  background: var(--bg-card);
+  border: 1rpx solid var(--primary-100);
+  box-shadow: -1rpx -1rpx 4rpx rgba(255, 255, 255, 0.4), 1rpx 1px 6rpx rgba(var(--shadow-rgb), 0.06);
 }
 
 .card-icon {
@@ -264,8 +271,8 @@ page {
 }
 
 .card-icon-svg {
-  width: 36rpx;
-  height: 36rpx;
+  width: 34rpx;
+  height: 34rpx;
 }
 
 .card-content {
@@ -275,14 +282,20 @@ page {
 
 .card-label {
   font-size: 22rpx;
-  color: #888888;
+  color: var(--text-hint);
   margin-bottom: 4rpx;
+  font-weight: 500;
 }
 
 .card-value {
   font-size: 26rpx;
   font-weight: 600;
-  color: #1A1A1A;
+  color: var(--text-default);
+}
+
+.card-value.highlight-value {
+  color: var(--primary-600);
+  font-weight: 700;
 }
 
 .card-decoration {
@@ -294,31 +307,33 @@ page {
   display: flex;
   flex-wrap: wrap;
   gap: 12rpx;
-  margin-bottom: 24rpx;
+  margin-bottom: 28rpx;
 }
 
 .special-tag {
   font-size: 22rpx;
-  padding: 8rpx 16rpx;
-  border-radius: 12rpx;
+  padding: 8rpx 18rpx;
+  border-radius: 14rpx;
+  font-weight: 500;
 }
 
 .special-tag.total {
-  color: #9B5C1A;
-  background: #FFFBE6;
+  color: var(--warning);
+  background: var(--warning-bg);
 }
 
 .special-tag.daily {
-  color: #0A6B52;
-  background: #F6FFED;
+  color: var(--success);
+  background: var(--success-bg);
 }
 
 /* 备注区域 */
 .remark-section {
-  border-radius: 12rpx;
+  border-radius: 18rpx;
   padding: 24rpx;
   margin-bottom: 32rpx;
-  border: 1rpx dashed #CCCCCC;
+  background: var(--bg-subtle);
+  border: 1rpx solid var(--border-light);
 }
 
 .remark-header {
@@ -340,12 +355,12 @@ page {
 .remark-title {
   font-size: 26rpx;
   font-weight: 600;
-  color: #555555;
+  color: var(--text-muted);
 }
 
 .remark-content {
   font-size: 26rpx;
-  color: #1A1A1A;
+  color: var(--text-default);
   line-height: 1.6;
   white-space: pre-wrap;
 }
@@ -360,7 +375,7 @@ page {
 .btn {
   flex: 1;
   height: 96rpx;
-  border-radius: 12rpx;
+  border-radius: 20rpx;
   font-size: 30rpx;
   font-weight: 700;
   border: none;
@@ -374,25 +389,26 @@ page {
   display: none;
 }
 
-/* 编辑按钮：主按钮样式 */
 .edit-btn {
-  background: #333333;
-  color: #FFFFFF;
+  background: var(--primary-gradient);
+  color: var(--text-inverse);
+  box-shadow: 0 4rpx 16rpx rgba(var(--primary-600-rgb), 0.25);
 }
 
 .edit-btn:active {
-  background: #555555;
+  transform: scale(0.97);
+  opacity: 0.9;
 }
 
-/* 删除按钮：边框按钮样式（次按钮） */
 .delete-btn {
-  background: #FFFFFF;
-  color: #CF1322;
-  border: 2rpx solid #CF1322;
+  background: var(--bg-card);
+  color: var(--error);
+  border: 2rpx solid var(--error);
 }
 
 .delete-btn:active {
-  background: #FFF1F0;
+  background: var(--error-bg);
+  transform: scale(0.97);
 }
 
 .btn-icon {
@@ -404,71 +420,19 @@ page {
   height: 32rpx;
 }
 
-.btn:active {
-  transform: scale(0.97);
-  opacity: 0.9;
-}
-
 .edit-btn:after,
 .delete-btn:after {
   border: none;
 }
 
 /* 订阅标签 */
-.asset-name {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-}
-
 .subscription-tag {
   display: inline-block;
   padding: 4rpx 16rpx;
   border-radius: 12rpx;
   font-size: 22rpx;
   font-weight: 600;
-  background: #F5F5F5;
-  color: #333333;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
   vertical-align: middle;
-}
-
-/* 每期金额显示 - 高亮 */
-.period-amount-wrapper {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  margin-bottom: 24rpx;
-  gap: 4rpx;
-}
-
-.period-label {
-  font-size: 24rpx;
-  color: #333333;
-}
-
-.period-amount {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #333333;
-}
-
-.period-type {
-  font-size: 24rpx;
-  color: #555555;
-}
-
-/* 订阅资产状态样式 */
-.status-pill.pending {
-  color: #9B5C1A;
-}
-
-.status-pill.ended {
-  color: #9B2C2C;
-}
-
-/* 订阅资产专属信息卡片 */
-.info-card.subscription-card {
-  background: #FFFFFF;
-  border: 1rpx solid #CCCCCC;
 }

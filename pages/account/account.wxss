@@ -1,25 +1,8 @@
-/* pages/account/account.wxss - 中性优先配色 */
-
-/* CSS 变量定义 - Design Tokens */
-page {
-  --primary-600: #333333;
-  --primary-500: #555555;
-  --primary-100: #E5E5E5;
-  --bg-base: #F5F5F5;
-  --bg-card: #FFFFFF;
-  --bg-subtle: #E5E5E5;
-  --border-default: #CCCCCC;
-  --text-default: #1A1A1A;
-  --text-muted: #555555;
-  --text-hint: #888888;
-  --success: #0F8F6F;
-  --error: #CF1322;
-  --warning: #C27A2C;
-}
+/* pages/account/account.wxss - 温暖极简浅色主题 */
 
 .container {
   min-height: 100vh;
-  background: #F5F5F5;
+  background: var(--bg-base);
   position: relative;
   padding-bottom: 60rpx;
 }
@@ -46,14 +29,14 @@ page {
   display: block;
   font-size: 48rpx;
   font-weight: 700;
-  color: #1A1A1A;
+  color: var(--text-default);
   margin-bottom: 10rpx;
 }
 
 .page-subtitle {
   display: block;
   font-size: 26rpx;
-  color: #555555;
+  color: var(--text-muted);
 }
 
 /* 加载状态 */
@@ -70,8 +53,8 @@ page {
 .loading-spinner {
   width: 60rpx;
   height: 60rpx;
-  border: 4rpx solid #CCCCCC;
-  border-top-color: #333333;
+  border: 4rpx solid var(--border-default);
+  border-top-color: var(--primary-600);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -82,7 +65,7 @@ page {
 
 .loading-text {
   font-size: 26rpx;
-  color: #555555;
+  color: var(--text-muted);
   margin-top: 20rpx;
 }
 
@@ -91,11 +74,11 @@ page {
   position: relative;
   z-index: 1;
   margin: 20rpx 30rpx;
-  background: #FFFFFF;
+  background: var(--bg-card);
   border-radius: 16rpx;
   padding: 50rpx 40rpx;
-  box-shadow: 0 4rpx 12rpx rgba(30, 42, 54, 0.08);
-  border: 1rpx solid #CCCCCC;
+  box-shadow: 0 4rpx 12rpx rgba(var(--shadow-rgb), 0.1);
+  border: 1rpx solid var(--border-default);
 }
 
 /* 头像区域 */
@@ -115,7 +98,7 @@ page {
   width: 180rpx;
   height: 180rpx;
   border-radius: 50%;
-  border: 4rpx solid #CCCCCC;
+  border: 4rpx solid var(--border-default);
 }
 
 .avatar-placeholder {
@@ -125,7 +108,7 @@ page {
   width: 180rpx;
   height: 180rpx;
   border-radius: 50%;
-  background: #E5E5E5;
+  background: var(--bg-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -144,7 +127,7 @@ page {
 .info-label {
   display: block;
   font-size: 24rpx;
-  color: #888888;
+  color: var(--text-hint);
   margin-bottom: 10rpx;
 }
 
@@ -152,13 +135,13 @@ page {
   display: block;
   font-size: 36rpx;
   font-weight: 600;
-  color: #1A1A1A;
+  color: var(--text-default);
 }
 
 /* 分割线 */
 .divider {
   height: 1rpx;
-  background: #CCCCCC;
+  background: var(--border-default);
   margin: 30rpx 0;
 }
 
@@ -169,7 +152,7 @@ page {
   justify-content: center;
   padding: 20rpx;
   margin-bottom: 20rpx;
-  background: #E5E5E5;
+  background: var(--bg-subtle);
   border-radius: 12rpx;
 }
 
@@ -180,7 +163,7 @@ page {
 
 .tip-text {
   font-size: 26rpx;
-  color: #333333;
+  color: var(--text-default);
 }
 
 /* 编辑按钮 */
@@ -194,8 +177,8 @@ page {
   font-size: 30rpx;
   font-weight: 500;
   border: none;
-  background: #333333;
-  color: #FFFFFF;
+  background: var(--primary-600);
+  color: var(--text-inverse);
 }
 
 .btn-icon {
@@ -216,14 +199,14 @@ page {
 .edit-notice {
   padding: 20rpx 24rpx;
   margin-bottom: 20rpx;
-  background: #E5E5E5;
+  background: var(--bg-subtle);
   border-radius: 12rpx;
-  border-left: 4rpx solid #333333;
+  border-left: 4rpx solid var(--primary-600);
 }
 
 .notice-text {
   font-size: 24rpx;
-  color: #555555;
+  color: var(--text-muted);
   line-height: 1.6;
 }
 
@@ -231,13 +214,13 @@ page {
   display: flex;
   align-items: center;
   padding: 24rpx 0;
-  border-bottom: 1rpx solid #CCCCCC;
+  border-bottom: 1rpx solid var(--border-default);
 }
 
 .edit-label {
   width: 100rpx;
   font-size: 28rpx;
-  color: #1A1A1A;
+  color: var(--text-default);
   font-weight: 500;
 }
 
@@ -257,12 +240,12 @@ page {
   width: 80rpx;
   height: 80rpx;
   border-radius: 50%;
-  border: 2rpx solid #CCCCCC;
+  border: 2rpx solid var(--border-default);
 }
 
 .avatar-empty-text {
   font-size: 26rpx;
-  color: #888888;
+  color: var(--text-hint);
 }
 
 .nickname-select-btn {
@@ -282,16 +265,16 @@ page {
 }
 
 .nickname-text.filled {
-  color: #1A1A1A;
+  color: var(--text-default);
 }
 
 .nickname-text.empty {
-  color: #888888;
+  color: var(--text-hint);
 }
 
 .select-arrow {
   font-size: 28rpx;
-  color: #888888;
+  color: var(--text-hint);
   margin-left: 10rpx;
 }
 
@@ -309,9 +292,9 @@ page {
   justify-content: center;
   padding: 24rpx;
   margin: 30rpx 0 20rpx;
-  background: #FFFFFF;
+  background: var(--bg-card);
   border-radius: 12rpx;
-  border: 1rpx dashed #333333;
+  border: 1rpx dashed var(--primary-600);
 }
 
 .random-icon {
@@ -321,7 +304,7 @@ page {
 
 .random-text {
   font-size: 26rpx;
-  color: #333333;
+  color: var(--primary-600);
 }
 
 /* 操作按钮 */
@@ -337,8 +320,8 @@ page {
   line-height: 88rpx;
   border-radius: 12rpx;
   font-size: 30rpx;
-  background: #E5E5E5;
-  color: #555555;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
   border: none;
   display: flex;
   align-items: center;
@@ -356,8 +339,8 @@ page {
   line-height: 88rpx;
   border-radius: 12rpx;
   font-size: 30rpx;
-  background: #333333;
-  color: #FFFFFF;
+  background: var(--primary-600);
+  color: var(--text-inverse);
   border: none;
   display: flex;
   align-items: center;
@@ -370,7 +353,7 @@ page {
 }
 
 .confirm-btn.disabled {
-  background: #CCCCCC;
+  background: var(--border-default);
 }
 
 /* 空状态 */
@@ -391,7 +374,7 @@ page {
 
 .empty-text {
   font-size: 28rpx;
-  color: #888888;
+  color: var(--text-hint);
 }
 
 /* 底部留白 */
@@ -426,16 +409,16 @@ page {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(30, 42, 54, 0.5);
+  background: rgba(var(--neutral-900-rgb), 0.5);
 }
 
 .random-panel {
   position: relative;
   width: 600rpx;
-  background: #FFFFFF;
+  background: var(--bg-card);
   border-radius: 16rpx;
   padding: 40rpx;
-  box-shadow: 0 8rpx 24rpx rgba(30, 42, 54, 0.15);
+  box-shadow: 0 8rpx 24rpx rgba(var(--shadow-rgb), 0.2);
 }
 
 .random-header {
@@ -446,13 +429,13 @@ page {
 .random-title {
   font-size: 34rpx;
   font-weight: 600;
-  color: #1A1A1A;
+  color: var(--text-default);
   margin-bottom: 10rpx;
 }
 
 .random-desc {
   font-size: 26rpx;
-  color: #555555;
+  color: var(--text-muted);
 }
 
 .random-body {
@@ -476,13 +459,13 @@ page {
   width: 120rpx;
   height: 120rpx;
   border-radius: 50%;
-  border: 2rpx solid #333333;
+  border: 2rpx solid var(--primary-600);
 }
 
 .random-refresh-btn {
   width: 50rpx;
   height: 50rpx;
-  background: #333333;
+  background: var(--primary-600);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -504,18 +487,18 @@ page {
 .random-nickname-text {
   font-size: 32rpx;
   font-weight: 500;
-  color: #1A1A1A;
+  color: var(--text-default);
 }
 
 .random-nickname-refresh {
   width: 40rpx;
   height: 40rpx;
-  background: #E5E5E5;
+  background: var(--bg-subtle);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1rpx solid #CCCCCC;
+  border: 1rpx solid var(--border-default);
 }
 
 .refresh-icon-small {
@@ -535,8 +518,8 @@ page {
   line-height: 80rpx;
   border-radius: 12rpx;
   font-size: 28rpx;
-  background: #E5E5E5;
-  color: #555555;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
   border: none;
   display: flex;
   align-items: center;
@@ -554,8 +537,8 @@ page {
   line-height: 80rpx;
   border-radius: 12rpx;
   font-size: 28rpx;
-  background: #333333;
-  color: #FFFFFF;
+  background: var(--primary-600);
+  color: var(--text-inverse);
   border: none;
   display: flex;
   align-items: center;

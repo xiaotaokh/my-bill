@@ -3,6 +3,8 @@ const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '�
 
 // 引入 echarts
 import * as echarts from '../../components/ec-canvas/echarts';
+// 引入主题颜色
+import { theme } from '../../utils/theme';
 
 Page({
   data: {
@@ -73,7 +75,7 @@ Page({
     reportIncludedCount: 0,
     reportExcludedCount: 0,
     reportCategoryStats: [],
-    reportColors: ['#667eea', '#764ba2', '#9b72e8', '#f472b6', '#fb923c', '#34d399', '#60a5fa', '#a78bfa', '#fbbf24', '#38bdf8'],
+    reportColors: theme.reportColors,
 
     // 状态统计
     reportActiveCount: 0,
@@ -126,6 +128,13 @@ Page({
     welcomeMessage: '',
     welcomeSubMessage: '',
     welcomeDuration: 10,
+
+    // 金额显隐控制
+    showAmount: true,
+
+    // 资产列表视图模式
+    showSimpleView: true,
+    simpleViewCols: [[], [], [], [], []],
 
     // 预设头像 SVG（20个不同风格和语义的头像）
     presetAvatars: [
@@ -211,8 +220,9 @@ Page({
     const ADMIN_OPENID = 'ofW_r4lPk806IqPSk4-gR9r_478g';
 
     app.getOpenid().then(openid => {
-      // 管理员不需要记录到用户统计
+      // 管理员直接加载布局偏好
       if (openid === ADMIN_OPENID) {
+        this.loadLayoutPreference();
         return;
       }
 
@@ -223,6 +233,9 @@ Page({
           this.createRandomUserInfo(true);
         } else {
           const user = dbRes.data[0];
+          // 用户存在，先加载布局偏好
+          this.loadLayoutPreference();
+
           if (!user.nickName || !user.avatarUrl) {
             // 存在记录但缺少昵称头像，自动补充随机信息
             this.updateUserInfoWithRandom(user._id, true);
@@ -640,7 +653,7 @@ Page({
         this.applySort();
       }
     }).catch(err => {
-      this.setData({ assets: [], filteredAssets: [], isLoading: false });
+      this.setData({ assets: [], filteredAssets: [], simpleViewCols: [[], [], [], [], []], isLoading: false });
       wx.hideLoading();
       wx.showToast({ title: '加载失败', icon: 'none' });
     }).finally(() => wx.hideLoading());
@@ -847,7 +860,8 @@ Page({
       return { ...asset, categoryIcon: icon, categoryIconUrl: icon?.startsWith('http') ? icon : '' };
     });
 
-    this.setData({ assets: update(assets), filteredAssets: update(this.data.filteredAssets) });
+    const nextFiltered = update(this.data.filteredAssets);
+    this.setData({ assets: update(assets), filteredAssets: nextFiltered, simpleViewCols: this._splitIntoCols(nextFiltered) });
   },
 
   // 应用筛选
@@ -865,7 +879,10 @@ Page({
       filtered = filtered.filter(a => a.category === activeCategory);
     }
 
-    this.setData({ filteredAssets: filtered }, () => this.calculateStats());
+    this.setData({ filteredAssets: filtered }, () => {
+      this.calculateStats();
+      this._updateSimpleCols(filtered);
+    });
   },
 
   calculateStats() {
@@ -1008,7 +1025,10 @@ Page({
     const field = fields[currentSortIndex];
     sorted.sort((a, b) => sortOrder === 'desc' ? getVal(b, field) - getVal(a, field) : getVal(a, field) - getVal(b, field));
 
-    this.setData({ filteredAssets: sorted }, () => this.calculateStats());
+    this.setData({ filteredAssets: sorted }, () => {
+      this.calculateStats();
+      this._updateSimpleCols(sorted);
+    });
   },
 
   goToAdd() {
@@ -1098,6 +1118,48 @@ Page({
 
   scrollToTop() {
     wx.pageScrollTo({ scrollTop: 0, duration: 300 });
+  },
+
+  // 切换金额显示/隐藏
+  toggleAmountVisible() {
+    this.setData({ showAmount: !this.data.showAmount });
+  },
+
+  toggleAssetView() {
+    const newShowSimpleView = !this.data.showSimpleView;
+    this.setData({ showSimpleView: newShowSimpleView });
+    this.saveLayoutPreference(newShowSimpleView);
+  },
+
+  // 保存布局偏好 - 本地存储
+  saveLayoutPreference(showSimpleView) {
+    wx.setStorageSync('showSimpleView', showSimpleView);
+  },
+
+  // 加载布局偏好 - 本地存储
+  loadLayoutPreference() {
+    const cached = wx.getStorageSync('showSimpleView');
+    if (cached !== '') {
+      this.setData({ showSimpleView: !!cached });
+    }
+  },
+
+  _splitIntoCols(arr, n = 5) {
+    // 估算卡片自然高度: padding(32) + 头像(padding 40 + 内容 80) + name(32) + cost(31) ≈ 215
+    const BASE_HEIGHT = 220;
+    const BG_COLORS = theme.cardBgColors;
+    const cols = Array.from({ length: n }, () => []);
+    arr.forEach((item, i) => {
+      const extra = [20, 50, 80][Math.floor(Math.random() * 3)];
+      item._cardHeight = BASE_HEIGHT + extra;
+      item._bgColor = BG_COLORS[Math.floor(Math.random() * BG_COLORS.length)];
+      cols[i % n].push(item);
+    });
+    return cols;
+  },
+
+  _updateSimpleCols(filteredAssets) {
+    this.setData({ simpleViewCols: this._splitIntoCols(filteredAssets) });
   },
 
   preventTouchMove() {},
@@ -1265,7 +1327,7 @@ Page({
     wx.showModal({
       title: '确认删除',
       content: `确定删除选中的 ${selectedAssets.length} 项资产吗？`,
-      confirmColor: '#FF7043',
+      confirmColor: theme.error,
       success: res => { if (res.confirm) this.executeBatchDelete(); }
     });
   },
@@ -1466,12 +1528,12 @@ Page({
         tooltip: {
           trigger: 'item',
           confine: true,
-          backgroundColor: '#fff',
-          borderColor: '#eee',
+          backgroundColor: theme.bgCard,
+          borderColor: theme.borderLight,
           borderWidth: 1,
           padding: [8, 12],
           textStyle: {
-            color: '#333',
+            color: theme.textDefault,
             fontSize: 12
           },
           formatter: params => {
@@ -1507,7 +1569,7 @@ Page({
               left: 'center',
               top: '0',
               style: {
-                fill: '#333',
+                fill: theme.textDefault,
                 text: pieCenterText,
                 font: 'bold 18px sans-serif',
                 textAlign: 'center'
@@ -1518,7 +1580,7 @@ Page({
               left: 'center',
               top: '24',
               style: {
-                fill: '#999',
+                fill: theme.textMuted,
                 text: pieCenterSubText,
                 font: '12px sans-serif',
                 textAlign: 'center'
@@ -1532,7 +1594,7 @@ Page({
           center: ['50%', '40%'],
           itemStyle: {
             borderRadius: 6,
-            borderColor: '#fff',
+            borderColor: theme.bgCard,
             borderWidth: 2
           },
           label: { show: false },
@@ -1578,7 +1640,7 @@ Page({
             left: 'center',
             top: '0',
             style: {
-              fill: '#333',
+              fill: theme.textDefault,
               text: text,
               font: 'bold 18px sans-serif',
               textAlign: 'center'
@@ -1589,7 +1651,7 @@ Page({
             left: 'center',
             top: '24',
             style: {
-              fill: '#999',
+              fill: theme.textMuted,
               text: subText,
               font: '12px sans-serif',
               textAlign: 'center'
@@ -1653,16 +1715,16 @@ Page({
       this.lineDateAssetsMap = dateAssetsMap;
 
       chart.setOption({
-        color: ['#667eea'],
+        color: [theme.primary600],
         tooltip: {
           trigger: 'axis',
           confine: true,
-          backgroundColor: '#fff',
-          borderColor: '#eee',
+          backgroundColor: theme.bgCard,
+          borderColor: theme.borderLight,
           borderWidth: 1,
           padding: [8, 12],
           textStyle: {
-            color: '#333',
+            color: theme.textDefault,
             fontSize: 12
           },
           formatter: params => {
@@ -1873,16 +1935,16 @@ Page({
       canvas.setChart(chart);
 
       chart.setOption({
-        color: ['#667eea'],
+        color: [theme.primary600],
         tooltip: {
           trigger: 'axis',
           confine: true,
-          backgroundColor: '#fff',
-          borderColor: '#eee',
+          backgroundColor: theme.bgCard,
+          borderColor: theme.borderLight,
           borderWidth: 1,
           padding: [8, 12],
           textStyle: {
-            color: '#333',
+            color: theme.textDefault,
             fontSize: 12
           },
           formatter: params => {
@@ -1943,7 +2005,7 @@ Page({
               return dataItem.count + '件';
             },
             fontSize: 10,
-            color: '#666'
+            color: theme.textMuted
           }
         }]
       });

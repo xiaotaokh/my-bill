@@ -144,7 +144,7 @@ Page({
           { name: '鼠标', icon: '🖱️' },
           { name: '键盘', icon: '⌨️' },
           { name: '触摸板', icon: '🖐️' },
-          { name: '拓展坞', icon: '🔌' },
+          { name: '拓展坞', icon: '🔗' },
           { name: '电脑配件', icon: '🖥️' },
           { name: '显示器', icon: '📺' },
           { name: '打印机', icon: '🖨️' },

@@ -19,8 +19,6 @@
 
   <!-- 主内容区域 -->
   <view class="main-content" style="{{showSetting || showReport || showBatchDelete ? 'display: none;' : 'display: block;'}}">
-    <!-- 顶部背景 -->
-    <view class="header-bg" style="{{showSetting || showBatchDelete ? 'display: none;' : 'display: block;'}}"></view>
 
     <!-- 搜索输入框 -->
     <view class="search-bar-container" hidden="{{!showSearchInput || showSetting || showBatchDelete}}">
@@ -44,10 +42,12 @@
     <!-- 日期显示 -->
     <view class="date-section">
       <view class="date-display">
-        <text class="date-day">{{currentDay}}</text>
-        <view class="date-info">
-          <text class="date-month">{{currentMonth}}月 {{currentYear}}</text>
-          <text class="date-week">{{currentWeek}}</text>
+        <view class="date-left">
+          <text class="date-day">{{currentDay}}</text>
+          <view class="date-info">
+            <text class="date-month">{{currentMonth}}月 {{currentYear}}</text>
+            <text class="date-week">{{currentWeek}}</text>
+          </view>
         </view>
         <!-- 天气显示 -->
         <view class="weather-info" wx:if="{{!weatherLoading && weatherText}}">
@@ -69,22 +69,18 @@
 
     <!-- 总资产卡片 -->
     <view class="total-card">
-      <view class="total-card-left">
-        <view class="total-label">总资产</view>
-        <view class="total-value" style="font-size: {{totalPriceSize}}rpx;">¥{{totalPrice}}</view>
-      </view>
-      <view class="total-divider"></view>
-      <view class="total-card-right">
-        <view class="daily-label">总日均成本</view>
-        <view class="daily-value" style="font-size: {{dailyCostSize}}rpx;">¥{{dailyCost}}</view>
-      </view>
+      <view class="total-label">总资产 (CNY)<image class="amount-toggle" src="{{showAmount ? '/images/eye.svg' : '/images/eye-off.svg'}}" mode="aspectFit" bindtap="toggleAmountVisible" /></view>
+      <text class="total-value" style="font-size: {{totalPriceSize}}rpx;">{{showAmount ? ('¥ ' + totalPrice) : '****'}}</text>
+      <view class="card-divider"></view>
+      <view class="daily-label">总日均成本</view>
+      <text class="daily-value" style="font-size: {{dailyCostSize}}rpx;">¥ {{dailyCost}}</text>
       <view class="total-glow"></view>
     </view>
 
     <!-- 统计指标卡片 -->
     <view class="stats-section">
       <view class="stat-row">
-        <view class="stat-item {{activeStatus === 'all' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="all">
+        <view class="stat-item total-item {{activeStatus === 'all' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="all">
           <view class="stat-icon total-icon">
             <text class="iconfont">🗂️</text>
           </view>
@@ -93,7 +89,7 @@
             <text class="stat-name">资产总数</text>
           </view>
         </view>
-        <view class="stat-item {{activeStatus === 'active' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="active">
+        <view class="stat-item active-item {{activeStatus === 'active' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="active">
           <view class="stat-icon active-icon">
             <image class="stat-icon-svg" src="/images/active.svg" mode="aspectFit"></image>
           </view>
@@ -102,7 +98,7 @@
             <text class="stat-name">服役中</text>
           </view>
         </view>
-        <view class="stat-item {{activeStatus === 'retired' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="retired">
+        <view class="stat-item retired-item {{activeStatus === 'retired' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="retired">
           <view class="stat-icon retired-icon">
             <image class="stat-icon-svg" src="/images/retired.svg" mode="aspectFit"></image>
           </view>
@@ -111,7 +107,7 @@
             <text class="stat-name">已退役</text>
           </view>
         </view>
-        <view class="stat-item {{activeStatus === 'sold' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="sold">
+        <view class="stat-item sold-item {{activeStatus === 'sold' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="sold">
           <view class="stat-icon sold-icon">
             <image class="stat-icon-svg" src="/images/sold.svg" mode="aspectFit"></image>
           </view>
@@ -154,24 +150,6 @@
     <!-- 资产列表 -->
     <view class="asset-list">
       <view class="list-header">
-        <view class="list-title-wrapper">
-          <view class="list-title-box">
-            <text class="list-title">我的资产</text>
-            <view class="list-count-badge">
-              <text>{{filteredAssets.length}}</text>
-            </view>
-          </view>
-          <view wx:if="{{filteredAssets.length > 0}}" class="list-price-group">
-            <view class="list-total-price">
-              <text class="price-value">¥{{filteredTotalPrice}}</text>
-              <text class="price-label">/总</text>
-            </view>
-            <view class="list-total-price">
-              <text class="price-value">¥{{filteredDailyCost}}</text>
-              <text class="price-label">/日</text>
-            </view>
-          </view>
-        </view>
         <view class="sort-wrapper">
           <picker mode="selector" range="{{sortOptions}}" bindchange="changeSort">
             <view class="sort-btn">
@@ -180,16 +158,36 @@
             </view>
           </picker>
         </view>
+        <view wx:if="{{filteredAssets.length > 0}}" class="list-price-group">
+          <view class="list-total-price">
+            <text class="price-value">¥{{filteredTotalPrice}}</text>
+            <text class="price-label">/总</text>
+          </view>
+          <view class="list-total-price">
+            <text class="price-value">¥{{filteredDailyCost}}</text>
+            <text class="price-label">/日</text>
+          </view>
+        </view>
+        <view wx:if="{{filteredAssets.length > 0}}" class="list-count-right">
+          <text class="list-count-value">{{filteredAssets.length}}</text>
+          <text class="list-count-label">/个</text>
+        </view>
+        <view class="view-toggle" bindtap="toggleAssetView">
+          <image wx:if="{{showSimpleView}}" src="/images/grid-simple.svg" mode="aspectFit" class="toggle-icon"></image>
+          <image wx:else src="/images/list-detail.svg" mode="aspectFit" class="toggle-icon"></image>
+        </view>
       </view>
 
       <block wx:if="{{filteredAssets.length > 0}}">
-        <view
-          class="asset-card"
-          wx:for="{{filteredAssets}}"
-          wx:key="_id"
-          bindtap="goToDetail"
-          data-id="{{item._id}}"
-        >
+        <!-- 详细视图 -->
+        <block wx:if="{{!showSimpleView}}">
+          <view
+            class="asset-card"
+            wx:for="{{filteredAssets}}"
+            wx:key="_id"
+            bindtap="goToDetail"
+            data-id="{{item._id}}"
+          >
           <!-- 资产类型角标 - 卡片左上角 -->
           <view class="asset-type-corner" wx:if="{{item.assetType === 'subscription'}}">
             <image class="type-corner-icon" src="/images/subscription-asset.svg" mode="aspectFit"></image>
@@ -302,7 +300,31 @@
               </block>
             </view>
           </view>
-        </view>
+          </view>
+        </block>
+        <!-- 简单视图 -->
+        <block wx:else>
+          <view class="simple-asset-grid">
+            <view class="masonry-col" wx:for="{{simpleViewCols}}" wx:key="index">
+              <view
+                class="asset-card-simple"
+                wx:for="{{item}}"
+                wx:for-item="asset"
+                wx:key="_id"
+                bindtap="goToDetail"
+                data-id="{{asset._id}}"
+                style="min-height: {{asset._cardHeight}}rpx; background: {{asset._bgColor}};"
+              >
+                <view class="simple-avatar">
+                  <image wx:if="{{asset.displayIcon}}" class="simple-avatar-img" src="{{asset.displayIcon}}" mode="widthFix"></image>
+                  <text wx:else class="simple-avatar-icon">{{asset.icon || '📦'}}</text>
+                </view>
+                <text class="simple-name">{{asset.name}}</text>
+                <text class="simple-cost">¥{{asset.dailyCost}}/天</text>
+              </view>
+            </view>
+          </view>
+        </block>
       </block>
 
       <block wx:else>

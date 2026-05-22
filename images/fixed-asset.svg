@@ -1,15 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <!-- 盒子主体 - 商务黑白灰风格 -->
-  <rect x="4" y="6" width="16" height="14" rx="2" fill="#333333"/>
-  <!-- 盒子顶部盖子 -->
-  <rect x="3" y="4" width="18" height="3" rx="1" fill="#555555"/>
-  <!-- 盒子内部 -->
-  <rect x="5" y="8" width="14" height="10" rx="1" fill="#F5F5F5"/>
-  <!-- 盒子物品轮廓 -->
-  <rect x="7" y="10" width="4" height="6" rx="1" fill="#E5E5E5"/>
-  <rect x="13" y="10" width="4" height="6" rx="1" fill="#E5E5E5"/>
-  <!-- 单次付款标记 -->
-  <circle cx="18" cy="5" r="4" fill="#52C41A"/>
-  <rect x="15" y="4" width="6" height="1.5" rx="0.5" fill="#FFFFFF"/>
-  <rect x="16" y="6.5" width="4" height="1" rx="0.3" fill="#FFFFFF"/>
+  <!-- 主体 - 保险箱/存储盒 -->
+  <rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="#5D7D6E" stroke-width="2"/>
+
+  <!-- 顶部装饰线 -->
+  <line x1="4" y1="9" x2="20" y2="9" stroke="#5D7D6E" stroke-width="2"/>
+
+  <!-- 锁/安全图标 -->
+  <rect x="10" y="11" width="4" height="4" rx="0.8" fill="#EDF2EF" stroke="#6F8E7E" stroke-width="2"/>
+  <circle cx="12" cy="13" r="1.2" fill="#6F8E7E"/>
+
+  <!-- 金额符号 -->
+  <text x="8" y="15.5" font-size="5" text-anchor="middle" fill="#86A396" font-weight="700">$</text>
+  <text x="16" y="15.5" font-size="5" text-anchor="middle" fill="#86A396" font-weight="700">¥</text>
+
+  <!-- 底部支脚 -->
+  <rect x="6" y="20" width="2.5" height="1.5" rx="0.5" fill="#5D7D6E"/>
+  <rect x="15.5" y="20" width="2.5" height="1.5" rx="0.5" fill="#5D7D6E"/>
+
+  <!-- 角标 - 资产标签 -->
+  <circle cx="18" cy="7" r="4" fill="#6F8E7E"/>
+  <text x="18" y="8.5" font-size="4.5" text-anchor="middle" fill="#FFFFFF" font-weight="700">A</text>
 </svg>
