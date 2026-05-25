@@ -1,6 +1,9 @@
 // pages/user-stats/user-stats.js
+import { themeManager } from '../../utils/themeManager';
+
 Page({
   data: {
+    themeStyle: '',
     users: [],
     filteredUsers: [],
     loading: false,
@@ -23,6 +26,14 @@ Page({
   },
 
   onLoad() {
+    themeManager.init();
+    this.setData({
+      themeStyle: themeManager.getCurrentStyle(),
+      currentThemeKey: themeManager.getCurrentTheme()
+    });
+    themeManager.addListener((style, themeKey) => {
+      this.setData({ themeStyle: style, currentThemeKey: themeKey });
+    });
     this.loadUserStats();
   },
 

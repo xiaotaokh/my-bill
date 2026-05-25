@@ -1,5 +1,5 @@
 <!--index.wxml-->
-<view class="container">
+<view class="container theme-{{currentThemeKey}}" style="{{themeStyle}}">
   <!-- 欢迎提示弹窗 -->
   <view class="welcome-toast {{showWelcomeToast ? 'show' : ''}}" bindtap="hideWelcomeToast">
     <view class="welcome-toast-inner">
@@ -80,7 +80,7 @@
     <!-- 统计指标卡片 -->
     <view class="stats-section">
       <view class="stat-row">
-        <view class="stat-item total-item {{activeStatus === 'all' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="all">
+        <view class="stat-item total-item {{activeStatus === 'all' ? 'stat-active' : ''}}" style="background: {{statBgColors[0]}};" bindtap="filterByStatus" data-status="all">
           <view class="stat-icon total-icon">
             <text class="iconfont">🗂️</text>
           </view>
@@ -89,7 +89,7 @@
             <text class="stat-name">资产总数</text>
           </view>
         </view>
-        <view class="stat-item active-item {{activeStatus === 'active' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="active">
+        <view class="stat-item active-item {{activeStatus === 'active' ? 'stat-active' : ''}}" style="background: {{statBgColors[1]}};" bindtap="filterByStatus" data-status="active">
           <view class="stat-icon active-icon">
             <image class="stat-icon-svg" src="/images/active.svg" mode="aspectFit"></image>
           </view>
@@ -98,7 +98,7 @@
             <text class="stat-name">服役中</text>
           </view>
         </view>
-        <view class="stat-item retired-item {{activeStatus === 'retired' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="retired">
+        <view class="stat-item retired-item {{activeStatus === 'retired' ? 'stat-active' : ''}}" style="background: {{statBgColors[2]}};" bindtap="filterByStatus" data-status="retired">
           <view class="stat-icon retired-icon">
             <image class="stat-icon-svg" src="/images/retired.svg" mode="aspectFit"></image>
           </view>
@@ -107,7 +107,7 @@
             <text class="stat-name">已退役</text>
           </view>
         </view>
-        <view class="stat-item sold-item {{activeStatus === 'sold' ? 'stat-active' : ''}}" bindtap="filterByStatus" data-status="sold">
+        <view class="stat-item sold-item {{activeStatus === 'sold' ? 'stat-active' : ''}}" style="background: {{statBgColors[3]}};" bindtap="filterByStatus" data-status="sold">
           <view class="stat-icon sold-icon">
             <image class="stat-icon-svg" src="/images/sold.svg" mode="aspectFit"></image>
           </view>
@@ -159,11 +159,12 @@
           </picker>
         </view>
         <view wx:if="{{filteredAssets.length > 0}}" class="list-price-group">
-          <view class="list-total-price">
+          <view class="list-total-price is-total">
             <text class="price-value">¥{{filteredTotalPrice}}</text>
             <text class="price-label">/总</text>
           </view>
-          <view class="list-total-price">
+          <view class="price-divider"></view>
+          <view class="list-total-price is-daily">
             <text class="price-value">¥{{filteredDailyCost}}</text>
             <text class="price-label">/日</text>
           </view>
@@ -187,6 +188,7 @@
             wx:key="_id"
             bindtap="goToDetail"
             data-id="{{item._id}}"
+            style="background: {{item._cardBg}};"
           >
           <!-- 资产类型角标 - 卡片左上角 -->
           <view class="asset-type-corner" wx:if="{{item.assetType === 'subscription'}}">
@@ -432,6 +434,20 @@
           <text class="arrow">›</text>
         </view>
       </button>
+
+      <!-- 主题设置 -->
+      <view class="setting-item-full" bindtap="showThemeSelector">
+        <view class="setting-icon-box">
+          <text>🎨</text>
+        </view>
+        <view class="setting-info">
+          <text class="setting-title-text">主题设置</text>
+          <text class="setting-desc">{{currentThemeName}}</text>
+        </view>
+        <view class="setting-arrow">
+          <text class="arrow">›</text>
+        </view>
+      </view>
 
       <!-- 关于 -->
       <view class="setting-item-full" bindtap="showAboutInfo">
@@ -943,6 +959,33 @@
       <view class="about-footer">
         <text class="about-message">愿您朝夕相伴，数计有方</text>
         <button class="about-close-btn" bindtap="closeAboutModal">知道了</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 主题选择弹窗 -->
+  <view class="theme-modal {{showThemeModal ? 'show' : ''}}" wx:if="{{showThemeModal}}">
+    <view class="theme-mask" bindtap="closeThemeModal"></view>
+    <view class="theme-panel">
+      <view class="theme-header">
+        <text class="theme-title">选择主题</text>
+      </view>
+      <view class="theme-list">
+        <view
+          class="theme-item {{item.isActive ? 'active' : ''}}"
+          wx:for="{{themeList}}"
+          wx:key="key"
+          bindtap="selectTheme"
+          data-key="{{item.key}}"
+        >
+          <view class="theme-info">
+            <text class="theme-name">{{item.name}}</text>
+            <text class="theme-desc">{{item.description}}</text>
+          </view>
+          <view class="theme-check" wx:if="{{item.isActive}}">
+            <text>✓</text>
+          </view>
+        </view>
       </view>
     </view>
   </view>

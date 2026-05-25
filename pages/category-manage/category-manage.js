@@ -1,7 +1,9 @@
 // pages/category-manage/category-manage.js
+import { themeManager } from '../../utils/themeManager';
 
 Page({
   data: {
+    themeStyle: '',
     categories: [],
     loading: false,
     // 排序相关
@@ -60,6 +62,14 @@ Page({
   },
 
   onLoad: function () {
+    // 初始化主题
+    this.setData({
+      themeStyle: themeManager.getCurrentStyle(),
+      currentThemeKey: themeManager.getCurrentTheme()
+    });
+    themeManager.addListener((style, themeKey) => {
+      this.setData({ themeStyle: style, currentThemeKey: themeKey });
+    });
     this.loadCategories();
   },
 
@@ -224,7 +234,7 @@ Page({
 
   // 带参数的排序方法
   applySortingWithParams: function(categories, sortIndex, sortOrder) {
-    // 如果是自定义排序，直接返回
+    // 如果是自定义排序，直接返回（保持云端返回的顺序）
     if (sortIndex === -1) {
       return categories;
     }

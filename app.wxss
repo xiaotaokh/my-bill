@@ -1,56 +1,56 @@
 /**app.wxss**/
 page {
-  background-color: #F6F4F0;
+  background-color: #F8FAFC;
   font-family: -apple-system, 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', sans-serif;
 
-  /* Design Tokens - 温暖极简浅色主题 */
-  --primary-700: #5D7D6E;
-  --primary-600: #6F8E7E;
-  --primary-500: #86A396;
-  --primary-400: #A5BBB1;
-  --primary-200: #C8D7CF;
-  --primary-100: #E2EAE5;
-  --primary-soft: #EDF2EF;
+  /* Design Tokens - 现代金融科技风主题 */
+  --primary-700: #3730A3;
+  --primary-600: #4F46E5;
+  --primary-500: #6366F1;
+  --primary-400: #818CF8;
+  --primary-200: #C7D2FE;
+  --primary-100: #E0E7FF;
+  --primary-soft: #EEF2FF;
 
-  --neutral-900: #2C2B28;
-  --neutral-700: #6B6965;
-  --neutral-500: #9E9B97;
-  --neutral-300: #C8C5C0;
-  --neutral-200: #DEDBD6;
-  --neutral-100: #EBE8E3;
-  --neutral-50: #F0EDE8;
+  --neutral-900: #1E293B;
+  --neutral-700: #334155;
+  --neutral-500: #64748B;
+  --neutral-300: #CBD5E1;
+  --neutral-200: #E2E8F0;
+  --neutral-100: #F1F5F9;
+  --neutral-50: #F8FAFC;
 
-  --bg-base: #F6F4F0;
-  --bg-card: #FCFBF9;
-  --bg-subtle: #F0EDE8;
-  --bg-hover: #EBE8E3;
-  --bg-card-rgb: 252, 251, 249;
+  --bg-base: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-subtle: #F1F5F9;
+  --bg-hover: #E2E8F0;
+  --bg-card-rgb: 255, 255, 255;
 
-  --border-default: #E5E2DC;
-  --border-light: #EBE8E3;
-  --border-focus: #6F8E7E;
+  --border-default: #E2E8F0;
+  --border-light: #F1F5F9;
+  --border-focus: #4F46E5;
 
-  --text-default: #2C2B28;
-  --text-muted: #7A7874;
-  --text-hint: #A8A5A0;
+  --text-default: #1E293B;
+  --text-muted: #64748B;
+  --text-hint: #94A3B8;
   --text-inverse: #FFFFFF;
 
-  --success: #6F8E7E;
-  --success-bg: #EEF3F0;
-  --error: #C4918A;
-  --error-bg: #F6EEEC;
-  --warning: #C4A99A;
-  --warning-bg: #F4EFEC;
-  --amber: #9B5C1A;
+  --success: #10B981;
+  --success-bg: #ECFDF5;
+  --error: #EF4444;
+  --error-bg: #FEF2F2;
+  --warning: #F59E0B;
+  --warning-bg: #FFFBEB;
+  --amber: #B45309;
 
-  --retired: #C8A078;
-  --sold: #BE828C;
+  --retired: #B45309;
+  --sold: #6B7280;
   --gold: #FBBF24;
 
   /* 装饰色 - 用于气泡/边框渐变等 */
   --pink: #F472B6;
   --hot-pink: #EC4899;
-  --mint: #34D399;
+  --mint: #10B981;
   --emerald: #10B981;
   --warm-yellow: #F59E0B;
   --cream: #FEF3C7;
@@ -60,18 +60,18 @@ page {
   --orange: #FB923C;
   --purple: #A78BFA;
   --sky-blue: #38BDF8;
-  --blue: #60A5FA;
+  --blue: #3B82F6;
 
-  --primary-gradient: linear-gradient(135deg, #6F8E7E 0%, #86A396 100%);
-  --accent-color: #6F8E7E;
-  --primary-600-rgb: 111, 142, 126;
-  --warning-rgb: 196, 169, 154;
-  --error-rgb: 196, 145, 138;
-  --neutral-900-rgb: 44, 43, 40;
-  --shadow-rgb: 160, 150, 140;
+  --primary-gradient: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+  --accent-color: #4F46E5;
+  --primary-600-rgb: 79, 70, 229;
+  --warning-rgb: 245, 158, 11;
+  --error-rgb: 239, 68, 68;
+  --neutral-900-rgb: 30, 41, 59;
+  --shadow-rgb: 148, 163, 184;
   --text-inverse-rgb: 255, 255, 255;
-  --retired-rgb: 200, 160, 120;
-  --sold-rgb: 190, 130, 140;
+  --retired-rgb: 180, 83, 9;
+  --sold-rgb: 107, 114, 128;
   --gold-rgb: 251, 191, 36;
   --glass-bg: rgba(var(--bg-card-rgb), 0.92);
   --glass-border: rgba(var(--neutral-900-rgb), 0.04);
@@ -79,4 +79,77 @@ page {
   --shadow-card: 0 4rpx 16rpx rgba(var(--shadow-rgb), 0.06);
   --shadow-neumorph: -3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 10rpx rgba(var(--shadow-rgb), 0.06);
   --shadow-neumorph-sm: -2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 6rpx rgba(var(--shadow-rgb), 0.04);
+}
+
+/* 极简呼吸主题 CSS 变量 */
+.theme-minimal {
+  --primary-700: #8B6F5E;
+  --primary-600: #A38472;
+  --primary-500: #B89B8A;
+  --primary-400: #CEB6A8;
+  --primary-200: #E2D3C9;
+  --primary-100: #F0E7E1;
+  --primary-soft: #F6F0EC;
+  --neutral-900: #2C2A28;
+  --neutral-700: #5C5955;
+  --neutral-500: #8E8A85;
+  --neutral-300: #C2BEB9;
+  --neutral-200: #D9D5D1;
+  --neutral-100: #EBE9E5;
+  --neutral-50: #F4F2F0;
+  --bg-base: #F6F4F1;
+  --bg-card: #FFFFFF;
+  --bg-subtle: #EEECE9;
+  --bg-hover: #E5E2DE;
+  --bg-card-rgb: 255, 255, 255;
+  --border-default: #E5E2DD;
+  --border-light: #EEECE9;
+  --border-focus: #A38472;
+  --text-default: #2C2A28;
+  --text-muted: #7A7671;
+  --text-hint: #A5A19C;
+  --text-inverse: #FFFFFF;
+  --success: #7B9E8A;
+  --success-bg: #EFF4F1;
+  --error: #D49A8E;
+  --error-bg: #F8F1EF;
+  --warning: #D4B08A;
+  --warning-bg: #F6F2EC;
+  --amber: #B8935A;
+  --retired: #B8A088;
+  --sold: #A5A19C;
+  --gold: #E8C84A;
+  --activity-high: #7B9E8A;
+  --activity-high-bg: #EFF4F1;
+  --activity-high-text: #5E7E6B;
+  --activity-medium: #D4B08A;
+  --activity-medium-bg: #F6F2EC;
+  --activity-medium-text: #A8885A;
+  --activity-low: #C2BEB9;
+  --primary-600-rgb: 163, 132, 114;
+  --error-rgb: 212, 154, 142;
+  --warning-rgb: 212, 176, 138;
+  --neutral-900-rgb: 44, 42, 40;
+  --shadow-rgb: 165, 161, 156;
+  --text-inverse-rgb: 255, 255, 255;
+  --retired-rgb: 184, 160, 136;
+  --sold-rgb: 180, 178, 174;
+  --gold-rgb: 232, 200, 74;
+  --accent-color: #A38472;
+  --primary-gradient: linear-gradient(135deg, #A38472 0%, #B89B8A 100%);
+  --shadow-soft: 0 4rpx 12rpx rgba(var(--shadow-rgb), 0.04);
+  --shadow-card: 0 2rpx 8rpx rgba(var(--shadow-rgb), 0.03);
+  --pink: #E8C8C4;
+  --hot-pink: #D99C94;
+  --mint: #B8D0C0;
+  --emerald: #8FB89E;
+  --warm-yellow: #E8DCC4;
+  --cream: #F4F2EE;
+  --cream-dark: #E8E2DA;
+  --cream-light: #FDFCFA;
+  --cream-mid: #EDE6DC;
+  --orange: #E8C0A8;
+  --purple: #C4B8D4;
+  --sky-blue: #B8C8D4;
+  --blue: #A0B8C8;
 }

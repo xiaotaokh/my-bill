@@ -1,7 +1,8 @@
 // asset-detail.js
-import { theme } from '../../utils/theme';
+import { themeManager } from '../../utils/themeManager';
 Page({
   data: {
+    themeStyle: '',
     asset: {},
     assetId: '',
     displayIcon: null, // 资产缩略图的临时URL
@@ -26,6 +27,15 @@ Page({
   },
 
   onLoad: function (options) {
+    // 初始化主题
+    this.setData({
+      themeStyle: themeManager.getCurrentStyle(),
+      currentThemeKey: themeManager.getCurrentTheme()
+    });
+    themeManager.addListener((style, themeKey) => {
+      this.setData({ themeStyle: style, currentThemeKey: themeKey });
+    });
+
     if (options.id) {
       this.setData({
         assetId: options.id
@@ -366,7 +376,7 @@ Page({
     wx.showModal({
       title: '确认删除',
       content: '确定要删除此资产吗？删除后无法恢复',
-      confirmColor: theme.error,
+      confirmColor: themeManager.getThemeColors().error,
       success: (res) => {
         if (res.confirm) {
           this.confirmDelete();

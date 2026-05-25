@@ -412,43 +412,32 @@
 }
 
 .add-btn {
-  padding: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--primary-600);
   border-radius: 60rpx;
+  border: none;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text-inverse);
   box-shadow: 0 4rpx 12rpx rgba(var(--primary-600-rgb), 0.25);
-  transition: all 0.2s ease;
+  padding: 24rpx 48rpx;
+  margin: 0 auto;
+}
+
+.add-btn::after {
+  border: none;
 }
 
 .add-btn:active {
   transform: scale(0.95);
 }
 
-.add-btn-inner {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  padding: 24rpx 48rpx;
-  background: var(--bg-card);
-  border-radius: 56rpx;
-}
-
-.add-icon {
-  width: 44rpx;
-  height: 44rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--primary-600);
-  border-radius: 50%;
-  font-size: 32rpx;
-  font-weight: 700;
-  color: var(--text-inverse);
-}
-
 .add-text {
   font-size: 32rpx;
   font-weight: 700;
-  color: var(--text-default);
+  color: var(--text-inverse);
   letter-spacing: 2rpx;
 }
 

@@ -1,6 +1,9 @@
 // asset-add.js
+import { themeManager } from '../../utils/themeManager';
+
 Page({
   data: {
+    themeStyle: '',
     // 编辑模式
     isEdit: false,
     assetId: '',
@@ -295,6 +298,15 @@ Page({
   },
 
   onLoad: function (options) {
+    // 初始化主题
+    this.setData({
+      themeStyle: themeManager.getCurrentStyle(),
+      currentThemeKey: themeManager.getCurrentTheme()
+    });
+    themeManager.addListener((style, themeKey) => {
+      this.setData({ themeStyle: style, currentThemeKey: themeKey });
+    });
+
     // 初始化今天的日期
     const today = new Date();
     const year = today.getFullYear();

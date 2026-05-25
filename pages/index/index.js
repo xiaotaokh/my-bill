@@ -3,8 +3,8 @@ const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '�
 
 // 引入 echarts
 import * as echarts from '../../components/ec-canvas/echarts';
-// 引入主题颜色
-import { theme } from '../../utils/theme';
+// 引入主题管理器
+import { themeManager } from '../../utils/themeManager';
 
 Page({
   data: {
@@ -75,7 +75,7 @@ Page({
     reportIncludedCount: 0,
     reportExcludedCount: 0,
     reportCategoryStats: [],
-    reportColors: theme.reportColors,
+    reportColors: [],  // 由 initTheme() 动态设置
 
     // 状态统计
     reportActiveCount: 0,
@@ -122,6 +122,15 @@ Page({
 
     // 关于弹窗
     showAboutModal: false,
+
+    // 主题设置
+    showThemeModal: false,
+    themeList: [],
+    currentThemeName: '星辰靛蓝',
+    currentThemeKey: '',
+    themeStyle: '',
+    themeColors: {},
+    statBgColors: [],
 
     // 欢迎提示弹窗
     showWelcomeToast: false,
@@ -212,6 +221,7 @@ Page({
     this.loadWeather();
     this.checkAdmin();
     this.checkUserAuth();
+    this.initTheme();
   },
 
   // 检查用户是否已授权 - 新用户自动分配随机头像昵称
@@ -644,6 +654,15 @@ Page({
       }));
 
       const assets = assetsWithIcon.map(a => this.calculateAssetFields(a));
+      // 为复杂模式资产卡片分配半透明背景色
+      const cardBgColors = themeManager.getCardBgColors();
+      assets.forEach((a, i) => {
+        const hex = cardBgColors[i % cardBgColors.length];
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        a._cardBg = `rgba(${r}, ${g}, ${b}, 0.30)`;
+      });
       this.setData({ assets, isLoading: false });
 
       // 应用筛选
@@ -1100,6 +1119,59 @@ Page({
     this.setData({ showAboutModal: false });
   },
 
+  // ============================================
+  // 主题设置
+  // ============================================
+
+  initTheme() {
+    themeManager.init();
+    const themeList = themeManager.getAllThemes();
+    const current = themeList.find(t => t.isActive);
+    this.setData({
+      themeList,
+      currentThemeKey: themeManager.getCurrentTheme(),
+      currentThemeName: current?.name || '星辰靛蓝',
+      themeStyle: themeManager.getCurrentStyle(),
+      themeColors: themeManager.getThemeColors(),
+      reportColors: themeManager.getReportColors(),
+      statBgColors: themeManager.getStatBgColors()
+    });
+    // 注册主题变更监听器
+    themeManager.addListener((style, themeKey) => {
+      const list = themeManager.getAllThemes();
+      const name = list.find(t => t.key === themeKey)?.name;
+      this.setData({
+        themeList: list,
+        currentThemeKey: themeKey,
+        currentThemeName: name,
+        themeStyle: style,
+        themeColors: themeManager.getThemeColors(),
+        reportColors: themeManager.getReportColors(),
+        statBgColors: themeManager.getStatBgColors()
+      });
+      // 图表颜色变化时重新初始化图表
+      if (this.data.showReport) {
+        this.initPieChart();
+        this.initLineChart();
+        this.initTimePeriodChart();
+      }
+    });
+  },
+
+  showThemeSelector() {
+    this.setData({ showThemeModal: true });
+  },
+
+  closeThemeModal() {
+    this.setData({ showThemeModal: false });
+  },
+
+  selectTheme(e) {
+    const key = e.currentTarget.dataset.key;
+    themeManager.setTheme(key);
+    this.closeThemeModal();
+  },
+
   goToDetail(e) {
     wx.navigateTo({ url: `/pages/asset-detail/asset-detail?id=${e.currentTarget.dataset.id}` });
   },
@@ -1147,7 +1219,7 @@ Page({
   _splitIntoCols(arr, n = 5) {
     // 估算卡片自然高度: padding(32) + 头像(padding 40 + 内容 80) + name(32) + cost(31) ≈ 215
     const BASE_HEIGHT = 220;
-    const BG_COLORS = theme.cardBgColors;
+    const BG_COLORS = themeManager.getCardBgColors();
     const cols = Array.from({ length: n }, () => []);
     arr.forEach((item, i) => {
       const extra = [20, 50, 80][Math.floor(Math.random() * 3)];
@@ -1159,7 +1231,20 @@ Page({
   },
 
   _updateSimpleCols(filteredAssets) {
-    this.setData({ simpleViewCols: this._splitIntoCols(filteredAssets) });
+    const cols = this._splitIntoCols(filteredAssets);
+    // 同步更新复杂模式的 _cardBg（从 _splitIntoCols 赋值的 _bgColor 转换）
+    filteredAssets.forEach(a => {
+      if (a._bgColor && a._bgColor.startsWith('#')) {
+        const r = parseInt(a._bgColor.slice(1, 3), 16);
+        const g = parseInt(a._bgColor.slice(3, 5), 16);
+        const b = parseInt(a._bgColor.slice(5, 7), 16);
+        a._cardBg = `rgba(${r}, ${g}, ${b}, 0.30)`;
+      }
+    });
+    this.setData({
+      simpleViewCols: cols,
+      filteredAssets: [...filteredAssets]
+    });
   },
 
   preventTouchMove() {},
@@ -1327,7 +1412,7 @@ Page({
     wx.showModal({
       title: '确认删除',
       content: `确定删除选中的 ${selectedAssets.length} 项资产吗？`,
-      confirmColor: theme.error,
+      confirmColor: themeManager.getThemeColors().error,
       success: res => { if (res.confirm) this.executeBatchDelete(); }
     });
   },
@@ -1502,6 +1587,9 @@ Page({
     const { reportCategoryStats, reportColors, pieCenterText, pieCenterSubText } = this.data;
     if (!reportCategoryStats.length) return;
 
+    // 获取当前主题颜色（用于图表样式）
+    const themeColors = themeManager.getThemeColors();
+
     const component = this.selectComponent('#pie-chart');
     if (!component) return;
 
@@ -1528,12 +1616,12 @@ Page({
         tooltip: {
           trigger: 'item',
           confine: true,
-          backgroundColor: theme.bgCard,
-          borderColor: theme.borderLight,
+          backgroundColor: themeColors.bgCard,
+          borderColor: themeColors.borderLight,
           borderWidth: 1,
           padding: [8, 12],
           textStyle: {
-            color: theme.textDefault,
+            color: themeColors.textDefault,
             fontSize: 12
           },
           formatter: params => {
@@ -1569,7 +1657,7 @@ Page({
               left: 'center',
               top: '0',
               style: {
-                fill: theme.textDefault,
+                fill: themeColors.textDefault,
                 text: pieCenterText,
                 font: 'bold 18px sans-serif',
                 textAlign: 'center'
@@ -1580,7 +1668,7 @@ Page({
               left: 'center',
               top: '24',
               style: {
-                fill: theme.textMuted,
+                fill: themeColors.textMuted,
                 text: pieCenterSubText,
                 font: '12px sans-serif',
                 textAlign: 'center'
@@ -1594,7 +1682,7 @@ Page({
           center: ['50%', '40%'],
           itemStyle: {
             borderRadius: 6,
-            borderColor: theme.bgCard,
+            borderColor: themeColors.bgCard,
             borderWidth: 2
           },
           label: { show: false },
@@ -1640,7 +1728,7 @@ Page({
             left: 'center',
             top: '0',
             style: {
-              fill: theme.textDefault,
+              fill: themeColors.textDefault,
               text: text,
               font: 'bold 18px sans-serif',
               textAlign: 'center'
@@ -1651,7 +1739,7 @@ Page({
             left: 'center',
             top: '24',
             style: {
-              fill: theme.textMuted,
+              fill: themeColors.textMuted,
               text: subText,
               font: '12px sans-serif',
               textAlign: 'center'
@@ -1670,6 +1758,9 @@ Page({
   initLineChart() {
     const { reportAssets } = this.data;
     if (!reportAssets.length) return;
+
+    // 获取当前主题颜色（用于图表样式）
+    const themeColors = themeManager.getThemeColors();
 
     const component = this.selectComponent('#line-chart');
     if (!component) return;
@@ -1715,16 +1806,16 @@ Page({
       this.lineDateAssetsMap = dateAssetsMap;
 
       chart.setOption({
-        color: [theme.primary600],
+        color: [themeColors.primary600],
         tooltip: {
           trigger: 'axis',
           confine: true,
-          backgroundColor: theme.bgCard,
-          borderColor: theme.borderLight,
+          backgroundColor: themeColors.bgCard,
+          borderColor: themeColors.borderLight,
           borderWidth: 1,
           padding: [8, 12],
           textStyle: {
-            color: theme.textDefault,
+            color: themeColors.textDefault,
             fontSize: 12
           },
           formatter: params => {
@@ -1923,6 +2014,9 @@ Page({
     const { timePeriodStats } = this.data;
     if (!timePeriodStats || timePeriodStats.data.length === 0) return;
 
+    // 获取当前主题颜色（用于图表样式）
+    const themeColors = themeManager.getThemeColors();
+
     const component = this.selectComponent('#time-chart');
     if (!component) return;
 
@@ -1935,16 +2029,16 @@ Page({
       canvas.setChart(chart);
 
       chart.setOption({
-        color: [theme.primary600],
+        color: [themeColors.primary600],
         tooltip: {
           trigger: 'axis',
           confine: true,
-          backgroundColor: theme.bgCard,
-          borderColor: theme.borderLight,
+          backgroundColor: themeColors.bgCard,
+          borderColor: themeColors.borderLight,
           borderWidth: 1,
           padding: [8, 12],
           textStyle: {
-            color: theme.textDefault,
+            color: themeColors.textDefault,
             fontSize: 12
           },
           formatter: params => {
@@ -2005,7 +2099,7 @@ Page({
               return dataItem.count + '件';
             },
             fontSize: 10,
-            color: theme.textMuted
+            color: themeColors.textMuted
           }
         }]
       });

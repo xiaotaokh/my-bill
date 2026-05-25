@@ -1,8 +1,10 @@
 // pages/account/account.js
+import { themeManager } from '../../utils/themeManager';
 const app = getApp();
 
 Page({
   data: {
+    themeStyle: '',
     userInfo: null,
     loading: true,
     userId: '',
@@ -80,6 +82,14 @@ Page({
   },
 
   onLoad() {
+    // 初始化主题
+    this.setData({
+      themeStyle: themeManager.getCurrentStyle(),
+      currentThemeKey: themeManager.getCurrentTheme()
+    });
+    themeManager.addListener((style, themeKey) => {
+      this.setData({ themeStyle: style, currentThemeKey: themeKey });
+    });
     this.loadUserInfo();
   },
 

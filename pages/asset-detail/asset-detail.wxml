@@ -1,5 +1,5 @@
 <!--asset-detail.wxml-->
-<view class="container">
+<view class="container theme-{{currentThemeKey}}" style="{{themeStyle}}">
   <!-- 动态背景 -->
   <view class="bg-decoration">
     <view class="bubble bubble-1"></view>

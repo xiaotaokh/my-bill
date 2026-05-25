@@ -1,5 +1,5 @@
 <!--pages/account/account.wxml-->
-<view class="container">
+<view class="container theme-{{currentThemeKey}}" style="{{themeStyle}}">
   <!-- 渐变背景头部 -->
   <view class="header-bg"></view>
 

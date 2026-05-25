@@ -1,5 +1,5 @@
 <!--asset-add.wxml-->
-<view class="container">
+<view class="container theme-{{currentThemeKey}}" style="{{themeStyle}}">
   <form bindsubmit="onSubmit" class="form">
     <!-- 资产类型选择 -->
     <view class="form-group">

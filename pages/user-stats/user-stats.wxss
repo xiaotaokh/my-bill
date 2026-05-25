@@ -1,14 +1,14 @@
-/* pages/user-stats/user-stats.wxss - 温暖极简浅色主题 */
+/* pages/user-stats/user-stats.wxss - 现代金融科技风主题 */
 
-/* Activity Levels */
+/* Activity Levels - 使用全局主题变量 */
 page {
-  --activity-high: var(--primary-600);
-  --activity-high-bg: var(--success-bg);
-  --activity-high-text: var(--primary-700);
-  --activity-medium: var(--warning);
-  --activity-medium-bg: var(--warning-bg);
-  --activity-medium-text: var(--amber);
-  --activity-low: var(--text-hint);
+  --activity-high: var(--activity-high);
+  --activity-high-bg: var(--activity-high-bg);
+  --activity-high-text: var(--activity-high-text);
+  --activity-medium: var(--activity-medium);
+  --activity-medium-bg: var(--activity-medium-bg);
+  --activity-medium-text: var(--activity-medium-text);
+  --activity-low: var(--activity-low);
 }
 
 .container {

@@ -18,7 +18,7 @@ module.exports = {
 </wxs>
 
 <!-- category-manage.wxml -->
-<view class="container">
+<view class="container theme-{{currentThemeKey}}" style="{{themeStyle}}">
   <!-- 装饰性背景元素 -->
   <view class="bg-decoration">
     <view class="leaf leaf-1">🌿</view>
@@ -138,12 +138,9 @@ module.exports = {
     </view>
     <!-- 正常模式 -->
     <view class="add-btn-wrap" wx:else>
-      <view class="add-btn" bindtap="addCategory">
-        <view class="add-btn-inner">
-          <text class="add-icon">+</text>
-          <text class="add-text">添加新分类</text>
-        </view>
-      </view>
+      <button class="add-btn" bindtap="addCategory">
+        <text class="add-text">添加新分类</text>
+      </button>
     </view>
   </view>
 </view>
