@@ -654,14 +654,16 @@ Page({
       }));
 
       const assets = assetsWithIcon.map(a => this.calculateAssetFields(a));
-      // 为复杂模式资产卡片分配半透明背景色
+      // 为复杂模式资产卡片分配背景色（根据主题配置决定透明度）
       const cardBgColors = themeManager.getCardBgColors();
+      const cardBgMode = themeManager.getThemeColors().cardBgMode;
+      const opacity = cardBgMode === 'solid' ? 1 : 0.30;
       assets.forEach((a, i) => {
         const hex = cardBgColors[i % cardBgColors.length];
         const r = parseInt(hex.slice(1, 3), 16);
         const g = parseInt(hex.slice(3, 5), 16);
         const b = parseInt(hex.slice(5, 7), 16);
-        a._cardBg = `rgba(${r}, ${g}, ${b}, 0.30)`;
+        a._cardBg = `rgba(${r}, ${g}, ${b}, ${opacity})`;
       });
       this.setData({ assets, isLoading: false });
 
@@ -1136,6 +1138,12 @@ Page({
       reportColors: themeManager.getReportColors(),
       statBgColors: themeManager.getStatBgColors()
     });
+    // 初始化导航栏颜色
+    const initNavColors = themeManager.getThemeColors();
+    wx.setNavigationBarColor({
+      backgroundColor: initNavColors.navBg,
+      frontColor: initNavColors.navTextStyle
+    });
     // 注册主题变更监听器
     themeManager.addListener((style, themeKey) => {
       const list = themeManager.getAllThemes();
@@ -1149,12 +1157,22 @@ Page({
         reportColors: themeManager.getReportColors(),
         statBgColors: themeManager.getStatBgColors()
       });
+      // 重新计算卡片背景色以匹配新主题
+      if (this.data.assets.length > 0) {
+        this.applyFilters();
+      }
       // 图表颜色变化时重新初始化图表
       if (this.data.showReport) {
         this.initPieChart();
         this.initLineChart();
         this.initTimePeriodChart();
       }
+      // 更新导航栏颜色
+      const navColors = themeManager.getThemeColors();
+      wx.setNavigationBarColor({
+        backgroundColor: navColors.navBg,
+        frontColor: navColors.navTextStyle
+      });
     });
   },
 
@@ -1233,12 +1251,14 @@ Page({
   _updateSimpleCols(filteredAssets) {
     const cols = this._splitIntoCols(filteredAssets);
     // 同步更新复杂模式的 _cardBg（从 _splitIntoCols 赋值的 _bgColor 转换）
+    const cardBgMode = themeManager.getThemeColors().cardBgMode;
+    const opacity = cardBgMode === 'solid' ? 1 : 0.30;
     filteredAssets.forEach(a => {
       if (a._bgColor && a._bgColor.startsWith('#')) {
         const r = parseInt(a._bgColor.slice(1, 3), 16);
         const g = parseInt(a._bgColor.slice(3, 5), 16);
         const b = parseInt(a._bgColor.slice(5, 7), 16);
-        a._cardBg = `rgba(${r}, ${g}, ${b}, 0.30)`;
+        a._cardBg = `rgba(${r}, ${g}, ${b}, ${opacity})`;
       }
     });
     this.setData({

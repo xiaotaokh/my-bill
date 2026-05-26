@@ -31,8 +31,19 @@ Page({
       themeStyle: themeManager.getCurrentStyle(),
       currentThemeKey: themeManager.getCurrentTheme()
     });
+    // 初始化导航栏颜色
+    const initNavColors = themeManager.getThemeColors();
+    wx.setNavigationBarColor({
+      backgroundColor: initNavColors.navBg,
+      frontColor: initNavColors.navTextStyle
+    });
     themeManager.addListener((style, themeKey) => {
       this.setData({ themeStyle: style, currentThemeKey: themeKey });
+      const navColors = themeManager.getThemeColors();
+      wx.setNavigationBarColor({
+        backgroundColor: navColors.navBg,
+        frontColor: navColors.navTextStyle
+      });
     });
     this.loadUserStats();
   },

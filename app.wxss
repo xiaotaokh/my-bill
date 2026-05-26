@@ -1,6 +1,6 @@
 /**app.wxss**/
 page {
-  background-color: #F8FAFC;
+  background-color: var(--bg-base);
   font-family: -apple-system, 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', sans-serif;
 
   /* Design Tokens - 现代金融科技风主题 */
@@ -79,6 +79,11 @@ page {
   --shadow-card: 0 4rpx 16rpx rgba(var(--shadow-rgb), 0.06);
   --shadow-neumorph: -3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 10rpx rgba(var(--shadow-rgb), 0.06);
   --shadow-neumorph-sm: -2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 6rpx rgba(var(--shadow-rgb), 0.04);
+}
+
+/* 主题切换过渡 */
+.container {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* 极简呼吸主题 CSS 变量 */
