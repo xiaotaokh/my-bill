@@ -139,6 +139,18 @@
   transform: rotate(180deg);
 }
 
+/* 自定义排序提示 */
+.sort-tip {
+  width: 100%;
+  margin-top: 12rpx;
+  padding: 16rpx 20rpx;
+  background: var(--warning-bg);
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  color: var(--warning);
+  text-align: center;
+}
+
 /* ========== 分类网格 ========== */
 .category-grid {
   display: flex;

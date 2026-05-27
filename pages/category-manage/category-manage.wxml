@@ -61,6 +61,10 @@ module.exports = {
           <text>自定义</text>
         </view>
       </view>
+      <!-- 自定义排序提示 -->
+      <view class="sort-tip" wx:if="{{currentSortIndex === -1}}">
+        <text>💡 自定义排序会影响首页分类显示顺序</text>
+      </view>
     </view>
 
     <view class="category-grid">
@@ -90,10 +94,10 @@ module.exports = {
           <view class="action-btn info" catchtap="showCategoryDetail" data-index="{{index}}" data-id="{{item._id}}">
             <text>📋</text>
           </view>
-          <view class="action-btn move" catchtap="moveUpCategory" data-index="{{index}}" wx:if="{{index > 0}}">
+          <view class="action-btn move" catchtap="moveUpCategory" data-index="{{index}}" wx:if="{{currentSortIndex === -1 && index > 0}}">
             <text>↑</text>
           </view>
-          <view class="action-btn move" catchtap="moveDownCategory" data-index="{{index}}" wx:if="{{index < categories.length - 1}}">
+          <view class="action-btn move" catchtap="moveDownCategory" data-index="{{index}}" wx:if="{{currentSortIndex === -1 && index < categories.length - 1}}">
             <text>↓</text>
           </view>
           <view class="action-btn edit" catchtap="editCategory" data-index="{{index}}" data-id="{{item._id}}">
