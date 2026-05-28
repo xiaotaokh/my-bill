@@ -3,7 +3,7 @@
  * 参考 showSimpleView 的存储模式
  * 处理主题存储、读取、切换和页面同步
  */
-import { themes, getThemeStyle, getThemeColors, DEFAULT_THEME, cardBgColors, reportColors, statBgColors } from './themes';
+const { themes, getThemeStyle, getThemeColors, DEFAULT_THEME, cardBgColors, reportColors, statBgColors } = require('./themes');
 
 const STORAGE_KEY = 'selectedTheme';
 
@@ -122,4 +122,5 @@ class ThemeManager {
 }
 
 // 单例导出
-export const themeManager = new ThemeManager();
+const themeManager = new ThemeManager();
+module.exports = { themeManager };

@@ -1,5 +1,6 @@
 // pages/account/account.js
-import { themeManager } from '../../utils/themeManager';
+const { themeManager } = require('../../utils/themeManager');
+const { supabase, uploadFileToStorage, getChinaTimeISO } = require('../../utils/supabase');
 const app = getApp();
 
 Page({
@@ -124,34 +125,42 @@ Page({
     }
   },
 
-  // 查询数据库
-  queryUserInfo() {
-    wx.cloud.database().collection('users').where({
-      _openid: app.globalData.openid
-    }).limit(1).get({
-      success: (res) => {
-        if (res.data && res.data.length > 0) {
-          const userData = res.data[0];
-          this.setData({
-            userInfo: {
-              nickName: userData.nickName || '',
-              avatarUrl: userData.avatarUrl || ''
-            },
-            userId: userData._id,
-            loading: false
-          });
-        } else {
-          this.setData({
-            userInfo: {},
-            loading: false
-          });
-        }
-      },
-      fail: (err) => {
-        console.error('获取用户信息失败:', err);
+  // 查询 Supabase 用户信息
+  async queryUserInfo() {
+    try {
+      const openid = await app.getOpenid();
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('_openid', openid)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('获取用户信息失败:', error);
         this.setData({ loading: false });
+        return;
       }
-    });
+
+      if (data) {
+        this.setData({
+          userInfo: {
+            nickName: data.nickName || '',
+            avatarUrl: data.avatarUrl || ''
+          },
+          userId: data.id,
+          loading: false
+        });
+      } else {
+        this.setData({
+          userInfo: {},
+          loading: false
+        });
+      }
+    } catch (err) {
+      console.error('获取用户信息失败:', err);
+      this.setData({ loading: false });
+    }
   },
 
   // 进入编辑模式
@@ -280,24 +289,9 @@ Page({
     } else if (editAvatarUrl.startsWith('data:image')) {
       // SVG data URL 直接使用
       this.saveUserInfoToDb(userId, editNickName, editAvatarUrl);
-    } else if (editAvatarUrl.startsWith('cloud://')) {
-      // 云存储链接直接使用
-      this.saveUserInfoToDb(userId, editNickName, editAvatarUrl);
     } else if (editAvatarUrl.startsWith('http://') || editAvatarUrl.startsWith('https://')) {
-      // 真正的网络URL（通常是云存储转换后的临时访问链接）
-      // 需要判断是否包含tmp，如果是临时链接则需要上传
-      if (editAvatarUrl.includes('tmp') || editAvatarUrl.includes('temporary')) {
-        this.uploadAvatar(editAvatarUrl).then(url => {
-          this.saveUserInfoToDb(userId, editNickName, url);
-        }).catch(err => {
-          console.error('头像上传失败:', err);
-          this.setData({ submitting: false });
-          wx.showToast({ title: '头像上传失败，请重试', icon: 'none' });
-        });
-      } else {
-        // 真正的永久HTTP链接，直接使用
-        this.saveUserInfoToDb(userId, editNickName, editAvatarUrl);
-      }
+      // 真正的网络URL，直接使用
+      this.saveUserInfoToDb(userId, editNickName, editAvatarUrl);
     } else {
       // 其他未知格式，尝试上传
       this.uploadAvatar(editAvatarUrl).then(url => {
@@ -310,98 +304,73 @@ Page({
     }
   },
 
-  // 保存用户信息到数据库
-  saveUserInfoToDb(userId, nickName, avatarUrl) {
-    wx.cloud.database().collection('users').doc(userId).update({
-      data: {
-        nickName: nickName.trim(),
-        avatarUrl: avatarUrl
-      },
-      success: () => {
-        app.globalData.userInfo = {
+  // 保存用户信息到 Supabase
+  async saveUserInfoToDb(userId, nickName, avatarUrl) {
+    try {
+      const openid = await app.getOpenid();
+
+      const { error } = await supabase
+        .from('users')
+        .update({
           nickName: nickName.trim(),
-          avatarUrl: avatarUrl
-        };
+          avatarUrl: avatarUrl,
+          updatedAt: getChinaTimeISO()
+        })
+        .eq('_openid', openid);
 
-        this.setData({
-          userInfo: {
-            nickName: nickName.trim(),
-            avatarUrl: avatarUrl
-          },
-          isEditing: false,
-          editNickName: '',
-          editAvatarUrl: '',
-          submitting: false
-        });
-
-        wx.showToast({ title: '修改成功', icon: 'success' });
-      },
-      fail: (err) => {
-        console.error('更新用户信息失败:', err);
+      if (error) {
+        console.error('更新用户信息失败:', error);
         this.setData({ submitting: false });
         wx.showToast({ title: '修改失败', icon: 'none' });
+        return;
       }
-    });
-  },
 
-  // 上传头像到云存储
-  uploadAvatar(tempFilePath) {
-    return new Promise((resolve, reject) => {
-      // 如果是 http://tmp/ 格式的特殊临时路径，需要先保存到本地
-      if (tempFilePath.startsWith('http://tmp/') || tempFilePath.startsWith('https://tmp/')) {
-        // 先将临时文件保存到本地可访问路径
-        const localPath = `${wx.env.USER_DATA_PATH}/avatar_${Date.now()}.jpg`;
+      app.globalData.userInfo = {
+        nickName: nickName.trim(),
+        avatarUrl: avatarUrl
+      };
 
-        wx.saveFile({
-          tempFilePath: tempFilePath,
-          success: (saveRes) => {
-            // 从保存的路径上传到云存储
-            const timestamp = Date.now();
-            const cloudPath = `user-avatars/${timestamp}.jpg`;
-
-            wx.cloud.uploadFile({
-              cloudPath: cloudPath,
-              filePath: saveRes.savedFilePath,
-              success: (uploadRes) => {
-                resolve(uploadRes.fileID);
-              },
-              fail: (err) => {
-                console.error('云存储上传失败:', err);
-                reject(err);
-              }
-            });
-          },
-          fail: (err) => {
-            console.error('保存临时文件失败:', err);
-            // 尝试直接上传
-            this.directUploadAvatar(tempFilePath).then(resolve).catch(reject);
-          }
-        });
-      } else {
-        // 直接上传
-        this.directUploadAvatar(tempFilePath).then(resolve).catch(reject);
-      }
-    });
-  },
-
-  // 直接上传头像
-  directUploadAvatar(filePath) {
-    return new Promise((resolve, reject) => {
-      const timestamp = Date.now();
-      const cloudPath = `user-avatars/${timestamp}.jpg`;
-
-      wx.cloud.uploadFile({
-        cloudPath: cloudPath,
-        filePath: filePath,
-        success: (res) => {
-          resolve(res.fileID);
+      this.setData({
+        userInfo: {
+          nickName: nickName.trim(),
+          avatarUrl: avatarUrl
         },
-        fail: (err) => {
-          console.error('直接上传失败:', err);
-          reject(err);
-        }
+        isEditing: false,
+        editNickName: '',
+        editAvatarUrl: '',
+        submitting: false
       });
-    });
+
+      wx.showToast({ title: '修改成功', icon: 'success' });
+    } catch (err) {
+      console.error('更新用户信息失败:', err);
+      this.setData({ submitting: false });
+      wx.showToast({ title: '修改失败', icon: 'none' });
+    }
   },
 
-  });
+  // 上传头像到 Supabase Storage
+  async uploadAvatar(tempFilePath) {
+    const timestamp = Date.now();
+    const fileName = `${timestamp}.jpg`;
+
+    try {
+      const { publicUrl, error } = await uploadFileToStorage('avatars', fileName, tempFilePath);
+
+      if (error) {
+        console.error('Supabase Storage 上传失败:', error);
+        throw error;
+      }
+
+      return publicUrl;
+    } catch (err) {
+      console.error('头像上传失败:', err);
+      throw err;
+    }
+  },
+
+  // 头像加载失败时显示默认占位
+  onAvatarError() {
+    this.setData({ 'userInfo.avatarUrl': '' });
+  }
+});

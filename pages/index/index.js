@@ -2,9 +2,12 @@
 const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
 // 引入 echarts
-import * as echarts from '../../components/ec-canvas/echarts';
+const echarts = require('../../components/ec-canvas/echarts');
 // 引入主题管理器
-import { themeManager } from '../../utils/themeManager';
+const { themeManager } = require('../../utils/themeManager');
+// 引入 Supabase
+const { supabase, uploadFileToStorage, deleteStorageFile, getChinaTimeISO } = require('../../utils/supabase');
+const { isAdmin, ADMIN_OPENID } = require('../../utils/auth');
 
 Page({
   data: {
@@ -227,44 +230,50 @@ Page({
   // 检查用户是否已授权 - 新用户自动分配随机头像昵称
   checkUserAuth() {
     const app = getApp();
-    const ADMIN_OPENID = 'ofW_r4lPk806IqPSk4-gR9r_478g';
 
-    app.getOpenid().then(openid => {
+    app.getOpenid().then(async openid => {
       // 管理员直接加载布局偏好
-      if (openid === ADMIN_OPENID) {
+      if (isAdmin(openid)) {
         this.loadLayoutPreference();
         return;
       }
 
-      // 查询数据库检查用户是否存在
-      wx.cloud.database().collection('users').where({ _openid: openid }).limit(1).get().then(dbRes => {
-        if (dbRes.data.length === 0) {
-          // 用户不存在，自动创建随机头像昵称（新用户）
-          this.createRandomUserInfo(true);
-        } else {
-          const user = dbRes.data[0];
-          // 用户存在，先加载布局偏好
-          this.loadLayoutPreference();
+      // 查询 Supabase 检查用户是否存在
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('_openid', openid)
+        .single();
 
-          if (!user.nickName || !user.avatarUrl) {
-            // 存在记录但缺少昵称头像，自动补充随机信息
-            this.updateUserInfoWithRandom(user._id, true);
-          } else {
-            // 用户已完善信息，显示欢迎回来提示
-            this.showWelcomeToast(`欢迎回来，${user.nickName}`, '继续记录您的资产吧');
-            app.globalData.userInfo = {
-              nickName: user.nickName,
-              avatarUrl: user.avatarUrl
-            };
-            wx.cloud.callFunction({
-              name: 'saveUserInfo',
-              data: { updateAccessTime: true }
-            });
-          }
+      if (error && error.code !== 'PGRST116') {
+        console.error('查询用户信息失败:', error);
+        return;
+      }
+
+      if (!user) {
+        // 用户不存在，自动创建随机头像昵称（新用户）
+        this.createRandomUserInfo(true);
+      } else {
+        // 用户存在，先加载布局偏好
+        this.loadLayoutPreference();
+
+        if (!user.nickName || !user.avatarUrl) {
+          // 存在记录但缺少昵称头像，自动补充随机信息
+          this.updateUserInfoWithRandom(user.id, true);
+        } else {
+          // 用户已完善信息，显示欢迎回来提示
+          this.showWelcomeToast(`欢迎回来，${user.nickName}`, '继续记录您的资产吧');
+          app.globalData.userInfo = {
+            nickName: user.nickName,
+            avatarUrl: user.avatarUrl
+          };
+          // 更新访问时间
+          await supabase
+            .from('users')
+            .update({ lastAccessTime: getChinaTimeISO() })
+            .eq('_openid', openid);
         }
-      }).catch(err => {
-        console.error('查询用户信息失败:', err);
-      });
+      }
     });
   },
 
@@ -299,8 +308,10 @@ Page({
   },
 
   // 为新用户自动创建随机头像昵称
-  createRandomUserInfo(isNewUser = false) {
+  async createRandomUserInfo(isNewUser = false) {
     const { presetAvatars, presetNicknames } = this.data;
+    const app = getApp();
+    const openid = await app.getOpenid();
 
     // 随机选择头像
     const randomAvatar = presetAvatars[Math.floor(Math.random() * presetAvatars.length)];
@@ -314,52 +325,51 @@ Page({
       this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 30);
     }
 
-    // 上传 SVG 头像到云存储
-    this.uploadDataUrlAvatar(randomAvatar).then(finalAvatarUrl => {
-      wx.cloud.callFunction({
-        name: 'saveUserInfo',
-        data: {
+    try {
+      // 上传 SVG 头像到 Supabase Storage
+      const finalAvatarUrl = await this.uploadDataUrlAvatar(randomAvatar);
+
+      // 保存用户信息到 Supabase（已查询确认用户不存在，用 insert 即可）
+      const { error } = await supabase
+        .from('users')
+        .insert({
+          _openid: openid,
+          nickName: randomNickname,
+          avatarUrl: finalAvatarUrl,
+          firstAccessTime: getChinaTimeISO(),
+          lastAccessTime: getChinaTimeISO()
+        });
+
+      if (!error) {
+        app.globalData.userInfo = {
           nickName: randomNickname,
           avatarUrl: finalAvatarUrl
-        },
-        success: (res) => {
-          if (res.result?.success) {
-            const app = getApp();
-            app.globalData.userInfo = {
-              nickName: randomNickname,
-              avatarUrl: finalAvatarUrl
-            };
-          }
-        },
-        fail: (err) => {
-          console.error('自动创建用户信息失败:', err);
-        }
-      });
-    }).catch(err => {
-      console.error('上传随机头像失败:', err);
+        };
+      }
+    } catch (err) {
+      console.error('自动创建用户信息失败:', err);
       // 上传失败时直接使用 data URL
-      wx.cloud.callFunction({
-        name: 'saveUserInfo',
-        data: {
+      await supabase
+        .from('users')
+        .insert({
+          _openid: openid,
           nickName: randomNickname,
-          avatarUrl: randomAvatar
-        },
-        success: (res) => {
-          if (res.result?.success) {
-            const app = getApp();
-            app.globalData.userInfo = {
-              nickName: randomNickname,
-              avatarUrl: randomAvatar
-            };
-          }
-        }
-      });
-    });
+          avatarUrl: randomAvatar,
+          firstAccessTime: getChinaTimeISO(),
+          lastAccessTime: getChinaTimeISO()
+        });
+      app.globalData.userInfo = {
+        nickName: randomNickname,
+        avatarUrl: randomAvatar
+      };
+    }
   },
 
   // 为已有用户补充随机头像昵称
-  updateUserInfoWithRandom(userId, isNewUser = false) {
+  async updateUserInfoWithRandom(userId, isNewUser = false) {
     const { presetAvatars, presetNicknames } = this.data;
+    const app = getApp();
+    const openid = await app.getOpenid();
 
     const randomAvatar = presetAvatars[Math.floor(Math.random() * presetAvatars.length)];
     const randomNickname = presetNicknames[Math.floor(Math.random() * presetNicknames.length)] +
@@ -370,48 +380,36 @@ Page({
       this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 30);
     }
 
-    this.uploadDataUrlAvatar(randomAvatar).then(finalAvatarUrl => {
-      wx.cloud.database().collection('users').doc(userId).update({
-        data: {
-          nickName: randomNickname,
-          avatarUrl: finalAvatarUrl
-        },
-        success: () => {
-          const app = getApp();
-          app.globalData.userInfo = {
-            nickName: randomNickname,
-            avatarUrl: finalAvatarUrl
-          };
-        },
-        fail: (err) => {
-          console.error('更新用户信息失败:', err);
-        }
-      });
-    }).catch(err => {
+    try {
+      const finalAvatarUrl = await this.uploadDataUrlAvatar(randomAvatar);
+      await supabase
+        .from('users')
+        .update({ nickName: randomNickname, avatarUrl: finalAvatarUrl })
+        .eq('_openid', openid);
+      app.globalData.userInfo = {
+        nickName: randomNickname,
+        avatarUrl: finalAvatarUrl
+      };
+    } catch (err) {
       console.error('上传随机头像失败:', err);
-      wx.cloud.database().collection('users').doc(userId).update({
-        data: {
-          nickName: randomNickname,
-          avatarUrl: randomAvatar
-        },
-        success: () => {
-          const app = getApp();
-          app.globalData.userInfo = {
-            nickName: randomNickname,
-            avatarUrl: randomAvatar
-          };
-        }
-      });
-    });
+      await supabase
+        .from('users')
+        .update({ nickName: randomNickname, avatarUrl: randomAvatar })
+        .eq('_openid', openid);
+      app.globalData.userInfo = {
+        nickName: randomNickname,
+        avatarUrl: randomAvatar
+      };
+    }
   },
 
-  // 上传 SVG data URL 头像到云存储
+  // 上传 SVG data URL 头像到 Supabase Storage
   uploadDataUrlAvatar(dataUrl) {
     return new Promise((resolve, reject) => {
       const fsm = wx.getFileSystemManager();
       const timestamp = Date.now();
       const tempFilePath = `${wx.env.USER_DATA_PATH}/avatar-${timestamp}.svg`;
-      const cloudPath = `user-avatars/${timestamp}.svg`;
+      const fileName = `${timestamp}.svg`;
 
       // 从 data URL 中提取 SVG 内容
       let svgContent = dataUrl;
@@ -426,24 +424,27 @@ Page({
         data: svgContent,
         encoding: 'utf8',
         success: () => {
-          wx.cloud.uploadFile({
-            cloudPath,
-            filePath: tempFilePath,
-            success: res => {
+          // 直接上传临时文件到 Supabase Storage
+          uploadFileToStorage('avatars', fileName, tempFilePath)
+            .then(result => {
               fsm.unlink({ filePath: tempFilePath, fail: () => {} });
-              resolve(res.fileID);
-            },
-            fail: err => {
+
+              if (result.error) {
+                console.error('Supabase Storage 上传失败:', result.error);
+                resolve(dataUrl);
+                return;
+              }
+
+              resolve(result.publicUrl);
+            })
+            .catch(err => {
               fsm.unlink({ filePath: tempFilePath, fail: () => {} });
-              console.error('云存储上传失败:', err);
-              // 开发工具模拟环境可能不支持上传，返回 data URL 作为临时方案
+              console.error('上传处理失败:', err);
               resolve(dataUrl);
-            }
-          });
+            });
         },
         fail: err => {
           console.error('写入临时文件失败:', err);
-          // 开发工具模拟环境可能不支持文件写入，返回 data URL 作为临时方案
           resolve(dataUrl);
         }
       });
@@ -452,10 +453,9 @@ Page({
 
   checkAdmin() {
     const app = getApp();
-    const ADMIN_OPENID = 'ofW_r4lPk806IqPSk4-gR9r_478g';
 
     app.getOpenid().then(openid => {
-      if (openid === ADMIN_OPENID) {
+      if (isAdmin(openid)) {
         this.setData({
           isAdmin: true,
           showUserStats: true
@@ -507,37 +507,36 @@ Page({
     });
   },
 
-  // 获取天气数据（通过云函数）
+  // 获取天气数据（通过 Supabase Edge Function）
   fetchWeather(latitude, longitude) {
-    wx.cloud.callFunction({
-      name: 'getWeather',
-      data: { latitude, longitude },
-      success: (res) => {
-        if (res.result?.success) {
-          const { now, forecast } = res.result;
+    supabase.functions.invoke('getWeather', { latitude, longitude })
+      .then(result => {
+        const { data, error } = result;
 
-          const updateData = { weatherLoading: false };
-
-          if (now) {
-            updateData.weatherText = now.text || '';
-            updateData.weatherTemp = now.temp || '';
-            updateData.weatherIcon = this.getWeatherIcon(now.text);
-          }
-
-          if (forecast && forecast[0]) {
-            updateData.weatherTempMax = forecast[0].tempMax || '';
-            updateData.weatherTempMin = forecast[0].tempMin || '';
-          }
-
-          this.setData(updateData);
-        } else {
+        if (error || !data || !data.success) {
           this.setData({ weatherLoading: false });
+          return;
         }
-      },
-      fail: (err) => {
+
+        const { now, forecast } = data;
+
+        const updateData = { weatherLoading: false };
+
+        if (now) {
+          updateData.weatherText = now.text || '';
+          updateData.weatherTemp = now.temp || '';
+          updateData.weatherIcon = this.getWeatherIcon(now.text);
+        }
+
+        if (forecast && forecast[0]) {
+          updateData.weatherTempMax = forecast[0].tempMax || '';
+          updateData.weatherTempMin = forecast[0].tempMin || '';
+        }
+
+        this.setData(updateData);
+      }).catch(err => {
         this.setData({ weatherLoading: false });
-      }
-    });
+      });
   },
 
   // 根据天气描述获取对应的图标
@@ -571,34 +570,33 @@ Page({
   },
 
   // 加载类别
-  loadCategories() {
-    wx.cloud.callFunction({
-      name: 'getCategories',
-      success: (res) => {
-        if (res.result?.success && res.result.data) {
-          this.processCategories(res.result.data);
-        } else {
-          this.setData({ categories: [], categoryList: [] });
-        }
-      },
-      fail: () => {
+  async loadCategories() {
+    const app = getApp();
+    try {
+      const openid = await app.getOpenid();
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('_openid', openid)
+        .order('sortOrder', { ascending: true });
+
+      if (error) {
         this.setData({ categories: [], categoryList: [] });
+        return;
       }
-    });
+
+      this.processCategories(data || []);
+    } catch (err) {
+      console.error('加载分类失败:', err);
+      this.setData({ categories: [], categoryList: [] });
+    }
   },
 
   async processCategories(categoriesData) {
-    const categoriesWithIcons = await Promise.all(categoriesData.map(async category => {
-      let displayIcon = null;
-      if (category.icon?.startsWith('cloud://')) {
-        try {
-          const fileRes = await wx.cloud.getTempFileURL({ fileList: [category.icon] });
-          displayIcon = fileRes.fileList[0]?.tempFileURL || null;
-        } catch (e) {}
-      } else if (category.icon?.startsWith('http')) {
-        displayIcon = category.icon;
-      }
-      return { name: category.name, icon: category.icon || '', displayIcon };
+    const categoriesWithIcons = categoriesData.map(category => ({
+      name: category.name,
+      icon: category.icon || '',
+      displayIcon: category.icon && category.icon.startsWith('http') ? category.icon : null
     }));
 
     this.setData({
@@ -608,7 +606,7 @@ Page({
   },
 
   // 加载资产
-  loadAssets(searchKeyword) {
+  async loadAssets(searchKeyword) {
     if (this.data.isLoading) return;
 
     this.setData({ isLoading: true });
@@ -620,41 +618,42 @@ Page({
     // 使用传入的搜索关键词，或当前状态中的值
     const keyword = searchKeyword !== undefined ? searchKeyword : this.data.searchKeyword;
 
-    app.getOpenid().then(openid => {
-      const db = wx.cloud.database({ env: app.globalData.envId });
-      const where = { _openid: openid };
+    try {
+      const openid = await app.getOpenid();
 
-      // 添加名称搜索条件
+      // Supabase 查询
+      let query = supabase
+        .from('assets')
+        .select('*')
+        .eq('_openid', openid);
+
+      // 添加名称搜索条件（Supabase 使用 ilike）
       if (keyword) {
-        // 使用正则表达式进行模糊搜索
-        where.name = db.RegExp({
-          regexp: keyword,
-          options: 'i'  // 不区分大小写
-        });
+        query = query.ilike('name', `%${keyword}%`);
       }
 
+      // 排序
       const sortField = sortDbFields[currentSortIndex];
       const orderField = sortField || 'createdAt';
       const orderDir = sortField ? sortOrder : 'desc';
 
-      // 获取所有资产（不做筛选，用于统计和列表）
-      return this.getAllAssetsWithPaging(db, where, orderField, orderDir);
-    }).then(async res => {
-      const assetsWithIcon = await Promise.all(res.data.map(async asset => {
-        let displayIcon = null;
-        if (asset.icon?.startsWith('cloud://')) {
-          try {
-            const fileRes = await wx.cloud.getTempFileURL({ fileList: [asset.icon] });
-            displayIcon = fileRes.fileList[0]?.tempFileURL || null;
-          } catch (e) {}
-        } else if (asset.icon?.startsWith('http')) {
-          displayIcon = asset.icon;
-        }
-        return { ...asset, displayIcon };
+      query = query.order(orderField, { ascending: orderDir === 'asc' });
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      // 处理图标 - HTTP 链接用图片，emoji 用文字
+      const assetsWithIcon = data.map(asset => ({
+        ...asset,
+        _id: asset.id, // Supabase id 映射到 _id
+        displayIcon: asset.icon && asset.icon.startsWith('http') ? asset.icon : null
       }));
 
       const assets = assetsWithIcon.map(a => this.calculateAssetFields(a));
-      // 为复杂模式资产卡片分配背景色（根据主题配置决定透明度）
+      // 为复杂模式资产卡片分配背景色
       const cardBgColors = themeManager.getCardBgColors();
       const cardBgMode = themeManager.getThemeColors().cardBgMode;
       const opacity = cardBgMode === 'solid' ? 1 : 0.30;
@@ -673,36 +672,13 @@ Page({
       if (!sortDbFields[currentSortIndex]) {
         this.applySort();
       }
-    }).catch(err => {
+    } catch (err) {
+      console.error('加载资产失败:', err);
       this.setData({ assets: [], filteredAssets: [], simpleViewCols: [[], [], [], [], []], isLoading: false });
-      wx.hideLoading();
       wx.showToast({ title: '加载失败', icon: 'none' });
-    }).finally(() => wx.hideLoading());
-  },
-
-  // 分页获取所有资产
-  async getAllAssetsWithPaging(db, where, orderBy, orderDir) {
-    const MAX_LIMIT = 20;
-    let allData = [];
-    let count = 0;
-
-    // 先获取总数
-    const countRes = await db.collection('assets').where(where).count();
-    const total = countRes.total;
-
-    // 分批获取
-    const batchTimes = Math.ceil(total / MAX_LIMIT);
-    for (let i = 0; i < batchTimes; i++) {
-      const res = await db.collection('assets')
-        .where(where)
-        .orderBy(orderBy, orderDir)
-        .skip(i * MAX_LIMIT)
-        .limit(MAX_LIMIT)
-        .get();
-      allData = allData.concat(res.data);
+    } finally {
+      wx.hideLoading();
     }
-
-    return { data: allData };
   },
 
   parseDate(dateInput) {
@@ -757,15 +733,6 @@ Page({
     };
   },
 
-  // 计算订阅资产日均成本
-  calculateSubscriptionDailyCost(asset) {
-    if (asset.assetType !== 'subscription') return '0.00';
-    if (!asset.periodAmount || !asset.periodType) return '0.00';
-
-    const periodDays = this.getPeriodDays(asset.periodType, asset.periodDays);
-    const dailyCost = asset.periodAmount / periodDays;
-    return dailyCost.toFixed(2);
-  },
 
   calculateAssetFields(asset) {
     // 订阅资产处理
@@ -790,9 +757,6 @@ Page({
         if (usedDays <= 0) usedDays = 1;
       }
 
-      // 订阅资产日均成本 = 每期金额 / 周期天数
-      const dailyCost = this.calculateSubscriptionDailyCost(asset);
-
       // 计算总投入（动态累计）
       let totalInvestment = 0;
       if (asset.subscriptionStatus !== 'pending' && asset.periodAmount && asset.periodType) {
@@ -802,13 +766,18 @@ Page({
         totalInvestment = asset.periodAmount * completedPeriods;
       }
 
+      // 订阅资产日均成本 = 总投入 / 已订阅天数
+      const dailyCost = (asset.subscriptionStatus !== 'pending' && usedDays > 0 && totalInvestment > 0)
+        ? (totalInvestment / usedDays).toFixed(2)
+        : '0.00';
+
       const startDate = this.formatDate(asset.subscriptionStartDate || asset.purchaseDate);
       const dateRangeEnd = asset.subscriptionStatus === 'ended' && asset.subscriptionEndDate
         ? this.formatDate(asset.subscriptionEndDate) : '至今';
 
-      const categoryItem = this.data.categoryList?.find(c => c.name === asset.category);
-      const categoryIcon = categoryItem?.displayIcon || categoryItem?.icon || '';
-      const categoryIconUrl = categoryIcon?.startsWith('http') ? categoryIcon : '';
+      const categoryItem = this.data.categoryList && this.data.categoryList.find(c => c.name === asset.category);
+      const categoryIcon = (categoryItem && categoryItem.displayIcon) || (categoryItem && categoryItem.icon) || '';
+      const categoryIconUrl = categoryIcon && categoryIcon.startsWith('http') ? categoryIcon : '';
 
       return {
         ...asset,
@@ -856,9 +825,9 @@ Page({
       dailyEquivalent = (asset.price / usedDays).toFixed(2);
     }
 
-    const categoryItem = this.data.categoryList?.find(c => c.name === asset.category);
-    const categoryIcon = categoryItem?.displayIcon || categoryItem?.icon || '';
-    const categoryIconUrl = categoryIcon?.startsWith('http') ? categoryIcon : '';
+    const categoryItem = this.data.categoryList && this.data.categoryList.find(c => c.name === asset.category);
+    const categoryIcon = (categoryItem && categoryItem.displayIcon) || (categoryItem && categoryItem.icon) || '';
+    const categoryIconUrl = categoryIcon && categoryIcon.startsWith('http') ? categoryIcon : '';
 
     return {
       ...asset,
@@ -873,12 +842,12 @@ Page({
 
   updateAssetsCategoryIcon() {
     const { assets, categoryList } = this.data;
-    if (!assets.length || !categoryList?.length) return;
+    if (!assets.length || !categoryList || !categoryList.length) return;
 
     const update = list => list.map(asset => {
       const item = categoryList.find(c => c.name === asset.category);
-      const icon = item?.displayIcon || item?.icon || '';
-      return { ...asset, categoryIcon: icon, categoryIconUrl: icon?.startsWith('http') ? icon : '' };
+      const icon = (item && item.displayIcon) || (item && item.icon) || '';
+      return { ...asset, categoryIcon: icon, categoryIconUrl: icon && icon.startsWith('http') ? icon : '' };
     });
 
     const nextFiltered = update(this.data.filteredAssets);
@@ -1132,7 +1101,7 @@ Page({
     this.setData({
       themeList,
       currentThemeKey: themeManager.getCurrentTheme(),
-      currentThemeName: current?.name || '星辰靛蓝',
+      currentThemeName: current && current.name || '星辰靛蓝',
       themeStyle: themeManager.getCurrentStyle(),
       themeColors: themeManager.getThemeColors(),
       reportColors: themeManager.getReportColors(),
@@ -1147,7 +1116,8 @@ Page({
     // 注册主题变更监听器
     themeManager.addListener((style, themeKey) => {
       const list = themeManager.getAllThemes();
-      const name = list.find(t => t.key === themeKey)?.name;
+      const found = list.find(t => t.key === themeKey);
+      const name = found && found.name;
       this.setData({
         themeList: list,
         currentThemeKey: themeKey,
@@ -1288,25 +1258,25 @@ Page({
 
     try {
       const openid = await app.getOpenid();
-      const db = wx.cloud.database({ env: app.globalData.envId });
-      const res = await this.getAllAssetsWithPaging(db, { _openid: openid }, 'purchaseDate', 'desc');
 
-      const list = await Promise.all(res.data.map(async asset => {
-        let displayIcon = null;
-        if (asset.icon?.startsWith('cloud://')) {
-          try {
-            const fileRes = await wx.cloud.getTempFileURL({ fileList: [asset.icon] });
-            displayIcon = fileRes.fileList[0]?.tempFileURL;
-          } catch (e) {}
-        } else if (asset.icon?.startsWith('http')) {
-          displayIcon = asset.icon;
-        }
+      // 使用 Supabase 查询
+      const { data, error } = await supabase
+        .from('assets')
+        .select('*')
+        .eq('_openid', openid)
+        .order('purchaseDate', { ascending: false });
 
-        const purchaseDate = this.formatDate(asset.purchaseDate);
-        const endDate = this.formatDate(asset.retiredDate || asset.soldDate);
-        const dateRange = asset.status === 'active' ? `${purchaseDate} - 至今` : `${purchaseDate} - ${endDate || '至今'}`;
+      if (error) throw error;
 
-        return { ...asset, displayIcon, _selected: false, dateRange };
+      const list = data.map(asset => ({
+        ...asset,
+        _id: asset.id, // Supabase id 映射到 _id
+        displayIcon: asset.icon && asset.icon.startsWith('http') ? asset.icon : null,
+        _selected: false,
+        purchaseDate: this.formatDate(asset.purchaseDate),
+        dateRange: asset.status === 'active'
+          ? `${this.formatDate(asset.purchaseDate)} - 至今`
+          : `${this.formatDate(asset.purchaseDate)} - ${this.formatDate(asset.retiredDate || asset.soldDate) || '至今'}`
       }));
 
       this.setData({ batchAssetList: list, filteredBatchAssetList: list, isAllSelected: false });
@@ -1437,50 +1407,68 @@ Page({
     });
   },
 
-  executeBatchDelete() {
+  async executeBatchDelete() {
     const { selectedAssets, batchSearchKeyword } = this.data;
+    const app = getApp();
     wx.showLoading({ title: '删除中...', mask: true });
 
-    wx.cloud.callFunction({
-      name: 'batchDeleteAssets',
-      data: { assetIds: selectedAssets },
-      success: res => {
-        wx.hideLoading();
-        if (res.result?.success) {
-          const remaining = this.data.batchAssetList.filter(a => !selectedAssets.includes(a._id));
+    try {
+      const openid = await app.getOpenid();
 
-          // 根据当前搜索关键词过滤剩余列表
-          let filteredRemaining = remaining;
-          if (batchSearchKeyword) {
-            const keyword = batchSearchKeyword.toLowerCase();
-            filteredRemaining = remaining.filter(asset => {
-              const name = (asset.name || '').toLowerCase();
-              const category = (asset.category || '').toLowerCase();
-              return name.includes(keyword) || category.includes(keyword);
-            });
-          }
-
-          this.setData({
-            batchAssetList: remaining,
-            filteredBatchAssetList: filteredRemaining,
-            selectedAssets: [],
-            selectedTotalPrice: '0.00',
-            isAllSelected: false
-          });
-          wx.showToast({ title: `已删除 ${selectedAssets.length} 项`, icon: 'success' });
-
-          if (remaining.length === 0) {
-            setTimeout(() => { this.exitBatchDelete(); this.loadAssets(); }, 1500);
-          }
-        } else {
-          wx.showToast({ title: res.result?.error || '删除失败', icon: 'none' });
+      // 删除所有选中资产的 Storage 图标文件
+      const assetsToDelete = this.data.batchAssetList
+        .filter(a => selectedAssets.includes(a._id || a.id));
+      for (var ai = 0; ai < assetsToDelete.length; ai++) {
+        var assetItem = assetsToDelete[ai];
+        if (assetItem.icon && assetItem.icon.startsWith('http')) {
+          await deleteStorageFile('icons', assetItem.icon);
         }
-      },
-      fail: () => {
-        wx.hideLoading();
-        wx.showToast({ title: '删除失败', icon: 'none' });
       }
-    });
+
+      // 使用 id 批量删除
+      const idsToDelete = assetsToDelete.map(a => a.id || a._id);
+
+      const { error } = await supabase
+        .from('assets')
+        .delete()
+        .in('id', idsToDelete);
+
+      wx.hideLoading();
+
+      if (error) {
+        wx.showToast({ title: '删除失败', icon: 'none' });
+        return;
+      }
+
+      const remaining = this.data.batchAssetList.filter(a => !selectedAssets.includes(a._id || a.id));
+
+      // 根据当前搜索关键词过滤剩余列表
+      let filteredRemaining = remaining;
+      if (batchSearchKeyword) {
+        const keyword = batchSearchKeyword.toLowerCase();
+        filteredRemaining = remaining.filter(asset => {
+          const name = (asset.name || '').toLowerCase();
+          const category = (asset.category || '').toLowerCase();
+          return name.includes(keyword) || category.includes(keyword);
+        });
+      }
+
+      this.setData({
+        batchAssetList: remaining,
+        filteredBatchAssetList: filteredRemaining,
+        selectedAssets: [],
+        selectedTotalPrice: '0.00',
+        isAllSelected: false
+      });
+      wx.showToast({ title: `已删除 ${selectedAssets.length} 项`, icon: 'success' });
+
+      if (remaining.length === 0) {
+        setTimeout(() => { this.exitBatchDelete(); this.loadAssets(); }, 1500);
+      }
+    } catch (err) {
+      wx.hideLoading();
+      wx.showToast({ title: '删除失败', icon: 'none' });
+    }
   },
 
   // ============================================
@@ -1493,10 +1481,17 @@ Page({
     const app = getApp();
     try {
       const openid = await app.getOpenid();
-      const db = wx.cloud.database({ env: app.globalData.envId });
-      const res = await this.getAllAssetsWithPaging(db, { _openid: openid }, 'purchaseDate', 'asc');
 
-      const assets = res.data;
+      // 使用 Supabase 查询
+      const { data, error } = await supabase
+        .from('assets')
+        .select('*')
+        .eq('_openid', openid)
+        .order('purchaseDate', { ascending: true });
+
+      if (error) throw error;
+
+      const assets = data;
 
       // 计算分类统计和资产映射
       const categoryMap = {};

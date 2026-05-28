@@ -1,5 +1,6 @@
 // pages/category-manage/category-manage.js
-import { themeManager } from '../../utils/themeManager';
+const { themeManager } = require('../../utils/themeManager');
+const { supabase, uploadFileToStorage, deleteStorageFile, getChinaTimeISO } = require('../../utils/supabase');
 
 Page({
   data: {
@@ -7,10 +8,8 @@ Page({
     categories: [],
     loading: false,
     // 排序相关
-    sortOptions: ['名称', '创建时间'],
-    currentSortIndex: 1, // 默认按创建时间排序
+    currentSortIndex: 0, // 0=创建时间排序, -1=自定义排序
     sortOrder: 'desc', // 'asc' 或 'desc'，desc 表示最新创建的在最上面
-    showSortOptions: false, // 是否显示排序方式选择
 
     // 批量操作相关
     batchMode: false, // 是否处于批量选择模式
@@ -96,129 +95,85 @@ Page({
   },
 
   // 加载类别列表
-  loadCategories: function (callback) {
+  async loadCategories(callback) {
     if (this.data.loading) return;
 
     this.setData({ loading: true });
     wx.showLoading({ title: '加载中...' });
 
-    wx.cloud.callFunction({
-      name: 'getCategories',
-      success: (res) => {
-        const resultData = res.result;
+    const app = getApp();
 
-        if (resultData && resultData.success) {
-          const processCategories = async () => {
-            const categoriesData = resultData.data || [];
+    try {
+      const openid = await app.getOpenid();
 
-            const categoriesWithIcons = await Promise.all(categoriesData.map(async category => {
-              let displayIcon = null;
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('_openid', openid)
+        .order('sortOrder', { ascending: true });
 
-              // 如果是云存储的fileID，获取临时文件链接
-              if (category.icon && category.icon.startsWith('cloud://')) {
-                try {
-                  const fileRes = await wx.cloud.getTempFileURL({
-                    fileList: [category.icon]
-                  });
-                  if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
-                    displayIcon = fileRes.fileList[0].tempFileURL;
-                  }
-                } catch (e) {
-                  // 获取失败时使用 null，显示内置图标
-                }
-              } else if (category.icon && category.icon.startsWith('http')) {
-                // 已经是 http 临时链接，直接使用
-                displayIcon = category.icon;
-              }
+      if (error) {
+        this.setData({ categories: [], loading: false });
+        wx.hideLoading();
+        wx.showToast({ title: '加载失败', icon: 'none' });
+        if (callback) callback();
+        return;
+      }
 
-              return {
-                ...category,
-                displayIcon: displayIcon,
-                _selected: false // 初始化选中状态
-              };
-            }));
-
-            // 应用当前排序
-            const sortedCategories = this.applySorting(categoriesWithIcons);
-
-            this.setData({
-              categories: sortedCategories
-            });
-          };
-
-          processCategories();
-        } else {
-          this.setData({
-            categories: []
-          });
-          wx.showToast({
-            title: resultData?.error || '加载失败',
-            icon: 'none'
+      // 查询当前用户所有资产的 category，在 JS 中分组计数
+      let countMap = {};
+      if (data.length > 0) {
+        const { data: allAssets, error: assetError } = await supabase
+          .from('assets')
+          .select('category')
+          .eq('_openid', openid);
+        if (!assetError && allAssets) {
+          allAssets.forEach(asset => {
+            const cat = asset.category;
+            if (cat) countMap[cat] = (countMap[cat] || 0) + 1;
           });
         }
-      },
-      fail: (err) => {
-        this.setData({
-          categories: []
-        });
-        wx.showToast({
-            title: '网络错误',
-            icon: 'none'
-        });
-      },
-      complete: () => {
-        this.setData({ loading: false });
-        wx.hideLoading();
-        if (callback) callback();
       }
-    });
-  },
 
-  // 按名称排序
-  changeSortByName: function() {
-    const { currentSortIndex, sortOrder, categories } = this.data;
-    let newIndex = 0;
-    let newOrder = 'asc';
+      // Supabase URL 直接使用，不需要获取临时链接
+      // 同时把 Supabase 的 id 映射到 _id，保持业务逻辑兼容
+      const categoriesWithIcons = data.map(category => ({
+        ...category,
+        _id: category.id, // Supabase id 映射到 _id
+        displayIcon: category.icon && category.icon.startsWith('http') ? category.icon : null,
+        _selected: false,
+        assetCount: countMap[category.name] || 0
+      }));
 
-    if (currentSortIndex === 0) {
-      // 同一字段，切换升序/降序
-      newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+      // 应用当前排序
+      const sortedCategories = this.applySorting(categoriesWithIcons);
+
+      this.setData({
+        categories: sortedCategories,
+        loading: false
+      });
+      wx.hideLoading();
+      if (callback) callback();
+    } catch (err) {
+      this.setData({ categories: [], loading: false });
+      wx.hideLoading();
+      wx.showToast({ title: '网络错误', icon: 'none' });
+      if (callback) callback();
     }
-
-    this.setData({
-      currentSortIndex: newIndex,
-      sortOrder: newOrder
-    });
-
-    // 使用新值进行排序
-    const sorted = this.applySortingWithParams(categories, newIndex, newOrder);
-    this.setData({ categories: sorted });
-
-    wx.showToast({
-      title: newOrder === 'asc' ? '名称 ↑' : '名称 ↓',
-      icon: 'none',
-      duration: 500
-    });
   },
 
   // 按创建时间排序
   changeSortByTime: function() {
-    const { currentSortIndex, sortOrder, categories } = this.data;
-    let newIndex = 1;
-    let newOrder = 'asc';
-
-    if (currentSortIndex === 1) {
-      // 同一字段，切换升序/降序
-      newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-    }
+    const { sortOrder } = this.data;
+    const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
 
     this.setData({
-      currentSortIndex: newIndex,
+      currentSortIndex: 0,
       sortOrder: newOrder
     });
 
     // 使用新值进行排序
-    const sorted = this.applySortingWithParams(categories, newIndex, newOrder);
+    const sorted = this.applySortingWithParams(this.data.categories, 0, newOrder);
     this.setData({ categories: sorted });
 
     wx.showToast({
@@ -234,7 +189,6 @@ Page({
       currentSortIndex: -1,
       sortOrder: 'asc'
     });
-    // 重新加载以获取自定义排序
     this.loadCategories();
     wx.showToast({
       title: '已切换到自定义排序',
@@ -252,30 +206,16 @@ Page({
 
     const sorted = [...categories];
 
-    switch(sortIndex) {
-      case 0: // 按名称排序
-        sorted.sort((a, b) => {
-          const nameA = a.name.toLowerCase();
-          const nameB = b.name.toLowerCase();
-          if (sortOrder === 'asc') {
-            return nameA.localeCompare(nameB);
-          } else {
-            return nameB.localeCompare(nameA);
-          }
-        });
-        break;
-      case 1: // 按创建时间排序
-        sorted.sort((a, b) => {
-          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          if (sortOrder === 'asc') {
-            return timeA - timeB;
-          } else {
-            return timeB - timeA;
-          }
-        });
-        break;
-    }
+    // 按创建时间排序
+    sorted.sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      if (sortOrder === 'asc') {
+        return timeA - timeB;
+      } else {
+        return timeB - timeA;
+      }
+    });
 
     return sorted;
   },
@@ -284,37 +224,22 @@ Page({
   applySorting: function(categories) {
     const { currentSortIndex, sortOrder } = this.data;
 
-    // 如果是自定义排序，直接返回（保持云端返回的顺序）
     if (currentSortIndex === -1) {
       return categories;
     }
 
     const sorted = [...categories];
 
-    switch(currentSortIndex) {
-      case 0: // 按名称排序
-        sorted.sort((a, b) => {
-          const nameA = a.name.toLowerCase();
-          const nameB = b.name.toLowerCase();
-          if (sortOrder === 'asc') {
-            return nameA.localeCompare(nameB);
-          } else {
-            return nameB.localeCompare(nameA);
-          }
-        });
-        break;
-      case 1: // 按创建时间排序（createdAt）
-        sorted.sort((a, b) => {
-          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          if (sortOrder === 'asc') {
-            return timeA - timeB;
-          } else {
-            return timeB - timeA;
-          }
-        });
-        break;
-    }
+    // 按创建时间排序
+    sorted.sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      if (sortOrder === 'asc') {
+        return timeA - timeB;
+      } else {
+        return timeB - timeA;
+      }
+    });
 
     return sorted;
   },
@@ -344,7 +269,7 @@ Page({
         // 判断图标类型：内置图标、上传图片、自定义emoji
         const iconValue = category.icon || '';
         const isBuiltinIcon = this.data.builtinIcons.some(item => item.icon === iconValue);
-        const isUploadedImage = iconValue.startsWith('cloud://') || iconValue.startsWith('http');
+        const isUploadedImage = iconValue.startsWith('http');
         const isCustomEmoji = !isBuiltinIcon && !isUploadedImage && iconValue.length > 0;
 
         this.setData({
@@ -354,7 +279,7 @@ Page({
           editCategoryId: categoryId,
           tempCategoryName: category.name,
           selectedIcon: iconValue || this.data.builtinIcons[0].icon,
-          selectedIconName: isBuiltinIcon ? (this.data.builtinIcons.find(item => item.icon === iconValue)?.name || '') : (isUploadedImage ? '自定义图片' : (isCustomEmoji ? '自定义emoji' : '')),
+          selectedIconName: isBuiltinIcon ? (function(arr, val){ var f = arr.find(function(item){ return item.icon === val; }); return f && f.name || ''; }(this.data.builtinIcons, iconValue)) : (isUploadedImage ? '自定义图片' : (isCustomEmoji ? '自定义emoji' : '')),
           uploadedImagePath: isUploadedImage ? iconValue : '',
           customEmojiValue: isCustomEmoji ? iconValue : '',
           tempDescription: category.description || ''
@@ -571,42 +496,36 @@ Page({
     });
   },
 
-  // 上传图片到云存储
-  uploadImage: function(filePath) {
+  // 上传图片到 Supabase Storage
+  uploadImage: async function(filePath) {
     wx.showLoading({ title: '上传中...' });
 
-    const that = this;
-    // 生成唯一的文件名
     const timestamp = Date.now();
     const randomNum = Math.floor(Math.random() * 10000);
-    const fileName = `category-icons/${timestamp}-${randomNum}.png`;
+    const fileName = `${timestamp}-${randomNum}.png`;
 
-    wx.cloud.uploadFile({
-      cloudPath: fileName,
-      filePath: filePath,
-      success: res => {
-        wx.hideLoading();
-        wx.showToast({
-          title: '上传成功',
-          icon: 'success'
-        });
+    try {
+      const { publicUrl, error } = await uploadFileToStorage('category-icons', fileName, filePath);
+      wx.hideLoading();
 
-        // 将云文件ID存储起来
-        that.setData({
-          selectedIcon: res.fileID,
-          selectedIconName: '自定义图片',
-          uploadedImagePath: res.fileID,
-          customEmojiValue: '' // 清除自定义emoji
-        });
-      },
-      fail: err => {
-        wx.hideLoading();
-        wx.showToast({
-          title: '上传失败',
-          icon: 'none'
-        });
+      if (error) {
+        console.error('上传失败', error);
+        wx.showToast({ title: '上传失败: ' + (error.message || '请重试'), icon: 'none' });
+        return;
       }
-    });
+
+      this.setData({
+        selectedIcon: publicUrl,
+        selectedIconName: '自定义图片',
+        uploadedImagePath: publicUrl,
+        customEmojiValue: ''
+      });
+      wx.showToast({ title: '上传成功', icon: 'success' });
+    } catch (err) {
+      wx.hideLoading();
+      console.error('上传异常', err);
+      wx.showToast({ title: '上传失败，请重试', icon: 'none' });
+    }
   },
 
   // 删除已上传的图片
@@ -661,108 +580,114 @@ Page({
   },
 
   // 执行添加分类
-  performAddCategory: function() {
+  async performAddCategory() {
     wx.showLoading({ title: '添加中...' });
 
     const { tempCategoryName, selectedIcon, tempDescription } = this.data;
+    const app = getApp();
 
-    // 调用云函数添加类别
-    wx.cloud.callFunction({
-      name: 'addCategory',
-      data: {
-        name: tempCategoryName,
-        icon: selectedIcon || '',
-        description: tempDescription
-      },
-      success: (res) => {
+    try {
+      const openid = await app.getOpenid();
+
+      // 获取当前最大排序值
+      const { data: existingCategories, error: queryError } = await supabase
+        .from('categories')
+        .select('sortOrder')
+        .eq('_openid', openid)
+        .order('sortOrder', { ascending: false })
+        .limit(1);
+
+      if (queryError) {
         wx.hideLoading();
-        if (res.result.success) {
-          // 重新加载类别列表
-          this.loadCategories();
-          // 关闭弹窗
-          this.setData({
-            dialogVisible: false,
-            tempCategoryName: '',
-            selectedIcon: '',
-            selectedIconName: '',
-            uploadedImagePath: '',
-            customEmojiValue: '',
-            tempDescription: '',
-            operationType: '',
-            editCategoryId: null
-          });
-          wx.showToast({
-            title: '添加成功',
-            icon: 'success'
-          });
-        } else {
-          wx.showToast({
-            title: res.result.error || '添加失败',
-            icon: 'none'
-          });
-        }
-      },
-      fail: (err) => {
-        wx.hideLoading();
-        wx.showToast({
-          title: '添加失败，请重试',
-          icon: 'none'
-        });
+        wx.showToast({ title: '添加失败', icon: 'none' });
+        return;
       }
-    });
+
+      const maxSortOrder = existingCategories.length > 0 ? existingCategories[0].sortOrder + 1 : 0;
+
+      // 添加分类
+      const { error } = await supabase
+        .from('categories')
+        .insert({
+          _openid: openid,
+          name: tempCategoryName,
+          icon: selectedIcon || '',
+          description: tempDescription || '',
+          sortOrder: maxSortOrder,
+          createdAt: getChinaTimeISO(),
+          updatedAt: getChinaTimeISO()
+        });
+
+      wx.hideLoading();
+      if (error) {
+        wx.showToast({ title: error.message || '添加失败', icon: 'none' });
+        return;
+      }
+
+      this.loadCategories();
+      this.setData({
+        dialogVisible: false,
+        tempCategoryName: '',
+        selectedIcon: '',
+        selectedIconName: '',
+        uploadedImagePath: '',
+        customEmojiValue: '',
+        tempDescription: '',
+        operationType: '',
+        editCategoryId: null
+      });
+      wx.showToast({ title: '添加成功', icon: 'success' });
+    } catch (err) {
+      wx.hideLoading();
+      wx.showToast({ title: '添加失败，请重试', icon: 'none' });
+    }
   },
 
   // 执行编辑分类
-  performEditCategory: function() {
+  async performEditCategory() {
     const { tempCategoryName, selectedIcon, editCategoryId, tempDescription } = this.data;
 
     wx.showLoading({ title: '更新中...' });
 
-    // 调用云函数更新类别
-    wx.cloud.callFunction({
-      name: 'updateCategory',
-      data: {
-        categoryId: editCategoryId,
-        name: tempCategoryName,
-        icon: selectedIcon || '',
-        description: tempDescription
-      },
-      success: (res) => {
-        wx.hideLoading();
-        if (res.result.success) {
-          // 重新加载类别列表
-          this.loadCategories();
-          // 关闭弹窗
-          this.setData({
-            dialogVisible: false,
-            tempCategoryName: '',
-            selectedIcon: '',
-            selectedIconName: '',
-            uploadedImagePath: '',
-            customEmojiValue: '',
-            tempDescription: '',
-            operationType: '',
-            editCategoryId: null
-          });
-          wx.showToast({
-            title: '修改成功',
-            icon: 'success'
-          });
-        } else {
-          wx.showToast({
-            title: res.result.error || '更新失败',
-            icon: 'none'
-          });
-        }
-      },
-      fail: (err) => {
-        wx.hideLoading();
-        wx.showToast({
-          title: '更新失败，请重试',
-          icon: 'none'
-        });
+    const app = getApp();
+
+    try {
+      const openid = await app.getOpenid();
+
+      const { error } = await supabase
+        .from('categories')
+        .update({
+          name: tempCategoryName,
+          icon: selectedIcon || '',
+          description: tempDescription || '',
+          updatedAt: getChinaTimeISO()
+        })
+        .eq('_openid', openid)
+        .eq('id', editCategoryId);
+
+      wx.hideLoading();
+      if (error) {
+        wx.showToast({ title: error.message || '更新失败', icon: 'none' });
+        return;
       }
-    });
+
+      this.loadCategories();
+      this.setData({
+        dialogVisible: false,
+        tempCategoryName: '',
+        selectedIcon: '',
+        selectedIconName: '',
+        uploadedImagePath: '',
+        customEmojiValue: '',
+        tempDescription: '',
+        operationType: '',
+        editCategoryId: null
+      });
+      wx.showToast({ title: '修改成功', icon: 'success' });
+    } catch (err) {
+      wx.hideLoading();
+      wx.showToast({ title: '更新失败，请重试', icon: 'none' });
+    }
   },
 
   // 添加新分类
@@ -821,33 +746,31 @@ Page({
   },
 
   // 保存排序
-  saveSortOrder: function(categories) {
-    const sortOrders = categories.map((cat, index) => ({
-      categoryId: cat._id,
-      sortOrder: index
-    }));
+  async saveSortOrder(categories) {
+    const app = getApp();
 
-    wx.cloud.callFunction({
-      name: 'updateCategorySortOrder',
-      data: { sortOrders },
-      success: (res) => {
-        if (res.result.success) {
-          wx.showToast({
-            title: '排序已保存',
-            icon: 'success',
-            duration: 1000
-          });
-        }
-      },
-      fail: (err) => {
-        wx.showToast({
-          title: '保存排序失败',
-          icon: 'none'
-        });
-        // 重新加载列表恢复原顺序
+    try {
+      const openid = await app.getOpenid();
+
+      // 更新每个分类的排序值
+      const updatePromises = categories.map((cat, index) => {
+        return supabase.from('categories').update({ sortOrder: index })
+          .eq('_openid', openid)
+          .eq('id', cat.id);
+      });
+
+      const results = await Promise.all(updatePromises);
+      const hasError = results.some(r => r.error);
+      if (hasError) {
+        wx.showToast({ title: '保存排序失败', icon: 'none' });
         this.loadCategories();
+      } else {
+        wx.showToast({ title: '排序已保存', icon: 'success', duration: 1000 });
       }
-    });
+    } catch (err) {
+      wx.showToast({ title: '保存排序失败', icon: 'none' });
+      this.loadCategories();
+    }
   },
 
   // ========== 批量操作相关方法 ==========
@@ -943,42 +866,60 @@ Page({
   },
 
   // 执行批量删除
-  performBatchDelete: function() {
+  async performBatchDelete() {
     wx.showLoading({ title: '删除中...' });
 
-    wx.cloud.callFunction({
-      name: 'batchDeleteCategories',
-      data: {
-        categoryIds: this.data.selectedCategoryIds
-      },
-      success: (res) => {
-        wx.hideLoading();
-        if (res.result.success) {
-          this.setData({
-            batchMode: false,
-            selectedCategoryIds: []
-          });
-          this.loadCategories();
-          wx.showToast({
-            title: res.result.message || '删除成功',
-            icon: 'success',
-            duration: 1500
-          });
-        } else {
-          wx.showToast({
-            title: res.result.error || '删除失败',
-            icon: 'none'
-          });
+    const app = getApp();
+    const categoryIds = this.data.selectedCategoryIds;
+    const categories = this.data.categories;
+
+    try {
+      const openid = await app.getOpenid();
+
+      // 删除所有自定义图标文件（失败不影响分类删除）
+      for (var i = 0; i < categories.length; i++) {
+        if (categoryIds.indexOf(categories[i]._id) !== -1 && categories[i].icon) {
+          try {
+            await deleteStorageFile('category-icons', categories[i].icon);
+          } catch (e) {
+            console.error('删除图标文件失败', e);
+          }
         }
-      },
-      fail: (err) => {
-        wx.hideLoading();
+      }
+
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('_openid', openid)
+        .in('id', categoryIds);
+
+      wx.hideLoading();
+
+      if (error) {
         wx.showToast({
-          title: '删除失败，请重试',
+          title: '删除失败',
           icon: 'none'
         });
+        return;
       }
-    });
+
+      this.setData({
+        batchMode: false,
+        selectedCategoryIds: []
+      });
+      this.loadCategories();
+      wx.showToast({
+        title: '删除成功',
+        icon: 'success',
+        duration: 1500
+      });
+    } catch (err) {
+      wx.hideLoading();
+      wx.showToast({
+        title: '删除失败，请重试',
+        icon: 'none'
+      });
+    }
   },
 
   // ========== 详情弹窗相关方法 ==========
@@ -1014,6 +955,7 @@ Page({
   // 从详情弹窗删除
   deleteFromDetail: function() {
     const category = this.data.currentCategory;
+    const categoryId = category._id;
     this.closeDetailDialog();
 
     wx.showModal({
@@ -1021,39 +963,66 @@ Page({
       content: `确定要删除分类 "${category.name}" 吗？此操作不可恢复`,
       success: (res) => {
         if (res.confirm) {
-          wx.showLoading({ title: '删除中...' });
-
-          wx.cloud.callFunction({
-            name: 'deleteCategory',
-            data: {
-              categoryId: category._id
-            },
-            success: (res) => {
-              wx.hideLoading();
-              if (res.result.success) {
-                this.loadCategories();
-                wx.showToast({
-                  title: '删除成功',
-                  icon: 'success'
-                });
-              } else {
-                wx.showToast({
-                  title: res.result.error || '删除失败',
-                  icon: 'none'
-                });
-              }
-            },
-            fail: (err) => {
-              wx.hideLoading();
-              wx.showToast({
-                title: '删除失败，请重试',
-                icon: 'none'
-              });
-            }
-          });
+          this.confirmDeleteCategory(categoryId);
         }
       }
     });
+  },
+
+  // 确认删除分类
+  async confirmDeleteCategory(categoryId) {
+    // 检查分类下是否有资产
+    const category = this.data.categories.find(cat => cat._id === categoryId);
+    if (category && category.assetCount > 0) {
+      wx.showToast({
+        title: `该分类下有 ${category.assetCount} 个资产，无法删除`,
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.showLoading({ title: '删除中...' });
+
+    try {
+      // 获取分类信息（用于删除图标文件）
+      const category = this.data.categories.find(cat => cat._id === categoryId);
+
+      // 尝试删除自定义图标文件（失败不影响分类删除）
+      if (category && category.icon) {
+        try {
+          await deleteStorageFile('category-icons', category.icon);
+        } catch (e) {
+          console.error('删除图标文件失败', e);
+        }
+      }
+
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', categoryId);
+
+      wx.hideLoading();
+
+      if (error) {
+        wx.showToast({
+          title: '删除失败',
+          icon: 'none'
+        });
+        return;
+      }
+
+      this.loadCategories();
+      wx.showToast({
+        title: '删除成功',
+        icon: 'success'
+      });
+    } catch (err) {
+      wx.hideLoading();
+      wx.showToast({
+        title: '删除失败，请重试',
+        icon: 'none'
+      });
+    }
   },
 
   // 删除分类
@@ -1068,38 +1037,7 @@ Page({
       content: `确定要删除分类 "${category.name}" 吗？此操作不可恢复`,
       success: (res) => {
         if (res.confirm) {
-          wx.showLoading({ title: '删除中...' });
-
-          // 调用云函数删除类别
-          wx.cloud.callFunction({
-            name: 'deleteCategory',
-            data: {
-              categoryId: categoryId
-            },
-            success: (res) => {
-              wx.hideLoading();
-              if (res.result.success) {
-                // 重新加载类别列表
-                this.loadCategories();
-                wx.showToast({
-                  title: '删除成功',
-                  icon: 'success'
-                });
-              } else {
-                wx.showToast({
-                  title: res.result.error || '删除失败',
-                  icon: 'none'
-                });
-              }
-            },
-            fail: (err) => {
-              wx.hideLoading();
-              wx.showToast({
-                title: '删除失败，请重试',
-                icon: 'none'
-              });
-            }
-          });
+          this.confirmDeleteCategory(categoryId);
         }
       }
     });

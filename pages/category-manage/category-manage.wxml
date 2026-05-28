@@ -49,12 +49,8 @@ module.exports = {
         <text class="category-count">({{categories.length}})</text>
       </view>
       <view class="sort-group">
-        <view class="sort-pill {{currentSortIndex === 1 ? 'active' : ''}}" bindtap="changeSortByTime">
+        <view class="sort-pill {{currentSortIndex === 0 ? 'active' : ''}}" bindtap="changeSortByTime">
           <text>创建时间</text>
-          <text class="sort-arrow {{currentSortIndex === 1 && sortOrder === 'desc' ? 'desc' : ''}}">↑</text>
-        </view>
-        <view class="sort-pill {{currentSortIndex === 0 ? 'active' : ''}}" bindtap="changeSortByName">
-          <text>名称</text>
           <text class="sort-arrow {{currentSortIndex === 0 && sortOrder === 'desc' ? 'desc' : ''}}">↑</text>
         </view>
         <view class="sort-pill {{currentSortIndex === -1 ? 'active' : ''}}" bindtap="resetToCustomSort">

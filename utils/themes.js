@@ -4,7 +4,7 @@
  * 所有主题配置集中于此，便于扩展和维护
  */
 
-export const themes = {
+const themes = {
   // 默认主题 - 星辰靛蓝（FinTech 科技风）
   fintech: {
     name: '星辰靛蓝',
@@ -820,7 +820,7 @@ export const themes = {
 };
 
 // 生成主题 CSS 变量字符串
-export function getThemeStyle(themeKey) {
+function getThemeStyle(themeKey) {
   const theme = themes[themeKey] || themes.fintech;
   const colors = theme.colors;
 
@@ -840,16 +840,16 @@ export function getThemeStyle(themeKey) {
 }
 
 // 默认主题 Key
-export const DEFAULT_THEME = 'fintech';
+const DEFAULT_THEME = 'fintech';
 
 // 获取当前主题的颜色对象（用于 JS 端动态引用）
-export function getThemeColors(themeKey) {
+function getThemeColors(themeKey) {
   const theme = themes[themeKey] || themes.fintech;
   return theme.colors;
 }
 
 // 简单视图卡片背景色（按主题）
-export const cardBgColors = {
+const cardBgColors = {
   fintech: [
     '#C7D2FE', '#A5B4FC', '#BFDBFE', '#93C5FD', '#A7F3D0',
     '#6EE7B7', '#FCD34D', '#F9A8D4', '#F0ABFC', '#C4B5FD',
@@ -889,7 +889,7 @@ export const cardBgColors = {
 };
 
 // 四个资产状态背景色（按主题）- 五彩实色，类似资产卡片背景
-export const statBgColors = {
+const statBgColors = {
   fintech: ['#C7D2FE', '#A7F3D0', '#FDE68A', '#E2E8F0'],
   minimal: ['#E2D3C9', '#C8DCD0', '#E8CCD0', '#D0D0DC'],
   obsidian: ['#F8E8B8', '#A7F3D0', '#FDE68A', '#E0C080'],  // 深色主题用亮色背景配深色文字
@@ -899,11 +899,21 @@ export const statBgColors = {
 };
 
 // 图表配色（按主题）
-export const reportColors = {
+const reportColors = {
   fintech: ['#4F46E5', '#6366F1', '#10B981', '#3B82F6', '#EF4444', '#F59E0B', '#8B5CF6', '#64748B', '#334155', '#3730A3'],
   minimal: ['#A38472', '#B89B8A', '#7B9E8A', '#8FB89E', '#D49A8E', '#D4B08A', '#C4B8D4', '#8E8A85', '#5C5955', '#2C2A28'],
   obsidian: ['#C9A962', '#D4AF37', '#4ADE80', '#38BDF8', '#F87171', '#FBBF24', '#A78BFA', '#A3A3A3', '#525252', '#B8860B'],
   forest: ['#059669', '#10B981', '#22C55E', '#34D399', '#EF4444', '#F59E0B', '#8B5CF6', '#15803D', '#166534', '#14532D'],
   sunset: ['#EA580C', '#F97316', '#22C55E', '#10B981', '#EF4444', '#F59E0B', '#8B5CF6', '#7C2D12', '#9A3412', '#431407'],
   aurora: ['#8B5CF6', '#EC4899', '#06B6D4', '#10B981', '#EF4444', '#F59E0B', '#A78BFA', '#312E81', '#4C1D95', '#1E1B4B']
+};
+
+module.exports = {
+  themes,
+  getThemeStyle,
+  getThemeColors,
+  DEFAULT_THEME,
+  cardBgColors,
+  statBgColors,
+  reportColors
 };

@@ -1,5 +1,30 @@
 // pages/user-stats/user-stats.js
-import { themeManager } from '../../utils/themeManager';
+const { themeManager } = require('../../utils/themeManager');
+const { supabase } = require('../../utils/supabase');
+
+// 内置默认头像列表（8种不同颜色的简单 SVG）
+const DEFAULT_AVATARS = [
+  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%234F46E5%22/%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 font-size=%2240%22 fill=%22%23fff%22%3E😀%3C/text%3E%3C/svg%3E',
+  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23EA580C%22/%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 font-size=%2240%22 fill=%22%23fff%22%3E😊%3C/text%3E%3C/svg%3E',
+  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23059669%22/%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 font-size=%2240%22 fill=%22%23fff%22%3E😎%3C/text%3E%3C/svg%3E',
+  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%238B5CF6%22/%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 font-size=%2240%22 fill=%22%23fff%22%3E🤩%3C/text%3E%3C/svg%3E',
+  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23EC4899%22/%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 font-size=%2240%22 fill=%22%23fff%22%3E😍%3C/text%3E%3C/svg%3E',
+  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%233B82F6%22/%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 font-size=%2240%22 fill=%22%23fff%22%3E😋%3C/text%3E%3C/svg%3E',
+  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23F59E0B%22/%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 font-size=%2240%22 fill=%22%23fff%22%3E🤗%3C/text%3E%3C/svg%3E',
+  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%2310B981%22/%3E%3Ctext x=%2250%22 y=%2265%22 text-anchor=%22middle%22 font-size=%2240%22 fill=%22%23fff%22%3E😄%3C/text%3E%3C/svg%3E'
+];
+
+// 根据 openid 确定性选取默认头像
+function getDefaultAvatar(openid) {
+  if (!openid) return DEFAULT_AVATARS[0];
+  var hash = 0;
+  for (var i = 0; i < openid.length; i++) {
+    hash = ((hash << 5) - hash) + openid.charCodeAt(i);
+    hash = hash & hash; // 保证32位
+  }
+  var index = Math.abs(hash) % DEFAULT_AVATARS.length;
+  return DEFAULT_AVATARS[index];
+}
 
 Page({
   data: {
@@ -98,7 +123,9 @@ Page({
     const sortValue = this.data.sortOptions[this.data.sortIndex].value;
     filtered.sort((a, b) => {
       if (sortValue === 'lastAccess') {
-        return (b.lastAccessTime || 0) - (a.lastAccessTime || 0);
+        const ta = a.lastAccessTime ? new Date(a.lastAccessTime).getTime() : 0;
+        const tb = b.lastAccessTime ? new Date(b.lastAccessTime).getTime() : 0;
+        return tb - ta;
       } else if (sortValue === 'assetCount') {
         return (b.assetCount || 0) - (a.assetCount || 0);
       } else if (sortValue === 'activity') {
@@ -150,121 +177,90 @@ Page({
     });
   },
 
-  loadUserStats(callback) {
+  loadUserStats: function(callback) {
     if (this.data.loading) return;
 
     this.setData({ loading: true, empty: false });
 
-    wx.cloud.callFunction({
-      name: 'getUserStats',
-      success: async (res) => {
-        if (res.result?.success) {
-          const users = res.result.data || [];
+    const app = getApp();
+    app.getOpenid().then(openid => {
+      // 调用 Supabase Edge Function 获取用户统计（传入 openid 用于鉴权）
+      supabase.functions.invoke('get-user-stats', { openid: openid }).then(result => {
+      const { data, error } = result;
 
-          // 处理头像链接
-          const processedUsers = await Promise.all(users.map(async (user) => {
-            let avatarUrl = user.avatarUrl;
-
-            // 云存储链接需要转换为临时链接
-            if (avatarUrl && avatarUrl.startsWith('cloud://')) {
-              try {
-                const fileRes = await wx.cloud.getTempFileURL({ fileList: [avatarUrl] });
-                if (fileRes.fileList && fileRes.fileList.length > 0) {
-                  const fileItem = fileRes.fileList[0];
-                  avatarUrl = fileItem.tempFileURL || fileItem.fileURL || '';
-                }
-              } catch (e) {
-                console.error('云存储链接转换失败:', e);
-                avatarUrl = '';
-              }
-            }
-
-            // 如果没有头像或转换失败，使用默认头像
-            if (!avatarUrl) {
-              avatarUrl = '/images/default-avatar.svg';
-            }
-
-            // 计算活跃度
-            const activity = this.calculateActivityLevel(user.lastAccessTime);
-
-            // 处理资产列表（需要转换云存储链接）
-            const assets = await Promise.all((user.assets || []).map(async (asset) => {
-              let assetIcon = asset.icon || '📦';
-              let displayIcon = '';
-
-              // 云存储链接需要转换为临时链接
-              if (assetIcon && assetIcon.startsWith('cloud://')) {
-                try {
-                  const fileRes = await wx.cloud.getTempFileURL({ fileList: [assetIcon] });
-                  if (fileRes.fileList && fileRes.fileList.length > 0) {
-                    const fileItem = fileRes.fileList[0];
-                    displayIcon = fileItem.tempFileURL || fileItem.fileURL || '';
-                    assetIcon = displayIcon || asset.icon;
-                  }
-                } catch (e) {
-                  console.error('资产图标云存储链接转换失败:', e);
-                }
-              } else if (assetIcon && assetIcon.startsWith('http')) {
-                // HTTP 链接直接使用
-                displayIcon = assetIcon;
-              }
-
-              return {
-                ...asset,
-                icon: assetIcon,
-                displayIcon: displayIcon  // 图片链接，用于 <image> 显示
-              };
-            }));
-
-            return {
-              ...user,
-              avatarUrl: avatarUrl,
-              firstAccessText: this.formatTime(user.firstAccessTime),
-              lastAccessText: this.formatTime(user.lastAccessTime),
-              activityLevel: activity.level,
-              activityLevelText: activity.text,
-              assets: assets,
-              _expanded: false
-            };
-          }));
-
-          // 计算统计数据
-          this.calculateStats(processedUsers);
-
-          this.setData({
-            users: processedUsers,
-            filteredUsers: processedUsers,
-            empty: processedUsers.length === 0,
-            loading: false
-          });
-        } else {
-          this.setData({
-            users: [],
-            filteredUsers: [],
-            empty: true,
-            loading: false
-          });
-          wx.showToast({
-            title: res.result?.error || '加载失败',
-            icon: 'none'
-          });
-        }
+      if (error) {
+        this.setData({ loading: false, empty: true });
+        wx.showToast({ title: '获取数据失败', icon: 'none' });
         if (callback) callback();
-      },
-      fail: (err) => {
-        console.error('云函数调用失败:', err);
-        this.setData({
-          users: [],
-          filteredUsers: [],
-          empty: true,
-          loading: false
-        });
-        wx.showToast({
-          title: '网络错误',
-          icon: 'none'
-        });
-        if (callback) callback();
+        return;
       }
+
+      const users = data || [];
+
+      // 处理用户数据（Supabase URL 直接使用）
+      const processedUsers = users.map(user => {
+        let avatarUrl = user.avatarUrl;
+
+        if (!avatarUrl) {
+          avatarUrl = getDefaultAvatar(user._openid);
+        }
+
+        // 计算活跃度
+        const activity = this.calculateActivityLevel(user.lastAccessTime);
+
+        // 处理资产列表
+        const assets = (user.assets || []).map(asset => {
+          let assetIcon = asset.icon || '📦';
+          let displayIcon = '';
+
+          if (assetIcon && assetIcon.startsWith('http')) {
+            displayIcon = assetIcon;
+          }
+
+          return {
+            ...asset,
+            icon: assetIcon,
+            displayIcon: displayIcon
+          };
+        });
+
+        return {
+          ...user,
+          avatarUrl: avatarUrl,
+          firstAccessText: this.formatTime(user.firstAccessTime),
+          lastAccessText: this.formatTime(user.lastAccessTime),
+          activityLevel: activity.level,
+          activityLevelText: activity.text,
+          assets: assets,
+          _expanded: false
+        };
+      });
+
+      // 计算统计数据
+      this.calculateStats(processedUsers);
+
+      this.setData({
+        users: processedUsers,
+        filteredUsers: processedUsers,
+        empty: processedUsers.length === 0,
+        loading: false
+      });
+
+      // 默认按最近访问排序
+      this.filterAndSortUsers();
+
+      if (callback) callback();
+    }).catch(err => {
+      console.error('获取用户统计失败:', err);
+      this.setData({
+        users: [],
+        filteredUsers: [],
+        empty: true,
+        loading: false
+      });
+      wx.showToast({ title: '网络错误', icon: 'none' });
+      if (callback) callback();
+    });
     });
   },
 
@@ -288,5 +284,16 @@ Page({
         urls: [iconUrl]
       });
     }
+  },
+
+  // 头像加载失败显示内置默认头像
+  onAvatarError(e) {
+    const index = e.currentTarget.dataset.index;
+    const user = this.data.filteredUsers[index];
+    if (!user || user._avatarFallback) return;
+    user._avatarFallback = true;
+    var data = {};
+    data['filteredUsers[' + index + '].avatarUrl'] = getDefaultAvatar(user._openid);
+    this.setData(data);
   }
 });

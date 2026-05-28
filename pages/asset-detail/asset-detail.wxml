@@ -72,7 +72,7 @@
       <!-- 普通资产状态标签 -->
       <block wx:else>
         <view class="status-pill {{asset.status}}">
-          <image class="status-pill-icon" src="/images/{{asset.status}}.svg" mode="aspectFit"></image>
+          <image wx:if="{{asset.status}}" class="status-pill-icon" src="/images/{{asset.status}}.svg" mode="aspectFit"></image>
           {{asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出'}}
         </view>
       </block>

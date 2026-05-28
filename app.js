@@ -1,33 +1,8 @@
 // app.js
+const { supabase } = require('./utils/supabase');
+
 App({
   onLaunch: function () {
-    // 初始化云开发环境
-    if (wx.cloud) {
-      wx.cloud.init({
-        env: 'cloud1-4gdakam95d203bfc',
-        traceUser: true
-      })
-    }
-
-    // 获取用户信息
-    // 注意：微信已不再支持在 onLaunch 中自动获取用户信息（wx.getUserInfo 接口已调整）
-    // 真机调试时此处容易报错，且云开发主要依赖 openid 鉴权，不影响核心功能
-    // 如需获取头像昵称，建议在具体页面通过按钮引导用户点击 wx.getUserProfile
-    /*
-    wx.getSetting({
-      success: res => {
-        if (res.authSetting['scope.userInfo']) {
-          // 已经授权，可以直接调用 getUserInfo 获取头像昵称
-          wx.getUserInfo({
-            success: res => {
-              this.globalData.userInfo = res.userInfo
-            }
-          })
-        }
-      }
-    })
-    */
-
     // 获取当前用户 openid
     this.getOpenid();
   },
@@ -44,15 +19,30 @@ App({
     }
 
     // 创建新的 Promise 并保存
+    // 使用 Supabase Edge Function 获取 openid
     this.globalData.openidPromise = new Promise((resolve, reject) => {
-      wx.cloud.callFunction({
-        name: 'getUserOpenid',
-        success: (res) => {
-          if (res.result && res.result.openid) {
-            this.globalData.openid = res.result.openid;
-            resolve(res.result.openid);
+      wx.login({
+        success: (loginRes) => {
+          if (loginRes.code) {
+            supabase.functions.invoke('get-user-openid', { code: loginRes.code })
+              .then(result => {
+                const { data, error } = result;
+                if (error) {
+                  reject(error);
+                  return;
+                }
+                if (data && data.openid) {
+                  this.globalData.openid = data.openid;
+                  resolve(data.openid);
+                } else {
+                  reject(new Error('获取 openid 失败'));
+                }
+              })
+              .catch(err => {
+                reject(err);
+              });
           } else {
-            reject(res);
+            reject(new Error('wx.login 失败：' + loginRes.errMsg));
           }
         },
         fail: (err) => {
@@ -66,7 +56,6 @@ App({
 
   globalData: {
     userInfo: null,
-    envId: 'cloud1-4gdakam95d203bfc',
     openid: null,
     openidPromise: null  // 保存 openid 的 Promise
   }

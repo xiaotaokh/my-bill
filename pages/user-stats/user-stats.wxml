@@ -106,7 +106,7 @@
           <!-- 头像区域 -->
           <view class="user-avatar-wrapper">
             <view class="avatar-ring {{item.activityLevel}}"></view>
-            <image class="avatar-img" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+            <image class="avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" binderror="onAvatarError" data-index="{{index}}"></image>
             <view class="activity-dot {{item.activityLevel}}"></view>
           </view>
 

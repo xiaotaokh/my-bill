@@ -35,6 +35,7 @@
             class="avatar-img"
             src="{{userInfo.avatarUrl}}"
             mode="aspectFill"
+            binderror="onAvatarError"
           ></image>
           <view wx:else class="avatar-placeholder">
             <text class="placeholder-icon">👤</text>

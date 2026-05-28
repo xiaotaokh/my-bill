@@ -1,5 +1,6 @@
 // asset-add.js
-import { themeManager } from '../../utils/themeManager';
+const { themeManager } = require('../../utils/themeManager');
+const { supabase, uploadFileToStorage, deleteStorageFile, getChinaTimeISO } = require('../../utils/supabase');
 
 Page({
   data: {
@@ -350,231 +351,187 @@ Page({
   },
 
   // 加载资产详情（编辑模式）
-  loadAssetDetail(id) {
+  async loadAssetDetail(assetId) {
     wx.showLoading({ title: '加载中...' });
+    const app = getApp();
 
-    const db = wx.cloud.database({
-      env: getApp().globalData.envId
-    });
+    try {
+      const openid = await app.getOpenid();
 
-    db.collection('assets').doc(id).get()
-      .then(async res => {
-        if (res.data) {
-          const asset = res.data;
+      // 使用 Supabase 查询（通过 id 匹配）
+      const { data: assets, error } = await supabase
+        .from('assets')
+        .select('*')
+        .eq('id', assetId)
+        .limit(1);
 
-          // 设置页面标题
-          wx.setNavigationBarTitle({
-            title: `编辑资产 - ${asset.name}`
-          });
-
-          // 处理缩略图
-          let uploadedImagePath = '';
-          let selectedIcon = '📦';
-          let selectedIconName = '默认';
-          let selectedGroupName = '常用';
-          let selectedIconIndex = 0;
-          let customEmojiValue = '';
-
-          if (asset.icon) {
-            if (asset.icon.startsWith('cloud://')) {
-              // 云存储路径，需要获取临时URL用于预览
-              try {
-                const fileRes = await wx.cloud.getTempFileURL({
-                  fileList: [asset.icon]
-                });
-                if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
-                  uploadedImagePath = asset.icon; // 保存原始云存储路径
-                  selectedIcon = ''; // 清空内置图标
-                  selectedIconName = ''; // 清空图标名称
-                  selectedGroupName = ''; // 清空分组名称，不选中任何内置图标
-                  customEmojiValue = ''; // 清空自定义emoji
-                }
-              } catch (e) {
-                // 获取失败时使用 null
-              }
-            } else if (asset.icon.startsWith('http')) {
-              uploadedImagePath = asset.icon;
-              selectedIcon = '';
-              selectedIconName = ''; // 清空图标名称
-              selectedGroupName = ''; // 清空分组名称，不选中任何内置图标
-              customEmojiValue = ''; // 清空自定义emoji
-            } else {
-              // emoji 图标
-              selectedIcon = asset.icon;
-
-              // 判断是否是自定义emoji（iconName为"自定义emoji"）
-              if (asset.iconName === '自定义emoji') {
-                customEmojiValue = asset.icon;
-                selectedIconName = '自定义emoji';
-                selectedGroupName = '';
-                selectedIconIndex = 0;
-              } else {
-                // 查找对应的图标名称和索引，传入保存的图标名称和分组名称
-                const iconInfo = this.findIconInfoByValue(asset.icon, asset.iconName, asset.groupName);
-                selectedIconName = iconInfo.name;
-                selectedGroupName = iconInfo.groupName;
-                selectedIconIndex = iconInfo.iconIndex;
-                customEmojiValue = '';
-              }
-            }
-          }
-
-          // 已退役或已卖出状态，自动开启不计入总日均
-          const isRetired = asset.status === 'retired';
-          const isSold = asset.status === 'sold';
-
-          // 处理订阅资产数据回显
-          const isSubscription = asset.assetType === 'subscription';
-          let periodAmount = '';
-          let periodType = 'monthly';
-          let periodTypeIndex = 0;
-          let periodDays = '';
-          let subscriptionStartDate = '';
-          let subscriptionEndDate = '';
-          let pendingSubscription = false;
-          let endSubscription = false;
-
-          if (isSubscription) {
-            periodAmount = String(asset.periodAmount || '');
-            periodType = asset.periodType || 'monthly';
-            const periodTypes = ['monthly', 'yearly', 'weekly', 'custom'];
-            periodTypeIndex = periodTypes.indexOf(periodType);
-            if (periodType === 'custom') {
-              periodDays = String(asset.periodDays || '');
-            }
-            subscriptionStartDate = asset.subscriptionStartDate || '';
-            subscriptionEndDate = asset.subscriptionEndDate || '';
-            pendingSubscription = asset.pendingSubscription || false;
-            endSubscription = asset.subscriptionStatus === 'ended';
-          }
-
-          this.setData({
-            assetName: asset.name,
-            name: asset.name,
-            price: isSubscription ? '' : String(asset.price),
-            purchaseDate: asset.purchaseDate,
-            remark: asset.remark || '',
-            isRetired: isRetired,
-            isSold: isSold,
-            retiredDate: asset.retiredDate || '',
-            soldDate: asset.soldDate || '',
-            excludeTotal: asset.excludeTotal || false,
-            // 已退役或已卖出时，强制不计入总日均
-            excludeDaily: isRetired || isSold ? true : (asset.excludeDaily || false),
-            selectedIcon: selectedIcon,
-            selectedIconName: selectedIconName,
-            selectedGroupName: selectedGroupName,
-            selectedIconIndex: selectedIconIndex,
-            uploadedImagePath: uploadedImagePath,
-            customEmojiValue: customEmojiValue,
-            assetCategory: asset.category || '', // 保存类别，等待类别加载后选中
-            // 订阅资产字段
-            assetType: asset.assetType || 'fixed',
-            periodAmount: periodAmount,
-            periodType: periodType,
-            periodTypeIndex: periodTypeIndex,
-            periodDays: periodDays,
-            subscriptionStartDate: subscriptionStartDate,
-            subscriptionEndDate: subscriptionEndDate,
-            pendingSubscription: pendingSubscription,
-            endSubscription: endSubscription
-          });
-
-          wx.hideLoading();
-
-          // 编辑模式下，资产详情加载完成后再加载类别
-          this.loadCategories();
-        } else {
-          wx.hideLoading();
-          wx.showToast({
-            title: '资产不存在',
-            icon: 'none'
-          });
-          setTimeout(() => {
-            wx.navigateBack();
-          }, 1500);
-        }
-      })
-      .catch(err => {
+      if (error || !assets || assets.length === 0) {
         wx.hideLoading();
-        wx.showToast({
-          title: '加载失败',
-          icon: 'none'
-        });
-        setTimeout(() => {
-          wx.navigateBack();
-        }, 1500);
+        wx.showToast({ title: '资产不存在', icon: 'none' });
+        setTimeout(() => wx.navigateBack(), 1500);
+        return;
+      }
+
+      const asset = assets[0];
+
+      // 设置页面标题
+      wx.setNavigationBarTitle({ title: `编辑资产 - ${asset.name}` });
+
+      // 处理缩略图（Supabase URL 直接使用）
+      let uploadedImagePath = '';
+      let selectedIcon = '📦';
+      let selectedIconName = '默认';
+      let selectedGroupName = '常用';
+      let selectedIconIndex = 0;
+      let customEmojiValue = '';
+
+      if (asset.icon) {
+        if (asset.icon.startsWith('http')) {
+          uploadedImagePath = asset.icon;
+          selectedIcon = '';
+          selectedIconName = '';
+          selectedGroupName = '';
+          customEmojiValue = '';
+        } else {
+          // emoji 图标
+          selectedIcon = asset.icon;
+          if (asset.iconName === '自定义emoji') {
+            customEmojiValue = asset.icon;
+            selectedIconName = '自定义emoji';
+            selectedGroupName = '';
+            selectedIconIndex = 0;
+          } else {
+            const iconInfo = this.findIconInfoByValue(asset.icon, asset.iconName, asset.groupName);
+            selectedIconName = iconInfo.name;
+            selectedGroupName = iconInfo.groupName;
+            selectedIconIndex = iconInfo.iconIndex;
+            customEmojiValue = '';
+          }
+        }
+      }
+
+      // 已退役或已卖出状态
+      const isRetired = asset.status === 'retired';
+      const isSold = asset.status === 'sold';
+
+      // 处理订阅资产数据
+      const isSubscription = asset.assetType === 'subscription';
+      let periodAmount = '';
+      let periodType = 'monthly';
+      let periodTypeIndex = 0;
+      let periodDays = '';
+      let subscriptionStartDate = '';
+      let subscriptionEndDate = '';
+      let pendingSubscription = false;
+      let endSubscription = false;
+
+      if (isSubscription) {
+        periodAmount = String(asset.periodAmount || '');
+        periodType = asset.periodType || 'monthly';
+        const periodTypes = ['monthly', 'yearly', 'weekly', 'custom'];
+        periodTypeIndex = periodTypes.indexOf(periodType);
+        if (periodType === 'custom') {
+          periodDays = String(asset.periodDays || '');
+        }
+        subscriptionStartDate = asset.subscriptionStartDate || '';
+        subscriptionEndDate = asset.subscriptionEndDate || '';
+        pendingSubscription = asset.pendingSubscription || false;
+        endSubscription = asset.subscriptionStatus === 'ended';
+      }
+
+      this.setData({
+        assetName: asset.name,
+        name: asset.name,
+        price: isSubscription ? '' : String(asset.price),
+        purchaseDate: asset.purchaseDate,
+        remark: asset.remark || '',
+        isRetired: isRetired,
+        isSold: isSold,
+        retiredDate: asset.retiredDate || '',
+        soldDate: asset.soldDate || '',
+        excludeTotal: asset.excludeTotal || false,
+        excludeDaily: isRetired || isSold ? true : (asset.excludeDaily || false),
+        selectedIcon: selectedIcon,
+        selectedIconName: selectedIconName,
+        selectedGroupName: selectedGroupName,
+        selectedIconIndex: selectedIconIndex,
+        uploadedImagePath: uploadedImagePath,
+        customEmojiValue: customEmojiValue,
+        assetCategory: asset.category || '',
+        assetType: asset.assetType || 'fixed',
+        periodAmount: periodAmount,
+        periodType: periodType,
+        periodTypeIndex: periodTypeIndex,
+        periodDays: periodDays,
+        subscriptionStartDate: subscriptionStartDate,
+        subscriptionEndDate: subscriptionEndDate,
+        pendingSubscription: pendingSubscription,
+        endSubscription: endSubscription,
+        _originalIcon: asset.icon || ''
       });
+
+      wx.hideLoading();
+      this.loadCategories();
+    } catch (err) {
+      wx.hideLoading();
+      wx.showToast({ title: '加载失败', icon: 'none' });
+      setTimeout(() => wx.navigateBack(), 1500);
+    }
   },
 
   // 加载类别
-  loadCategories() {
-    wx.cloud.callFunction({
-      name: 'getCategories',
-      success: (res) => {
-        if (res.result && res.result.success && res.result.data) {
-          const processCategories = async () => {
-            const categoriesData = res.result.data;
+  async loadCategories() {
+    const app = getApp();
+    try {
+      const openid = await app.getOpenid();
 
-            const categoriesWithIcons = await Promise.all(categoriesData.map(async category => {
-              let displayIcon = null;
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('_openid', openid)
+        .order('sortOrder', { ascending: true });
 
-              // 如果是云存储的fileID，获取临时文件链接
-              if (category.icon && category.icon.startsWith('cloud://')) {
-                try {
-                  const fileRes = await wx.cloud.getTempFileURL({
-                    fileList: [category.icon]
-                  });
-                  if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
-                    displayIcon = fileRes.fileList[0].tempFileURL;
-                  }
-                } catch (e) {
-                  // 获取失败时使用空
-                }
-              } else if (category.icon && category.icon.startsWith('http')) {
-                // 已经是 http 临时链接，直接使用
-                displayIcon = category.icon;
-              }
-
-              // 编辑模式下，根据资产类别选中对应的类别（单选模式）
-              let isSelected = false;
-              if (this.data.isEdit && this.data.assetCategory) {
-                // 单选模式：只匹配第一个类别
-                isSelected = category.name === this.data.assetCategory;
-              }
-
-              return {
-                name: category.name,
-                icon: category.icon || '',
-                displayIcon: displayIcon, // 临时文件链接
-                selected: isSelected
-              };
-            }));
-
-            // 添加模式下默认选中第一个类别
-            if (!this.data.isEdit && categoriesWithIcons.length > 0) {
-              categoriesWithIcons[0].selected = true;
-            }
-
-            this.setData({ categories: categoriesWithIcons });
-          };
-
-          processCategories();
-        } else {
-          this.setData({ categories: [] });
-        }
-      },
-      fail: (err) => {
-        this.setData({ categories: [] });
+      if (error) {
+        this.setData({ categoryList: [] });
+        return;
       }
-    });
+
+      const categoriesWithIcons = data.map(category => {
+        let displayIcon = null;
+        // Supabase URL 直接使用
+        if (category.icon && category.icon.startsWith('http')) {
+          displayIcon = category.icon;
+        }
+
+        // 编辑模式下选中对应类别
+        let isSelected = false;
+        if (this.data.isEdit && this.data.assetCategory) {
+          isSelected = category.name === this.data.assetCategory;
+        }
+
+        return {
+          name: category.name,
+          icon: category.icon || '',
+          displayIcon: displayIcon,
+          selected: isSelected
+        };
+      });
+
+      // 添加模式下默认选中第一个类别
+      if (!this.data.isEdit && categoriesWithIcons.length > 0) {
+        categoriesWithIcons[0].selected = true;
+      }
+
+      this.setData({ categories: categoriesWithIcons });
+    } catch (err) {
+      this.setData({ categories: [] });
+    }
   },
 
-  // 辅助函数：判断是否为图片路径（云存储或网络路径）
+  // 辅助函数：判断是否为图片路径（网络路径）
   isAssetImage(icon) {
-    if (!icon) return true;  // 没有图标时显示上传区域
-    // 检查是否为云存储路径或网络路径
-    return icon.indexOf('cloud://') !== -1 || icon.indexOf('http://') !== -1 || icon.indexOf('https://') !== -1;
+    if (!icon) return true;
+    return icon.indexOf('http://') !== -1 || icon.indexOf('https://') !== -1;
   },
 
   // 移除已上传的图片
@@ -865,39 +822,33 @@ Page({
     });
   },
 
-  // 上传图标到云存储
-  uploadIconToCloud(filePath) {
+  // 上传图标到 Supabase Storage
+  async uploadIconToCloud(filePath) {
     wx.showLoading({ title: '上传中...' });
 
-    const fileName = `icons/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.png`;
+    const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.png`;
 
-    wx.cloud.uploadFile({
-      cloudPath: fileName,
-      filePath: filePath,
-      success: (res) => {
-        // 上传成功后，更新selectedIcon为云存储路径，保持缩略图显示
-        this.setData({
-          uploadedImagePath: res.fileID, // 使用uploadedImagePath存储云存储路径
-          customEmojiValue: '' // 清除自定义emoji
-        });
+    try {
+      const { publicUrl, error } = await uploadFileToStorage('icons', fileName, filePath);
+
+      if (error) {
         wx.hideLoading();
-        wx.showToast({
-          title: '上传成功',
-          icon: 'success'
-        });
-      },
-      fail: (err) => {
-        wx.hideLoading();
-        wx.showToast({
-          title: '上传失败，请重试',
-          icon: 'none'
-        });
-        // 如果上传失败，清空上传路径
-        this.setData({
-          uploadedImagePath: ''
-        });
+        wx.showToast({ title: '上传失败，请重试', icon: 'none' });
+        this.setData({ uploadedImagePath: '' });
+        return;
       }
-    });
+
+      this.setData({
+        uploadedImagePath: publicUrl,
+        customEmojiValue: ''
+      });
+      wx.hideLoading();
+      wx.showToast({ title: '上传成功', icon: 'success' });
+    } catch (err) {
+      wx.hideLoading();
+      wx.showToast({ title: '上传失败，请重试', icon: 'none' });
+      this.setData({ uploadedImagePath: '' });
+    }
   },
 
   // 物品名称输入
@@ -1317,58 +1268,123 @@ Page({
       requestData.endSubscription = this.data.endSubscription;
     }
 
-    // 根据是否编辑模式调用不同的云函数
-    const cloudFunctionName = this.data.isEdit ? 'updateAsset' : 'addAsset';
-    if (this.data.isEdit) {
-      requestData.id = this.data.assetId;
-    }
+    // 根据是否编辑模式调用不同的 Supabase 操作
+    const app = getApp();
+    app.getOpenid().then(async openid => {
+      try {
+        // 构造 Supabase 数据（字段名使用 camelCase）
+        const supabaseData = {
+          _openid: openid,
+          name: requestData.name.trim(),
+          price: requestData.price,
+          purchaseDate: requestData.purchaseDate,
+          category: requestData.category,
+          icon: requestData.icon,
+          iconName: requestData.iconName,
+          groupName: requestData.groupName,
+          remark: requestData.remark || '',
+          status: requestData.status,
+          retiredDate: requestData.retiredDate || null,
+          soldDate: requestData.soldDate || null,
+          excludeTotal: requestData.excludeTotal,
+          excludeDaily: requestData.excludeDaily,
+          assetType: requestData.assetType,
+          updatedAt: getChinaTimeISO()
+        };
 
-    // 调用云函数保存资产
-    wx.cloud.callFunction({
-      name: cloudFunctionName,
-      data: requestData,
-      success: (res) => {
-        if (res.result.success) {
+        // 仅新增时设置创建时间
+        if (!this.data.isEdit) {
+          supabaseData.createdAt = getChinaTimeISO();
+        }
+
+        // 订阅资产额外字段
+        if (requestData.assetType === 'subscription') {
+          supabaseData.periodAmount = requestData.periodAmount;
+          supabaseData.periodType = requestData.periodType;
+          supabaseData.periodDays = requestData.periodDays || null;
+          supabaseData.subscriptionStartDate = requestData.subscriptionStartDate || null;
+          supabaseData.subscriptionEndDate = requestData.subscriptionEndDate || null;
+          supabaseData.subscriptionStatus = requestData.endSubscription ? 'ended' : 'active';
+          supabaseData.pendingSubscription = requestData.pendingSubscription;
+        }
+
+        // 检查资产名称是否已存在（同一用户下）
+        const { data: existingAssets, error: queryError } = await supabase
+          .from('assets')
+          .select('id')
+          .eq('_openid', openid)
+          .eq('name', requestData.name.trim());
+
+        if (queryError) {
           wx.hideLoading();
-          wx.showToast({
-            title: this.data.isEdit ? '更新成功' : '保存成功',
-            icon: 'success'
-          });
+          wx.showToast({ title: '检查名称时出错', icon: 'none' });
+          return;
+        }
 
-          // 返回并刷新上一页
-          setTimeout(() => {
-            wx.navigateBack({
-              delta: 1,
-              success: () => {
-                // 触发上一页的刷新
-                const pages = getCurrentPages();
-                if (pages.length > 1) {
-                  const prevPage = pages[pages.length - 2];
-                  // 资产详情页有 loadAssetDetail，首页有 loadAssets
-                  if (prevPage.loadAssetDetail) {
-                    prevPage.loadAssetDetail(this.data.assetId);
-                  } else if (prevPage.loadAssets) {
-                    prevPage.loadAssets();
-                  }
+        // 编辑模式排除自身（supabase.js 无 neq 过滤器，在 JS 层过滤）
+        // 注意：Supabase REST API 返回的 id 为数字，而 this.data.assetId 为字符串，需统一类型
+        const hasDuplicate = existingAssets.some(asset => {
+          if (this.data.isEdit) return String(asset.id) !== this.data.assetId;
+          return true;
+        });
+
+        if (hasDuplicate) {
+          wx.hideLoading();
+          this.setData({ errors: { name: '该名称已存在' } });
+          wx.showToast({ title: '该名称已存在', icon: 'none' });
+          return;
+        }
+
+        let error;
+        if (this.data.isEdit) {
+          // 如果图标变了，删除 Storage 中的旧图标文件
+          const originalIcon = this.data._originalIcon;
+          const newIcon = supabaseData.icon;
+          if (originalIcon && originalIcon.startsWith('http') && originalIcon !== newIcon) {
+            await deleteStorageFile('icons', originalIcon);
+          }
+
+          // 更新资产
+          const result = await supabase
+            .from('assets')
+            .update(supabaseData)
+            .eq('id', this.data.assetId);
+          error = result.error;
+        } else {
+          // 添加资产
+          const result = await supabase
+            .from('assets')
+            .insert(supabaseData);
+          error = result.error;
+        }
+
+        wx.hideLoading();
+
+        if (error) {
+          wx.showToast({ title: error.message || '保存失败', icon: 'none', duration: 2000 });
+          return;
+        }
+
+        wx.showToast({ title: this.data.isEdit ? '更新成功' : '保存成功', icon: 'success' });
+
+        // 返回并刷新上一页
+        setTimeout(() => {
+          wx.navigateBack({
+            delta: 1,
+            success: () => {
+              const pages = getCurrentPages();
+              if (pages.length > 1) {
+                const prevPage = pages[pages.length - 2];
+                if (prevPage.loadAssets) {
+                  prevPage.loadAssets();
                 }
               }
-            });
-          }, 1500);
-        } else {
-          wx.hideLoading();
-          wx.showToast({
-            title: res.result.error || '保存失败',
-            icon: 'none',
-            duration: 2000
+            }
           });
-        }
-      },
-      fail: (err) => {
+        }, 1500);
+      } catch (err) {
         wx.hideLoading();
-        wx.showToast({
-          title: '保存失败，请重试',
-          icon: 'none'
-        });
+        wx.showToast({ title: '保存失败，请重试', icon: 'none' });
       }
     });
   }

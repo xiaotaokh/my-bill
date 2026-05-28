@@ -1,7 +1,6 @@
 {
   "appid": "wxb1fb63721cb2da59",
   "projectname": "myBill",
-  "cloudfunctionRoot": "cloudfunctions/",
   "setting": {
     "urlCheck": false,
     "es6": true,
@@ -52,10 +51,6 @@
   "simulatorPluginLibVersion": {},
   "packOptions": {
     "ignore": [
-      {
-        "value": "cloudfunctions",
-        "type": "folder"
-      },
       {
         "value": "node_modules",
         "type": "folder"

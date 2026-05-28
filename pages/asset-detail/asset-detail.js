@@ -1,9 +1,10 @@
 // asset-detail.js
-import { themeManager } from '../../utils/themeManager';
+const { themeManager } = require('../../utils/themeManager');
+const { supabase, deleteStorageFile } = require('../../utils/supabase');
 Page({
   data: {
     themeStyle: '',
-    asset: {},
+    asset: { status: '' },
     assetId: '',
     displayIcon: null, // 资产缩略图的临时URL
     categoryIcon: null, // 分类图标的临时URL
@@ -62,76 +63,47 @@ Page({
     }
   },
 
-  // 加载资产详情
-  loadAssetDetail(id) {
+  // 加载资产详情（通过 Supabase id 查询）
+  async loadAssetDetail(assetId) {
     wx.showLoading({ title: '加载中...' });
+    const app = getApp();
 
-    const db = wx.cloud.database({
-      env: getApp().globalData.envId
-    });
-    db.collection('assets').doc(id).get()
-      .then(async res => {
-        if (res.data) {
-          const asset = res.data;
-          const displayInfo = this.calculateDisplayInfo(asset);
+    try {
+      const openid = await app.getOpenid();
 
-          // 处理资产缩略图 - 获取云存储临时URL
-          let displayIcon = null;
-          if (asset.icon && asset.icon.startsWith('cloud://')) {
-            try {
-              const fileRes = await wx.cloud.getTempFileURL({
-                fileList: [asset.icon]
-              });
-              if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
-                displayIcon = fileRes.fileList[0].tempFileURL;
-              }
-            } catch (e) {
-              // 获取失败时使用 null
-            }
-          } else if (asset.icon && asset.icon.startsWith('http')) {
-            displayIcon = asset.icon;
-          }
+      const { data, error } = await supabase
+        .from('assets')
+        .select('*')
+        .eq('id', assetId)
+        .single();
 
-          // 加载分类图标
-          this.loadCategoryIcon(asset.category);
-
-          this.setData({
-            asset: asset,
-            displayInfo: displayInfo,
-            displayIcon: displayIcon
-          });
-        } else {
-          wx.showToast({
-            title: '资产不存在',
-            icon: 'none'
-          });
-          setTimeout(() => {
-            wx.navigateBack();
-          }, 1500);
-        }
-      })
-      .catch(err => {
-        // 检查是否是权限错误（访问他人数据）
-        if (err.errCode === -502001 || (err.message && err.message.includes('permission'))) {
-          wx.showToast({
-            title: '无权访问此资产',
-            icon: 'none'
-          });
-        } else {
-          wx.showModal({
-            title: '加载失败',
-            content: '错误信息：' + (err.message || JSON.stringify(err)),
-            showCancel: false
-          });
-        }
-
-        setTimeout(() => {
-          wx.navigateBack();
-        }, 1500);
-      })
-      .finally(() => {
+      if (error || !data) {
         wx.hideLoading();
+        wx.showToast({ title: '资产不存在', icon: 'none' });
+        setTimeout(() => wx.navigateBack(), 1500);
+        return;
+      }
+
+      const asset = data;
+      const displayInfo = this.calculateDisplayInfo(asset);
+
+      // 处理资产缩略图 - HTTP 链接用图片，emoji 用文字
+      const displayIcon = asset.icon && asset.icon.startsWith('http') ? asset.icon : null;
+
+      // 加载分类图标
+      this.loadCategoryIcon(asset.category);
+
+      this.setData({
+        asset: asset,
+        displayInfo: displayInfo,
+        displayIcon: displayIcon
       });
+      wx.hideLoading();
+    } catch (err) {
+      wx.hideLoading();
+      wx.showToast({ title: '加载失败', icon: 'none' });
+      setTimeout(() => wx.navigateBack(), 1500);
+    }
   },
 
   // 辅助函数：安全解析日期（兼容 iOS，明确解析为本地时间午夜）
@@ -326,49 +298,38 @@ Page({
   },
 
   // 加载分类图标
-  loadCategoryIcon(categoryName) {
+  async loadCategoryIcon(categoryName) {
     if (!categoryName) return;
+    const app = getApp();
 
-    wx.cloud.callFunction({
-      name: 'getCategories',
-      success: async (res) => {
-        if (res.result && res.result.data) {
-          const category = res.result.data.find(c => c.name === categoryName);
-          if (category && category.icon) {
-            // 处理云存储图标
-            if (category.icon.startsWith('cloud://')) {
-              try {
-                const fileRes = await wx.cloud.getTempFileURL({
-                  fileList: [category.icon]
-                });
-                if (fileRes.fileList && fileRes.fileList[0] && fileRes.fileList[0].tempFileURL) {
-                  this.setData({
-                    categoryIcon: fileRes.fileList[0].tempFileURL
-                  });
-                }
-              } catch (e) {
-                // 获取失败时使用空
-              }
-            } else if (category.icon.startsWith('http')) {
-              this.setData({
-                categoryIcon: category.icon
-              });
-            } else {
-              // emoji 图标
-              this.setData({
-                categoryIconEmoji: category.icon
-              });
-            }
-          }
+    try {
+      const openid = await app.getOpenid();
+
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('_openid', openid)
+        .eq('name', categoryName)
+        .single();
+
+      if (data && data.icon) {
+        // Supabase URL 直接使用
+        if (data.icon.startsWith('http')) {
+          this.setData({ categoryIcon: data.icon });
+        } else {
+          // emoji 图标
+          this.setData({ categoryIconEmoji: data.icon });
         }
       }
-    });
+    } catch (err) {
+      // 加载失败时忽略
+    }
   },
 
   // 编辑资产
   editAsset() {
     wx.navigateTo({
-      url: `/pages/asset-add/asset-add?id=${this.data.assetId}&edit=true`
+      url: `/pages/asset-add/asset-add?id=${this.data.asset.id}&edit=true`
     });
   },
 
@@ -397,41 +358,43 @@ Page({
   },
 
   // 确认删除
-  confirmDelete() {
+  async confirmDelete() {
     wx.showLoading({ title: '删除中...' });
+    const app = getApp();
 
-    const db = wx.cloud.database({
-      env: getApp().globalData.envId
-    });
-    db.collection('assets').doc(this.data.assetId).remove()
-      .then(() => {
-        wx.hideLoading();
-        wx.showToast({
-          title: '删除成功',
-          icon: 'success'
-        });
+    try {
+      const openid = await app.getOpenid();
 
-        // 返回并刷新
-        setTimeout(() => {
-          wx.navigateBack({
-            success: () => {
-              const pages = getCurrentPages();
-              if (pages.length > 1) {
-                const prevPage = pages[pages.length - 2];
-                if (prevPage.loadAssets) {
-                  prevPage.loadAssets();
-                }
+      // 删除 Storage 中的图标文件
+      if (this.data.asset.icon && this.data.asset.icon.startsWith('http')) {
+        await deleteStorageFile('icons', this.data.asset.icon);
+      }
+
+      await supabase
+        .from('assets')
+        .delete()
+        .eq('id', this.data.assetId);
+
+      wx.hideLoading();
+      wx.showToast({ title: '删除成功', icon: 'success' });
+
+      // 返回并刷新
+      setTimeout(() => {
+        wx.navigateBack({
+          success: () => {
+            const pages = getCurrentPages();
+            if (pages.length > 1) {
+              const prevPage = pages[pages.length - 2];
+              if (prevPage.loadAssets) {
+                prevPage.loadAssets();
               }
             }
-          });
-        }, 1500);
-      })
-      .catch(err => {
-        wx.hideLoading();
-        wx.showToast({
-          title: '删除失败',
-          icon: 'none'
+          }
         });
-      });
+      }, 1500);
+    } catch (err) {
+      wx.hideLoading();
+      wx.showToast({ title: '删除失败', icon: 'none' });
+    }
   }
 });
