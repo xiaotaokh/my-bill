@@ -626,13 +626,13 @@
     <!-- 搜索和新增资产按钮组 -->
     <view wx:if="{{!showSetting && !showReport && !showBatchDelete}}" class="action-fab-group">
       <!-- 新增资产悬浮按钮 -->
-      <view class="add-asset-fab {{statsTotalCount > 0 ? 'has-divider' : ''}}" bindtap="goToAdd">
+      <view class="add-asset-fab" bindtap="goToAdd">
         <image class="fab-icon-img" src="/images/add.svg" mode="aspectFit"></image>
         <text class="fab-label">新增</text>
       </view>
 
       <!-- 搜索资产悬浮按钮 - 有资产时显示 -->
-      <view wx:if="{{statsTotalCount > 0}}" class="search-asset-fab {{showSearchInput ? 'active' : ''}} {{showBackToTop ? 'has-divider' : ''}}" bindtap="toggleSearchInput">
+      <view wx:if="{{statsTotalCount > 0}}" class="search-asset-fab {{showSearchInput ? 'active' : ''}}" bindtap="toggleSearchInput">
         <image wx:if="{{showSearchInput}}" class="fab-icon-img" src="/images/close.svg" mode="aspectFit"></image>
         <image wx:else class="fab-icon-img" src="/images/search.svg" mode="aspectFit"></image>
         <text class="fab-label">{{showSearchInput ? '取消' : '搜索'}}</text>
