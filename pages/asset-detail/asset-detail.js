@@ -93,6 +93,16 @@ Page({
       // 加载分类图标
       this.loadCategoryIcon(asset.category);
 
+      // 解码周期计算方式
+      let periodCalcMethodText = '';
+      if (asset.periodType === 'monthly' || asset.periodType === 'quarterly' || asset.periodType === 'yearly') {
+        const code = parseInt(asset.periodDays);
+        const periodLabel = asset.periodType === 'yearly' ? '年' : asset.periodType === 'quarterly' ? '季' : '月';
+        const calcTexts = [`自然${periodLabel}`, '日对日', '日对日减一'];
+        periodCalcMethodText = (!isNaN(code) && code >= 0 && code <= 2) ? calcTexts[code] : '日对日';
+      }
+      displayInfo.periodCalcMethodText = periodCalcMethodText;
+
       this.setData({
         asset: asset,
         displayInfo: displayInfo,
@@ -145,23 +155,11 @@ Page({
     return `${year}-${month}-${day} ${hour}:${minute}`;
   },
 
-  // 根据周期类型获取周期天数
-  getPeriodDays(periodType, customDays) {
-    const periodMap = {
-      'monthly': 30,
-      'yearly': 365,
-      'weekly': 7
-    };
-    if (periodType === 'custom') {
-      return parseInt(customDays) || 30;
-    }
-    return periodMap[periodType] || 30;
-  },
-
   // 获取周期类型文本
   getPeriodTypeText(periodType, customDays) {
     const typeMap = {
       'monthly': '月度',
+      'quarterly': '季度',
       'yearly': '年度',
       'weekly': '周'
     };
@@ -233,6 +231,119 @@ Page({
     };
   },
 
+  // 按日历计算订阅周期数（不使用固定天数）
+  calcSubscriptionPeriods(asset, startDate, endDate) {
+    const periodType = asset.periodType;
+    // 从 periodDays 解码计算方式（monthly/quarterly/yearly 类型时存 0/1/2）
+    let calcMethod = 'day_to_day';
+    if (periodType === 'monthly' || periodType === 'quarterly' || periodType === 'yearly') {
+      const code = parseInt(asset.periodDays);
+      if (!isNaN(code) && code >= 0 && code <= 2) {
+        calcMethod = ['natural', 'day_to_day', 'day_to_day_minus_one'][code];
+      }
+    }
+
+    if (periodType === 'weekly') {
+      const usedDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+      const safeDays = Math.max(1, usedDays);
+      return { usedDays: safeDays, completedPeriods: Math.floor(safeDays / 7) + 1 };
+    }
+    if (periodType === 'custom') {
+      const customDays = parseInt(asset.periodDays) || 30;
+      const usedDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+      const safeDays = Math.max(1, usedDays);
+      return { usedDays: safeDays, completedPeriods: Math.floor(safeDays / customDays) + 1 };
+    }
+
+    if (periodType === 'yearly') {
+      return this.calcYearlyPeriods(startDate, endDate, calcMethod);
+    }
+    if (periodType === 'quarterly') {
+      return this.calcQuarterlyPeriods(startDate, endDate, calcMethod);
+    }
+    return this.calcMonthlyPeriods(startDate, endDate, calcMethod);
+  },
+
+  calcMonthlyPeriods(startDate, endDate, calcMethod) {
+    const sy = startDate.getFullYear(), sm = startDate.getMonth(), sd = startDate.getDate();
+    const ey = endDate.getFullYear(), em = endDate.getMonth(), ed = endDate.getDate();
+
+    const mDiff = (ey - sy) * 12 + (em - sm);
+    const usedDays = Math.max(1, Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)));
+
+    const daysInMonth = new Date(ey, em + 1, 0).getDate();
+    const effDay = Math.min(sd, daysInMonth);
+
+    let completedPeriods;
+    if (calcMethod === 'natural') {
+      completedPeriods = Math.max(1, mDiff + 1);
+    } else if (calcMethod === 'day_to_day') {
+      completedPeriods = ed > effDay ? mDiff + 1 : Math.max(1, mDiff);
+    } else {
+      completedPeriods = ed >= effDay ? mDiff + 1 : Math.max(1, mDiff);
+    }
+
+    return { usedDays, completedPeriods };
+  },
+
+  calcYearlyPeriods(startDate, endDate, calcMethod) {
+    const sy = startDate.getFullYear(), sm = startDate.getMonth(), sd = startDate.getDate();
+    const ey = endDate.getFullYear(), em = endDate.getMonth(), ed = endDate.getDate();
+
+    const yDiff = ey - sy;
+    const usedDays = Math.max(1, Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)));
+
+    const daysInMonth = new Date(ey, em + 1, 0).getDate();
+    const effDay = Math.min(sd, daysInMonth);
+
+    let completedPeriods;
+    if (calcMethod === 'natural') {
+      completedPeriods = Math.max(1, yDiff + 1);
+    } else if (calcMethod === 'day_to_day') {
+      if (em > sm || (em === sm && ed > effDay)) {
+        completedPeriods = yDiff + 1;
+      } else {
+        completedPeriods = Math.max(1, yDiff);
+      }
+    } else {
+      if (em > sm || (em === sm && ed >= effDay)) {
+        completedPeriods = yDiff + 1;
+      } else {
+        completedPeriods = Math.max(1, yDiff);
+      }
+    }
+
+    return { usedDays, completedPeriods };
+  },
+
+  // 计算季度周期
+  calcQuarterlyPeriods(startDate, endDate, calcMethod) {
+    const sy = startDate.getFullYear(), sm = startDate.getMonth(), sd = startDate.getDate();
+    const ey = endDate.getFullYear(), em = endDate.getMonth(), ed = endDate.getDate();
+
+    const mDiff = (ey - sy) * 12 + (em - sm);
+    const qDiff = Math.floor(mDiff / 3);
+    const remainingMonths = mDiff % 3;
+    const usedDays = Math.max(1, Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)));
+
+    const daysInMonth = new Date(ey, em + 1, 0).getDate();
+    const effDay = Math.min(sd, daysInMonth);
+
+    let completedPeriods;
+    if (calcMethod === 'natural') {
+      const sq = Math.floor(sm / 3);
+      const eq = Math.floor(em / 3);
+      const qDiffNat = (ey - sy) * 4 + (eq - sq);
+      completedPeriods = Math.max(1, qDiffNat + 1);
+    } else if (calcMethod === 'day_to_day') {
+      completedPeriods = (remainingMonths > 0 || ed > effDay) ? qDiff + 1 : Math.max(1, qDiff);
+    } else {
+      completedPeriods = (remainingMonths > 0 || ed >= effDay) ? qDiff + 1 : Math.max(1, qDiff);
+    }
+
+    return { usedDays, completedPeriods };
+  },
+
   // 计算订阅资产显示信息
   calculateSubscriptionDisplayInfo(asset) {
     const purchaseDate = this.parseDate(asset.purchaseDate);
@@ -249,15 +360,17 @@ Page({
 
     // 待生效状态不计算使用天数
     if (asset.subscriptionStatus !== 'pending') {
-      usedDays = Math.floor((endDate - subscriptionStartDate) / (1000 * 60 * 60 * 24)) + 1;
-      if (usedDays <= 0) usedDays = 1;
+      usedDays = Math.floor((endDate - subscriptionStartDate) / (1000 * 60 * 60 * 24));
+      if (usedDays < 1) usedDays = 1;
     }
 
-    // 计算总投入
+    // 计算总投入（按日历周期）
     let totalInvestment = '0.00';
+    let completedPeriods = 0;
     if (asset.subscriptionStatus !== 'pending' && asset.periodAmount && asset.periodType) {
-      const periodDays = this.getPeriodDays(asset.periodType, asset.periodDays);
-      const completedPeriods = Math.ceil(usedDays / periodDays);
+      const result = this.calcSubscriptionPeriods(asset, subscriptionStartDate, endDate);
+      usedDays = result.usedDays;
+      completedPeriods = result.completedPeriods;
       totalInvestment = (asset.periodAmount * completedPeriods).toFixed(2);
     }
 
@@ -290,6 +403,8 @@ Page({
       dailyEquivalent: '0.00',
       dateRange: dateRange,
       periodTypeText: periodTypeText,
+      periodCount: completedPeriods,
+      periodCountText: completedPeriods > 0 ? completedPeriods + (asset.periodType === 'yearly' ? '年' : asset.periodType === 'quarterly' ? '季' : asset.periodType === 'weekly' ? '周' : '期') : '',
       totalInvestment: totalInvestment,
       subscriptionStartDateFormatted: this.formatDate(asset.subscriptionStartDate),
       subscriptionEndDateFormatted: this.formatDate(asset.subscriptionEndDate)

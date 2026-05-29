@@ -154,6 +154,25 @@
         </picker>
       </view>
 
+      <!-- 周期计算方式（月度、季度和年度可用） -->
+      <view class="form-item" wx:if="{{periodType === 'monthly' || periodType === 'quarterly' || periodType === 'yearly'}}">
+        <view class="item-label">
+          <text>周期计算方式</text>
+        </view>
+        <picker
+          mode="selector"
+          range="{{periodCalcOptions}}"
+          value="{{periodCalcIndex}}"
+          bindchange="onPeriodCalcChange"
+          class="item-picker"
+        >
+          <view class="picker-content">
+            <text class="picker-value">{{periodCalcOptions[periodCalcIndex]}}</text>
+            <text class="picker-icon">›</text>
+          </view>
+        </picker>
+      </view>
+
       <!-- 周期天数（自定义周期） -->
       <view class="form-item" wx:if="{{periodType === 'custom'}}">
         <view class="item-label">

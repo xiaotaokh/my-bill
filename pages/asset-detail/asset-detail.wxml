@@ -97,18 +97,32 @@
           </view>
           <view class="card-content">
             <view class="card-label">周期类型</view>
-            <view class="card-value">{{displayInfo.periodTypeText}}</view>
+            <view class="card-value">
+              <text wx:if="{{asset.periodType === 'custom'}}">自定义 / {{asset.periodDays || 30}}天</text>
+              <text wx:else>{{displayInfo.periodTypeText}}</text>
+            </view>
           </view>
         </view>
 
-        <!-- 订阅开始日期 -->
-        <view class="info-card" wx:if="{{asset.subscriptionStartDate}}">
+        <!-- 周期计算方式 -->
+        <view class="info-card" wx:if="{{displayInfo.periodCalcMethodText}}">
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/period-type.svg" mode="aspectFit"></image>
+          </view>
+          <view class="card-content">
+            <view class="card-label">周期计算方式</view>
+            <view class="card-value">{{displayInfo.periodCalcMethodText}}</view>
+          </view>
+        </view>
+
+        <!-- 订阅开始日期（待订阅显示"开始日期"，活跃/已结束显示"订阅日期"） -->
+        <view class="info-card" wx:if="{{asset.subscriptionStartDate || asset.purchaseDate}}">
           <view class="card-icon">
             <image class="card-icon-svg" src="/images/start-date.svg" mode="aspectFit"></image>
           </view>
           <view class="card-content">
-            <view class="card-label">开始日期</view>
-            <view class="card-value">{{displayInfo.subscriptionStartDateFormatted}}</view>
+            <view class="card-label">{{asset.subscriptionStatus === 'pending' ? '开始日期' : '订阅日期'}}</view>
+            <view class="card-value">{{displayInfo.subscriptionStartDateFormatted || displayInfo.purchaseDateFormatted}}</view>
           </view>
         </view>
 
@@ -133,6 +147,17 @@
             <view class="card-value highlight-value">{{displayInfo.usedDays}} 天</view>
           </view>
           <view class="card-decoration"></view>
+        </view>
+
+        <!-- 已订阅期数 -->
+        <view class="info-card" wx:if="{{asset.subscriptionStatus !== 'pending' && displayInfo.periodCount > 0}}">
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/subscription-duration.svg" mode="aspectFit"></image>
+          </view>
+          <view class="card-content">
+            <view class="card-label">已订阅期数</view>
+            <view class="card-value">{{displayInfo.periodCountText}}</view>
+          </view>
         </view>
 
         <!-- 日均成本 -->

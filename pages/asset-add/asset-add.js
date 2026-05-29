@@ -13,8 +13,11 @@ Page({
 
     // 资产类型
     assetType: 'fixed', // 'fixed' | 'subscription'
-    periodTypeOptions: ['月度', '年度', '周', '自定义'],
+    periodTypeOptions: ['月度', '季度', '年度', '周', '自定义'],
     periodTypeIndex: 0,
+    periodCalcMethod: 'day_to_day',
+    periodCalcOptions: ['自然月', '日对日', '日对日减一'],
+    periodCalcIndex: 1,
 
     // 表单数据
     name: '',
@@ -423,19 +426,36 @@ Page({
       let periodAmount = '';
       let periodType = 'monthly';
       let periodTypeIndex = 0;
+      let periodCalcMethod = 'day_to_day';
+      let periodCalcIndex = 1;
       let periodDays = '';
       let subscriptionStartDate = '';
       let subscriptionEndDate = '';
       let pendingSubscription = false;
       let endSubscription = false;
+      let calcOptions = ['自然月', '日对日', '日对日减一'];
 
       if (isSubscription) {
         periodAmount = String(asset.periodAmount || '');
         periodType = asset.periodType || 'monthly';
-        const periodTypes = ['monthly', 'yearly', 'weekly', 'custom'];
+        const periodTypes = ['monthly', 'quarterly', 'yearly', 'weekly', 'custom'];
         periodTypeIndex = periodTypes.indexOf(periodType);
         if (periodType === 'custom') {
           periodDays = String(asset.periodDays || '');
+        }
+        // 从 periodDays 解码计算方式（0=自然月/季/年, 1=日对日, 2=日对日减一）
+        const code = parseInt(asset.periodDays);
+        if (periodType !== 'custom' && !isNaN(code) && code >= 0 && code <= 2) {
+          periodCalcMethod = ['natural', 'day_to_day', 'day_to_day_minus_one'][code];
+          periodCalcIndex = code;
+        }
+        if (periodType === 'monthly' || periodType === 'quarterly' || periodType === 'yearly') {
+          periodDays = ''; // 清除，月度/季度/年度不存天数
+        }
+        // 设置周期计算方式选项文本
+        if (periodType === 'monthly' || periodType === 'quarterly' || periodType === 'yearly') {
+          const periodLabel = periodType === 'yearly' ? '年' : periodType === 'quarterly' ? '季' : '月';
+          calcOptions = [`自然${periodLabel}`, '日对日', '日对日减一'];
         }
         subscriptionStartDate = asset.subscriptionStartDate || '';
         subscriptionEndDate = asset.subscriptionEndDate || '';
@@ -467,6 +487,9 @@ Page({
         originalPeriodAmount: periodAmount,
         periodType: periodType,
         periodTypeIndex: periodTypeIndex,
+        periodCalcMethod: periodCalcMethod,
+        periodCalcIndex: periodCalcIndex,
+        periodCalcOptions: calcOptions,
         periodDays: periodDays,
         subscriptionStartDate: subscriptionStartDate,
         subscriptionEndDate: subscriptionEndDate,
@@ -1030,12 +1053,27 @@ Page({
   // 周期类型选择
   onPeriodTypeChange(e) {
     const index = parseInt(e.detail.value);
-    const periodTypes = ['monthly', 'yearly', 'weekly', 'custom'];
+    const periodTypes = ['monthly', 'quarterly', 'yearly', 'weekly', 'custom'];
     const periodType = periodTypes[index];
+    const periodLabel = periodType === 'yearly' ? '年' : periodType === 'quarterly' ? '季' : '月';
+    const periodCalcOptions = (periodType === 'monthly' || periodType === 'quarterly' || periodType === 'yearly')
+      ? [`自然${periodLabel}`, '日对日', '日对日减一']
+      : ['自然月', '日对日', '日对日减一'];
     this.setData({
       periodTypeIndex: index,
       periodType,
-      periodDays: '' // 清空自定义天数
+      periodDays: '', // 清空自定义天数
+      periodCalcOptions: periodCalcOptions
+    });
+  },
+
+  // 周期计算方式选择
+  onPeriodCalcChange(e) {
+    const index = parseInt(e.detail.value);
+    const methods = ['natural', 'day_to_day', 'day_to_day_minus_one'];
+    this.setData({
+      periodCalcIndex: index,
+      periodCalcMethod: methods[index]
     });
   },
 
@@ -1257,6 +1295,7 @@ Page({
     if (this.data.assetType === 'subscription') {
       requestData.periodAmount = parseFloat(this.data.periodAmount);
       requestData.periodType = this.data.periodType;
+      requestData.periodCalcMethod = this.data.periodCalcMethod;
       if (this.data.periodType === 'custom') {
         requestData.periodDays = parseInt(this.data.periodDays);
       }
@@ -1311,7 +1350,14 @@ Page({
         if (requestData.assetType === 'subscription') {
           supabaseData.periodAmount = requestData.periodAmount;
           supabaseData.periodType = requestData.periodType;
-          supabaseData.periodDays = requestData.periodDays || null;
+          if (requestData.periodType === 'custom') {
+            supabaseData.periodDays = requestData.periodDays || null;
+          } else if (requestData.periodType === 'monthly' || requestData.periodType === 'quarterly' || requestData.periodType === 'yearly') {
+            const calcCodes = { natural: 0, day_to_day: 1, day_to_day_minus_one: 2 };
+            supabaseData.periodDays = calcCodes[requestData.periodCalcMethod] ?? 1;
+          } else {
+            supabaseData.periodDays = null;
+          }
           supabaseData.subscriptionStartDate = requestData.subscriptionStartDate || null;
           supabaseData.subscriptionEndDate = requestData.subscriptionEndDate || null;
           supabaseData.subscriptionStatus = requestData.endSubscription ? 'ended' : (requestData.pendingSubscription ? 'pending' : 'active');
