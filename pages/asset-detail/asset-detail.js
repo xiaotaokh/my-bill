@@ -253,19 +253,18 @@ Page({
       if (usedDays <= 0) usedDays = 1;
     }
 
-    // 计算订阅资产日均成本 = 每期金额 / 周期天数
-    let dailyCost = '0.00';
-    if (asset.periodAmount && asset.periodType) {
-      const periodDays = this.getPeriodDays(asset.periodType, asset.periodDays);
-      dailyCost = (asset.periodAmount / periodDays).toFixed(2);
-    }
-
     // 计算总投入
     let totalInvestment = '0.00';
     if (asset.subscriptionStatus !== 'pending' && asset.periodAmount && asset.periodType) {
       const periodDays = this.getPeriodDays(asset.periodType, asset.periodDays);
       const completedPeriods = Math.ceil(usedDays / periodDays);
       totalInvestment = (asset.periodAmount * completedPeriods).toFixed(2);
+    }
+
+    // 计算日均成本 = 总投入 / 已使用天数（与首页保持一致）
+    let dailyCost = '0.00';
+    if (asset.subscriptionStatus !== 'pending' && usedDays > 0 && parseFloat(totalInvestment) > 0) {
+      dailyCost = (parseFloat(totalInvestment) / usedDays).toFixed(2);
     }
 
     // 周期类型文本

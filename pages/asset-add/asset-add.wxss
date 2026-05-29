@@ -1078,3 +1078,10 @@
   opacity: 0.9;
   transform: scale(0.98);
 }
+
+.amount-warning {
+  font-size: 24rpx;
+  color: #f59e0b;
+  margin-top: 8rpx;
+  padding-left: 4rpx;
+}

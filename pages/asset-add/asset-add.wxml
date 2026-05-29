@@ -131,6 +131,7 @@
           value="{{periodAmount}}"
           bindinput="onPeriodAmountInput"
         />
+        <view wx:if="{{isEdit && amountChanged}}" class="amount-warning">金额已变更，总投入将根据当前金额重新计算</view>
       </view>
 
       <!-- 周期类型 -->

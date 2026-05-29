@@ -37,6 +37,10 @@ Page({
     pendingSubscription: false,
     endSubscription: false,
 
+    // 订阅编辑金额变更提示
+    originalPeriodAmount: '',
+    amountChanged: false,
+
     // 缩略图选择
     selectedIcon: '📦', // 用户选择的自定义缩略图（默认为📦）
     selectedIconName: '默认',
@@ -460,6 +464,7 @@ Page({
         assetCategory: asset.category || '',
         assetType: asset.assetType || 'fixed',
         periodAmount: periodAmount,
+        originalPeriodAmount: periodAmount,
         periodType: periodType,
         periodTypeIndex: periodTypeIndex,
         periodDays: periodDays,
@@ -1014,7 +1019,12 @@ Page({
 
   // 每期金额输入
   onPeriodAmountInput(e) {
-    this.setData({ periodAmount: e.detail.value });
+    const val = e.detail.value;
+    const changed = this.data.isEdit && val !== this.data.originalPeriodAmount;
+    this.setData({
+      periodAmount: val,
+      amountChanged: changed
+    });
   },
 
   // 周期类型选择
