@@ -324,7 +324,7 @@ function deleteStorageFile(bucket, fileUrl) {
 function getChinaTimeISO() {
   var now = new Date();
   // 转换为 UTC+8
-  var chinaTime = new Date(now.getTime() + (now.getTimezoneOffset() + 480) * 60000);
+  var chinaTime = new Date(now.getTime() + 8 * 3600 * 1000);
   return chinaTime.toISOString().replace('Z', '');
 }
 

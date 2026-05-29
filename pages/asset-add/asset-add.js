@@ -1277,7 +1277,7 @@ Page({
           _openid: openid,
           name: requestData.name.trim(),
           price: requestData.price,
-          purchaseDate: requestData.purchaseDate,
+          purchaseDate: requestData.purchaseDate || null,
           category: requestData.category,
           icon: requestData.icon,
           iconName: requestData.iconName,
@@ -1304,7 +1304,7 @@ Page({
           supabaseData.periodDays = requestData.periodDays || null;
           supabaseData.subscriptionStartDate = requestData.subscriptionStartDate || null;
           supabaseData.subscriptionEndDate = requestData.subscriptionEndDate || null;
-          supabaseData.subscriptionStatus = requestData.endSubscription ? 'ended' : 'active';
+          supabaseData.subscriptionStatus = requestData.endSubscription ? 'ended' : (requestData.pendingSubscription ? 'pending' : 'active');
           supabaseData.pendingSubscription = requestData.pendingSubscription;
         }
 

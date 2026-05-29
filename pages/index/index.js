@@ -145,7 +145,7 @@ Page({
     showAmount: true,
 
     // 资产列表视图模式
-    showSimpleView: true,
+    showSimpleView: false,
     simpleViewCols: [[], [], [], [], []],
 
     // 预设头像 SVG（20个不同风格和语义的头像）
@@ -336,6 +336,8 @@ Page({
           _openid: openid,
           nickName: randomNickname,
           avatarUrl: finalAvatarUrl,
+          createdAt: getChinaTimeISO(),
+          updatedAt: getChinaTimeISO(),
           firstAccessTime: getChinaTimeISO(),
           lastAccessTime: getChinaTimeISO()
         });
@@ -355,6 +357,8 @@ Page({
           _openid: openid,
           nickName: randomNickname,
           avatarUrl: randomAvatar,
+          createdAt: getChinaTimeISO(),
+          updatedAt: getChinaTimeISO(),
           firstAccessTime: getChinaTimeISO(),
           lastAccessTime: getChinaTimeISO()
         });
@@ -762,7 +766,7 @@ Page({
       if (asset.subscriptionStatus !== 'pending' && asset.periodAmount && asset.periodType) {
         const periodDays = this.getPeriodDays(asset.periodType, asset.periodDays);
         const totalDays = usedDays;
-        const completedPeriods = Math.floor(totalDays / periodDays) + 1;
+        const completedPeriods = Math.ceil(totalDays / periodDays);
         totalInvestment = asset.periodAmount * completedPeriods;
       }
 

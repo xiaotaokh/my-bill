@@ -264,7 +264,7 @@ Page({
     let totalInvestment = '0.00';
     if (asset.subscriptionStatus !== 'pending' && asset.periodAmount && asset.periodType) {
       const periodDays = this.getPeriodDays(asset.periodType, asset.periodDays);
-      const completedPeriods = Math.floor(usedDays / periodDays) + 1;
+      const completedPeriods = Math.ceil(usedDays / periodDays);
       totalInvestment = (asset.periodAmount * completedPeriods).toFixed(2);
     }
 
