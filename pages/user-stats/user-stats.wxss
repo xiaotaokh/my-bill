@@ -195,7 +195,13 @@ page {
   color: var(--text-inverse);
 }
 
-/* 骨架屏样式 */
+/* 骨架屏样式 - 带闪烁动画 */
+@keyframes skeletonShimmer {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
 .skeleton-wrapper {
   position: relative;
   z-index: 2;
@@ -254,6 +260,10 @@ page {
   height: 24rpx;
   background: var(--border-default);
   border-radius: 6rpx;
+}
+
+.skeleton-animate {
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
 }
 
 /* 用户列表 */
@@ -475,9 +485,43 @@ page {
   color: var(--border-default);
 }
 
+/* 操作按钮组 */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+/* 删除按钮 */
+.delete-btn {
+  position: absolute;
+  bottom: 16rpx;
+  right: 16rpx;
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 24rpx;
+  background: var(--bg-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23EF4444'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5-1-1h-5l-1 1H5v2h14V4h-3.5z'/%3E%3C/svg%3E") no-repeat center;
+  background-size: 28rpx 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.delete-btn:active {
+  background-color: rgba(239, 68, 68, 0.1);
+  transform: scale(0.9);
+}
+
+.delete-icon {
+  width: 28rpx;
+  height: 28rpx;
+  display: block;
+}
+
 /* 展开/收起按钮 */
 .expand-btn {
-  flex-shrink: 0;
   width: 40rpx;
   height: 40rpx;
   display: flex;

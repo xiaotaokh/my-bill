@@ -393,14 +393,14 @@
         </view>
       </view>
 
-      <!-- 用户统计 -->
+      <!-- 用户管理 -->
       <view class="setting-item-full" bindtap="navigateToUserStats" wx:if="{{showUserStats}}">
         <view class="setting-icon-box">
           <text>🔒</text>
         </view>
         <view class="setting-info">
-          <text class="setting-title-text">用户统计</text>
-          <text class="setting-desc">查看用户访问和资产创建统计</text>
+          <text class="setting-title-text">用户管理</text>
+          <text class="setting-desc">管理用户及其资产数据</text>
         </view>
         <view class="setting-arrow">
           <text class="arrow">›</text>
@@ -852,6 +852,21 @@
         <!-- 柱状图 -->
         <view wx:if="{{timePeriodStats && timePeriodStats.data.length > 0}}" class="chart-wrapper" style="height: 400rpx;">
           <ec-canvas id="time-chart" canvas-id="time-chart" ec="{{ timePeriodEc }}"></ec-canvas>
+        </view>
+
+        <!-- 选中柱图的资产列表 -->
+        <view wx:if="{{selectedPeriodAssets.length > 0}}" class="period-asset-list">
+          <view class="period-asset-header">
+            <text class="period-asset-title">{{selectedPeriodLabel}}的资产</text>
+            <view class="period-asset-header-right">
+              <text class="period-asset-count">{{selectedPeriodAssets.length}}件</text>
+              <text class="period-asset-close" bindtap="closePeriodAssets">✕</text>
+            </view>
+          </view>
+          <view class="period-asset-item" wx:for="{{selectedPeriodAssets}}" wx:key="name" wx:for-item="asset">
+            <text class="period-asset-name">{{asset.name}}</text>
+            <text class="period-asset-price">¥{{asset.price}}</text>
+          </view>
         </view>
 
         <!-- 空状态提示 -->

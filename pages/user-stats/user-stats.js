@@ -1,6 +1,7 @@
 // pages/user-stats/user-stats.js
 const { themeManager } = require('../../utils/themeManager');
 const { supabase } = require('../../utils/supabase');
+const { ADMIN_OPENID } = require('../../utils/auth');
 
 // 内置默认头像列表（8种不同颜色的简单 SVG）
 const DEFAULT_AVATARS = [
@@ -295,5 +296,78 @@ Page({
     var data = {};
     data['filteredUsers[' + index + '].avatarUrl'] = getDefaultAvatar(user._openid);
     this.setData(data);
+  },
+
+  // 删除用户
+  deleteUser(e) {
+    const openid = e.currentTarget.dataset.openid;
+    const name = e.currentTarget.dataset.name;
+
+    // 防止删除管理员自身
+    if (openid === ADMIN_OPENID) {
+      wx.showToast({ title: '不能删除管理员账号', icon: 'none' });
+      return;
+    }
+
+    wx.showModal({
+      title: '确认删除',
+      content: `确定要删除用户「${name}」及其所有资产、分类和图片数据吗？此操作不可恢复！`,
+      cancelText: '取消',
+      confirmText: '确认删除',
+      confirmColor: '#EF4444',
+      success: (res) => {
+        if (res.confirm) {
+          this.doDeleteUser(openid, name);
+        }
+      }
+    });
+  },
+
+  doDeleteUser(openid, name) {
+    wx.showLoading({ title: '删除中...' });
+
+    const app = getApp();
+    app.getOpenid().then(adminOpenid => {
+      supabase.functions.invoke('delete-user', {
+        admin_openid: adminOpenid,
+        target_openid: openid
+      }).then(result => {
+        wx.hideLoading();
+
+        const { data, error } = result;
+
+        if (error) {
+          wx.showToast({ title: '删除失败：' + (error.message || '未知错误'), icon: 'none', duration: 3000 });
+          return;
+        }
+
+        if (data && data.success) {
+          wx.showToast({ title: '已删除用户', icon: 'success' });
+
+          // 从本地列表中移除该用户
+          const users = this.data.users.filter(u => u._openid !== openid);
+          this.setData({ users });
+          this.filterAndSortUsers();
+          this.calculateStats(users);
+
+          if (users.length === 0) {
+            this.setData({ empty: true });
+          }
+        } else {
+          const errMsg = (data && data.message) || '部分删除操作失败';
+          wx.showToast({ title: errMsg, icon: 'none', duration: 3000 });
+          if (data && data.errors && data.errors.length > 0) {
+            console.error('删除用户失败详情:', data.errors);
+          }
+        }
+      }).catch(err => {
+        wx.hideLoading();
+        wx.showToast({ title: '网络错误', icon: 'none' });
+        console.error('删除用户请求失败:', err);
+      });
+    }).catch(err => {
+      wx.hideLoading();
+      wx.showToast({ title: '身份验证失败', icon: 'none' });
+    });
   }
 });

@@ -60,7 +60,7 @@ Page({
     categoryList: [],
 
     // 排序
-    sortDbFields: ['price', 'purchaseDate', 'createdAt'],
+    sortDbFields: ['', 'purchaseDate', 'createdAt'],
     sortOptions: ['价格', '购买时间', '添加时间', '服役时长', '日均成本'],
     currentSortIndex: 1,
     sortOrder: 'desc',
@@ -98,6 +98,8 @@ Page({
     activeTimePeriod: 'all',
     activeGranularity: 'year',
     timePeriodStats: null,
+    selectedPeriodLabel: '',
+    selectedPeriodAssets: [],
 
     // 环形图中间文字
     pieCenterText: '',
@@ -636,7 +638,6 @@ Page({
         query = query.ilike('name', `%${keyword}%`);
       }
 
-      // 排序
       const sortField = sortDbFields[currentSortIndex];
       const orderField = sortField || 'createdAt';
       const orderDir = sortField ? sortOrder : 'desc';
@@ -1083,18 +1084,27 @@ Page({
   filterByStatus(e) {
     this.setData({ activeStatus: e.currentTarget.dataset.status });
     this.applyFilters();
+    if (!this.data.sortDbFields[this.data.currentSortIndex]) {
+      this.applySort();
+    }
   },
 
   filterByCategory(e) {
     this.setData({ activeCategory: e.currentTarget.dataset.category });
     this.applyFilters();
+    if (!this.data.sortDbFields[this.data.currentSortIndex]) {
+      this.applySort();
+    }
   },
 
   changeSort(e) {
     const index = parseInt(e.detail.value);
+    const sortOrder = index === this.data.currentSortIndex
+      ? (this.data.sortOrder === 'desc' ? 'asc' : 'desc')
+      : this.data.sortOrder;
     this.setData({
       currentSortIndex: index,
-      sortOrder: this.data.sortOrder === 'desc' ? 'asc' : 'desc'
+      sortOrder
     });
 
     if (this.data.sortDbFields[index]) {
@@ -1109,13 +1119,14 @@ Page({
     const sorted = [...filteredAssets];
 
     const getVal = (a, key) => {
-      if (key === 'price') return Number(a.price) || 0;
+      if (key === 'price') {
+        if (a.assetType === 'subscription') return Number(a.totalInvestment) || 0;
+        return Number(a.price) || 0;
+      }
       if (key === 'purchaseDate' || key === 'createdAt') return this.parseDate(a[key]).getTime();
       if (key === 'usedDays') return a.usedDays || 0;
       if (key === 'dailyCost') {
-        if (a.status !== 'active') return 0;
-        const days = (Date.now() - this.parseDate(a.purchaseDate).getTime()) / 86400000;
-        return days > 0 ? a.price / days : 0;
+        return Number(a.dailyCost) || 0;
       }
       return 0;
     };
@@ -1754,7 +1765,6 @@ Page({
             const catAssets = this.data.reportCategoryAssetsMap[catName] || [];
             const percent = ((catValue / total) * 100).toFixed(1);
 
-            // 构建资产列表（纯文本格式）
             let assetList = catAssets.slice(0, 5).map(asset => `${asset.name}: ¥${asset.price}`).join('\n');
             if (catAssets.length > 5) {
               assetList += `\n... 等${catAssets.length}项`;
@@ -1839,6 +1849,8 @@ Page({
   // 更新环形图中间文字
   updatePieCenterText(text, subText) {
     if (!this.pieChart) return;
+
+    const themeColors = themeManager.getThemeColors();
 
     this.pieChart.setOption({
       graphic: [{
@@ -2091,6 +2103,11 @@ Page({
     return labels[period] || period;
   },
 
+  // 关闭选中时段的资产列表
+  closePeriodAssets() {
+    this.setData({ selectedPeriodLabel: '', selectedPeriodAssets: [] });
+  },
+
   // 计算时间段统计数据
   calculateTimePeriodStats() {
     const { reportAssets, activeTimePeriod, activeGranularity } = this.data;
@@ -2113,7 +2130,7 @@ Page({
     const granularity = activeTimePeriod === 'all' ? activeGranularity : null;
     const stats = this.groupAssetsByGranularity(filteredAssets, granularity);
 
-    this.setData({ timePeriodStats: stats });
+    this.setData({ timePeriodStats: stats, selectedPeriodLabel: '', selectedPeriodAssets: [] });
 
     // 更新图表
     setTimeout(() => this.initTimeChart(), 100);
@@ -2122,14 +2139,14 @@ Page({
   // 选择时间段
   selectTimePeriod(e) {
     const period = e.currentTarget.dataset.period;
-    this.setData({ activeTimePeriod: period });
+    this.setData({ activeTimePeriod: period, selectedPeriodLabel: '', selectedPeriodAssets: [] });
     this.calculateTimePeriodStats();
   },
 
   // 选择时间线粒度
   selectGranularity(e) {
     const granularity = e.currentTarget.dataset.granularity;
-    this.setData({ activeGranularity: granularity });
+    this.setData({ activeGranularity: granularity, selectedPeriodLabel: '', selectedPeriodAssets: [] });
     this.calculateTimePeriodStats();
   },
 
@@ -2169,7 +2186,6 @@ Page({
             if (!params || !params.length) return '';
             const d = params[0];
             const dataItem = timePeriodStats.data[d.dataIndex];
-            // 构建资产列表（最多显示5项）
             let assetList = dataItem.assets.slice(0, 5).map(a => `${a.name}: ¥${a.price.toFixed(2)}`).join('\n');
             if (dataItem.assets.length > 5) {
               assetList += `\n... 等${dataItem.assets.length}项`;
@@ -2212,6 +2228,7 @@ Page({
           yAxisIndex: 0,
           data: timePeriodStats.data.map(d => d.totalAmount),
           barMaxWidth: 40,
+          barMinWidth: 12,
           itemStyle: {
             borderRadius: [4, 4, 0, 0]
           },
@@ -2226,6 +2243,25 @@ Page({
             color: themeColors.textMuted
           }
         }]
+      });
+
+      // tooltip 显示时展示对应资产列表
+      chart.on('showTip', params => {
+        const dataIndex = params.dataIndex != null ? params.dataIndex : (params.seriesData && params.seriesData[0] ? params.seriesData[0].dataIndex : -1);
+        if (dataIndex < 0 || dataIndex >= timePeriodStats.data.length) return;
+        const dataItem = timePeriodStats.data[dataIndex];
+        if (!dataItem || !dataItem.assets) return;
+        this.setData({
+          selectedPeriodLabel: dataItem.label,
+          selectedPeriodAssets: dataItem.assets
+        });
+      });
+
+      // tooltip 消失时隐藏资产列表
+      chart.on('hideTip', () => {
+        if (this.data.selectedPeriodAssets.length > 0) {
+          this.setData({ selectedPeriodLabel: '', selectedPeriodAssets: [] });
+        }
       });
 
       this.timeChart = chart;
