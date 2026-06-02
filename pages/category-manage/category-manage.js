@@ -83,11 +83,6 @@ Page({
     this.loadCategories();
   },
 
-  onShow: function () {
-    // 页面每次显示都重新加载，确保数据是最新的
-    this.loadCategories();
-  },
-
   onPullDownRefresh: function () {
     this.loadCategories(() => {
       wx.stopPullDownRefresh();

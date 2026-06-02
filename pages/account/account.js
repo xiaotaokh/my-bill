@@ -105,10 +105,6 @@ Page({
     this.loadUserInfo();
   },
 
-  onShow() {
-    this.loadUserInfo();
-  },
-
   // 从数据库加载用户信息
   loadUserInfo() {
     this.setData({ loading: true });

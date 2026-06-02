@@ -663,7 +663,7 @@ Page({
       const cardBgMode = themeManager.getThemeColors().cardBgMode;
       const opacity = cardBgMode === 'solid' ? 1 : 0.30;
       assets.forEach((a, i) => {
-        const hex = cardBgColors[i % cardBgColors.length];
+        const hex = cardBgColors[(i * 7) % cardBgColors.length];
         const r = parseInt(hex.slice(1, 3), 16);
         const g = parseInt(hex.slice(3, 5), 16);
         const b = parseInt(hex.slice(5, 7), 16);
@@ -1332,7 +1332,7 @@ Page({
     arr.forEach((item, i) => {
       const extra = [20, 50, 80][Math.floor(Math.random() * 3)];
       item._cardHeight = BASE_HEIGHT + extra;
-      item._bgColor = BG_COLORS[Math.floor(Math.random() * BG_COLORS.length)];
+      item._bgColor = BG_COLORS[(i * 7) % BG_COLORS.length];
       cols[i % n].push(item);
     });
     return cols;

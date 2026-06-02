@@ -1423,20 +1423,9 @@ Page({
 
         wx.showToast({ title: this.data.isEdit ? '更新成功' : '保存成功', icon: 'success' });
 
-        // 返回并刷新上一页
+        // 返回上一页（onShow 会自动刷新数据）
         setTimeout(() => {
-          wx.navigateBack({
-            delta: 1,
-            success: () => {
-              const pages = getCurrentPages();
-              if (pages.length > 1) {
-                const prevPage = pages[pages.length - 2];
-                if (prevPage.loadAssets) {
-                  prevPage.loadAssets();
-                }
-              }
-            }
-          });
+          wx.navigateBack({ delta: 1 });
         }, 1500);
       } catch (err) {
         wx.hideLoading();

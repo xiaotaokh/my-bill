@@ -19,27 +19,64 @@
 
   <!-- 统计概览卡片组 -->
   <view class="stats-overview">
-    <view class="overview-card main-card">
-      <view class="card-icon">👥</view>
-      <view class="card-content">
-        <text class="card-value">{{users.length}}</text>
-        <text class="card-label">用户总数</text>
+    <!-- 主统计行：用户总数 / 资产总数 / 活跃用户 -->
+    <view class="stats-row-main">
+      <view class="stat-card main-card">
+        <view class="stat-icon-wrap">
+          <image class="stat-icon-img" src="{{usersIcon}}" mode="aspectFit" />
+        </view>
+        <view class="stat-card-body">
+          <text class="stat-card-value">{{users.length}}</text>
+          <text class="stat-card-label">用户总数</text>
+        </view>
       </view>
-      <view class="card-glow"></view>
+      <view class="stat-card">
+        <view class="stat-icon-wrap">
+          <image class="stat-icon-img" src="{{boxIcon}}" mode="aspectFit" />
+        </view>
+        <view class="stat-card-body">
+          <text class="stat-card-value">{{totalAssetCount}}</text>
+          <text class="stat-card-label">资产总数</text>
+        </view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-icon-wrap">
+          <image class="stat-icon-img" src="{{lightningIcon}}" mode="aspectFit" />
+        </view>
+        <view class="stat-card-body">
+          <text class="stat-card-value">{{activeUserCount}}</text>
+          <text class="stat-card-label">活跃用户</text>
+        </view>
+      </view>
     </view>
-    <view class="overview-card">
-      <view class="card-icon">📦</view>
-      <view class="card-content">
-        <text class="card-value">{{totalAssetCount}}</text>
-        <text class="card-label">资产总数</text>
+    <!-- 访问统计行：今日访问 / 昨日访问 -->
+    <view class="stats-row-access">
+      <view class="access-stat-box">
+        <image class="access-stat-icon" src="{{calendarCheckIcon}}" mode="aspectFit" />
+        <view class="access-stat-body">
+          <text class="access-stat-num">{{todayCount}}</text>
+          <text class="access-stat-label">今日访问</text>
+        </view>
+      </view>
+      <view class="access-stat-divider"></view>
+      <view class="access-stat-box">
+        <image class="access-stat-icon" src="{{calendarClockIcon}}" mode="aspectFit" />
+        <view class="access-stat-body">
+          <text class="access-stat-num">{{yesterdayCount}}</text>
+          <text class="access-stat-label">昨日访问</text>
+        </view>
       </view>
     </view>
-    <view class="overview-card">
-      <view class="card-icon">⚡</view>
-      <view class="card-content">
-        <text class="card-value">{{activeUserCount}}</text>
-        <text class="card-label">活跃用户</text>
-      </view>
+  </view>
+
+  <!-- 实时访问趋势图表 -->
+  <view wx:if="{{!loading && accessChartData.length > 0}}" class="chart-section">
+    <view class="chart-header">
+      <image class="chart-header-icon" src="{{chartIcon}}" mode="aspectFit" />
+      <text class="chart-title">访问趋势</text>
+    </view>
+    <view class="chart-wrapper">
+      <ec-canvas id="access-chart" canvas-id="access-chart" ec="{{accessEc}}"></ec-canvas>
     </view>
   </view>
 

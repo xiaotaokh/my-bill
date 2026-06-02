@@ -851,22 +851,22 @@ function getThemeColors(themeKey) {
 // 简单视图卡片背景色（按主题）
 const cardBgColors = {
   fintech: [
-    '#C7D2FE', '#A5B4FC', '#BFDBFE', '#93C5FD', '#A7F3D0',
-    '#6EE7B7', '#FCD34D', '#F9A8D4', '#F0ABFC', '#C4B5FD',
-    '#DDD6FE', '#CBD5E1', '#D1D5DB', '#E2E8F0', '#BFDBFE',
-    '#BAE6FD', '#C4B5FD', '#A7F3D0', '#D9F99D', '#C7D2FE'
+    '#E2E8F0', '#D1D9E6', '#E8ECF4', '#C8D0DC', '#EDF2F7',
+    '#D4DAE8', '#E6EDF6', '#C5CCD8', '#E0E7FF', '#C2CAD6',
+    '#E4E9F2', '#CDD6E4', '#E8EEF4', '#CED6E2', '#DEE4EE',
+    '#CCD3E0', '#DCE3F8', '#D0D8E4', '#D8E0F2', '#C0C8D4'
   ],
   minimal: [
-    '#E8D5C4', '#F0E0D0', '#E0D5C8', '#D4DCC8', '#C8DCD0',
-    '#E4DEC8', '#ECE4C8', '#E8D4C8', '#E8CCD0', '#D0D0DC',
-    '#C8D8DC', '#DCD4D0', '#ECE4D4', '#E4DCD0', '#D0DCC8',
-    '#C8D8D0', '#E8E0C4', '#F0E0CC', '#E8D0CC', '#D8D0D4'
+    '#E8D5C4', '#C4D8D0', '#D0D0E0', '#D4DCC8', '#E0D0D8',
+    '#C8D8DC', '#ECE4C8', '#E0D5C8', '#C8D0E0', '#DCD4D0',
+    '#D0DCC8', '#E4D8C8', '#C8D8D4', '#D8C8D8', '#D8DCD0',
+    '#E0D0C8', '#D0D0D8', '#E8DCC8', '#C8D4DC', '#DCD0D8'
   ],
   obsidian: [
-    '#1A1A1A', '#0D0D0D', '#262626', '#333333', '#2A2A2A',
-    '#222222', '#2E2E2E', '#383838', '#1F1F1F', '#303030',
-    '#282828', '#3A3A3A', '#353535', '#242424', '#1C1C1C',
-    '#404040', '#2C2C2C', '#343434', '#3C3C3C', '#181818'
+    '#4A1E1E', '#1E4A2E', '#1E1E5A', '#5A4A1E', '#1E4A4A',
+    '#4A1E4A', '#3A3A3A', '#5A2E1E', '#1E3A1E', '#1E2E5A',
+    '#5A1E2E', '#2E5A1E', '#1E2E4A', '#4A2E4A', '#2E4A2E',
+    '#1E1E4A', '#5A4A1E', '#1E5A4A', '#4A1E2E', '#2E4A4A'
   ],
   forest: [
     '#A7F3D0', '#D1FAE5', '#ECFDF5', '#BBF7D0', '#86EFAC',

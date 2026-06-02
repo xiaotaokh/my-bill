@@ -1,4 +1,5 @@
 // pages/user-stats/user-stats.js
+const echarts = require('../../components/ec-canvas/echarts');
 const { themeManager } = require('../../utils/themeManager');
 const { supabase } = require('../../utils/supabase');
 const { ADMIN_OPENID } = require('../../utils/auth');
@@ -27,6 +28,21 @@ function getDefaultAvatar(openid) {
   return DEFAULT_AVATARS[index];
 }
 
+// SVG 图标路径（Lucide 风格）
+const ICON_PATHS = {
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  box: '<path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/>',
+  lightning: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  calendarCheck: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/>',
+  calendarClock: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="12 14 12 18 15 18"/>',
+  trendingUp: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'
+};
+
+function createSVGDataURI(pathData, strokeColor) {
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="' + strokeColor + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + pathData + '</svg>';
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
 Page({
   data: {
     themeStyle: '',
@@ -48,7 +64,21 @@ Page({
 
     // 统计数据
     activeUserCount: 0,
-    totalAssetCount: 0
+    totalAssetCount: 0,
+
+    // 访问统计
+    todayCount: 0,
+    yesterdayCount: 0,
+    accessChartData: [],
+    accessEc: { lazyLoad: true },
+
+    // SVG 图标
+    usersIcon: '',
+    boxIcon: '',
+    lightningIcon: '',
+    calendarCheckIcon: '',
+    calendarClockIcon: '',
+    chartIcon: ''
   },
 
   onLoad() {
@@ -70,7 +100,11 @@ Page({
         backgroundColor: navColors.navBg,
         frontColor: navColors.navTextStyle
       });
+      // 主题切换时重新生成图标和图表
+      this.initIcons();
+      setTimeout(() => this.initAccessChart(), 300);
     });
+    this.initIcons();
     this.loadUserStats();
   },
 
@@ -239,6 +273,8 @@ Page({
 
       // 计算统计数据
       this.calculateStats(processedUsers);
+      // 计算访问统计数据
+      this.calculateAccessStats(users);
 
       this.setData({
         users: processedUsers,
@@ -249,6 +285,9 @@ Page({
 
       // 默认按最近访问排序
       this.filterAndSortUsers();
+
+      // 延迟初始化图表（等 DOM 渲染完成）
+      setTimeout(() => this.initAccessChart(), 300);
 
       if (callback) callback();
     }).catch(err => {
@@ -262,6 +301,185 @@ Page({
       wx.showToast({ title: '网络错误', icon: 'none' });
       if (callback) callback();
     });
+    });
+  },
+
+  // 计算访问统计数据（收集所有日期，支持长周期滚动）
+  calculateAccessStats(users) {
+    const now = new Date();
+    const chinaOffset = 8 * 60;
+    const localOffset = now.getTimezoneOffset();
+    const chinaNow = new Date(now.getTime() + (chinaOffset + localOffset) * 60000);
+    const todayDateStr = chinaNow.toISOString().slice(0, 10);
+    const yesterdayDate = new Date(chinaNow);
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterdayDateStr = yesterdayDate.toISOString().slice(0, 10);
+
+    let todayCount = 0;
+    let yesterdayCount = 0;
+    // date -> { count, users: [{ name, assetCount }] }
+    var dateData = {};
+
+    function getChinaDateStr(user) {
+      if (!user.lastAccessTime) return null;
+      var d = new Date(user.lastAccessTime);
+      var chinaD = new Date(d.getTime() + (chinaOffset + d.getTimezoneOffset()) * 60000);
+      return chinaD.toISOString().slice(0, 10);
+    }
+
+    users.forEach(function(user) {
+      var dateStr = getChinaDateStr(user);
+      if (!dateStr) return;
+      if (dateStr === todayDateStr) todayCount++;
+      if (dateStr === yesterdayDateStr) yesterdayCount++;
+      if (!dateData[dateStr]) dateData[dateStr] = { count: 0, users: [] };
+      dateData[dateStr].count++;
+      dateData[dateStr].users.push({
+        name: user.nickName || '未知用户',
+        assetCount: user.assetCount || 0,
+        assetPrice: user.totalAssetPrice || 0
+      });
+    });
+
+    var dates = Object.keys(dateData).sort();
+    if (dates.length === 0) {
+      this.setData({ todayCount: 0, yesterdayCount: 0, accessChartData: [] });
+      return;
+    }
+
+    var firstDate = new Date(dates[0]);
+    var lastDate = new Date(dates[dates.length - 1]);
+    var totalDays = Math.floor((lastDate - firstDate) / (1000 * 60 * 60 * 24)) + 1;
+
+    var accessChartData;
+    if (totalDays > 90) {
+      // 按月聚合（不展示用户明细）
+      var monthMap = {};
+      users.forEach(function(user) {
+        var dateStr = getChinaDateStr(user);
+        if (!dateStr) return;
+        var monthKey = dateStr.slice(0, 7);
+        if (!monthMap[monthKey]) monthMap[monthKey] = { count: 0 };
+        monthMap[monthKey].count++;
+      });
+      accessChartData = Object.keys(monthMap).sort().map(function(m) {
+        return { date: m.slice(5), count: monthMap[m].count, fullDate: m };
+      });
+    } else {
+      // 按日展示，补全空日期
+      var fullDayData = {};
+      var cursor = new Date(firstDate);
+      while (cursor <= lastDate) {
+        var key = cursor.toISOString().slice(0, 10);
+        fullDayData[key] = dateData[key] || { count: 0, users: [] };
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      accessChartData = Object.keys(fullDayData).sort().map(function(date) {
+        var d = fullDayData[date];
+        return { date: date.slice(5), count: d.count, fullDate: date, users: d.users };
+      });
+    }
+
+    this.setData({ todayCount: todayCount, yesterdayCount: yesterdayCount, accessChartData: accessChartData });
+  },
+
+  // 初始化访问趋势图表（渐变柱状 + 滚动缩放）
+  initAccessChart() {
+    var chartData = this.data.accessChartData;
+    if (!chartData || chartData.length === 0) return;
+
+    var themeColors = themeManager.getThemeColors();
+    var component = this.selectComponent('#access-chart');
+    if (!component) return;
+
+    component.init(function(canvas, width, height, dpr) {
+      var chart = echarts.init(canvas, null, {
+        width: width, height: height, devicePixelRatio: dpr
+      });
+      canvas.setChart(chart);
+
+      // 渐变颜色
+      var gradientColor = {
+        type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+        colorStops: [
+          { offset: 0, color: themeColors.primary400 },
+          { offset: 1, color: themeColors.primary600 }
+        ]
+      };
+
+      chart.setOption({
+        color: [themeColors.primary600],
+        animationDuration: 800,
+        animationEasing: 'cubicOut',
+        tooltip: {
+          trigger: 'axis',
+          triggerOn: 'click',
+          confine: true,
+          backgroundColor: themeColors.bgCard,
+          borderColor: themeColors.borderLight,
+          borderWidth: 1,
+          padding: [10, 14],
+          textStyle: { color: themeColors.textDefault, fontSize: 12 },
+          formatter: function(params) {
+            if (!params || !params.length) return '';
+            var d = params[0];
+            var dataItem = chartData[d.dataIndex];
+            var text = d.name + '\n访问人数: ' + d.value + '人';
+            if (dataItem && dataItem.users && dataItem.users.length > 0) {
+              var list = dataItem.users.slice(0, 10);
+              for (var i = 0; i < list.length; i++) {
+                var u = list[i];
+                text += '\n  ' + u.name + '  ' + u.assetCount + '件  ¥' + Number(u.assetPrice).toFixed(2);
+              }
+              if (dataItem.users.length > 10) {
+                text += '\n  ... 等' + dataItem.users.length + '人';
+              }
+            }
+            return text;
+          }
+        },
+        grid: { left: '3%', right: '6%', bottom: '15%', top: '12%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: chartData.map(function(d) { return d.date; }),
+          boundaryGap: true,
+          axisLabel: {
+            fontSize: 10,
+            color: themeColors.textHint,
+            interval: chartData.length > 15 ? 'auto' : 0
+          },
+          axisLine: { lineStyle: { color: themeColors.borderDefault } },
+          axisTick: { show: false }
+        },
+        yAxis: {
+          type: 'value',
+          minInterval: 1,
+          axisLabel: { color: themeColors.textHint, fontSize: 10 },
+          splitLine: { lineStyle: { type: 'dashed', color: themeColors.borderLight } }
+        },
+        series: [{
+          type: 'bar',
+          barMaxWidth: 36,
+          itemStyle: { borderRadius: [4, 4, 0, 0], color: gradientColor },
+          emphasis: { itemStyle: { color: themeColors.primary700 } },
+          data: chartData.map(function(d) { return d.count; })
+        }]
+      });
+
+      return chart;
+    });
+  },
+
+  // 生成 SVG 图标（使用主题色）
+  initIcons() {
+    var color = themeManager.getThemeColors().textMuted;
+    this.setData({
+      usersIcon: createSVGDataURI(ICON_PATHS.users, color),
+      boxIcon: createSVGDataURI(ICON_PATHS.box, color),
+      lightningIcon: createSVGDataURI(ICON_PATHS.lightning, color),
+      calendarCheckIcon: createSVGDataURI(ICON_PATHS.calendarCheck, color),
+      calendarClockIcon: createSVGDataURI(ICON_PATHS.calendarClock, color),
+      chartIcon: createSVGDataURI(ICON_PATHS.trendingUp, color)
     });
   },
 
@@ -349,6 +567,8 @@ Page({
           this.setData({ users });
           this.filterAndSortUsers();
           this.calculateStats(users);
+          this.calculateAccessStats(users);
+          setTimeout(() => this.initAccessChart(), 300);
 
           if (users.length === 0) {
             this.setData({ empty: true });

@@ -492,19 +492,9 @@ Page({
       wx.hideLoading();
       wx.showToast({ title: '删除成功', icon: 'success' });
 
-      // 返回并刷新
+      // 返回上一页（onShow 会自动刷新数据）
       setTimeout(() => {
-        wx.navigateBack({
-          success: () => {
-            const pages = getCurrentPages();
-            if (pages.length > 1) {
-              const prevPage = pages[pages.length - 2];
-              if (prevPage.loadAssets) {
-                prevPage.loadAssets();
-              }
-            }
-          }
-        });
+        wx.navigateBack();
       }, 1500);
     } catch (err) {
       wx.hideLoading();
