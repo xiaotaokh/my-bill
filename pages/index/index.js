@@ -324,7 +324,7 @@ Page({
 
     // 显示新用户欢迎提示
     if (isNewUser) {
-      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 30);
+      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 15);
     }
 
     try {
@@ -383,7 +383,7 @@ Page({
 
     // 显示新用户欢迎提示
     if (isNewUser) {
-      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 30);
+      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 15);
     }
 
     try {
