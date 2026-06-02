@@ -204,7 +204,7 @@
           </view>
           <view class="card-left">
             <view class="asset-avatar">
-              <image wx:if="{{item.displayIcon}}" class="avatar-img" src="{{item.displayIcon}}" mode="aspectFit"></image>
+              <image wx:if="{{item.displayIcon}}" class="avatar-img" src="{{item.displayIcon}}" mode="aspectFill"></image>
               <text wx:else class="avatar-icon">{{item.icon || '📦'}}</text>
             </view>
           </view>
@@ -323,7 +323,7 @@
                 style="min-height: {{asset._cardHeight}}rpx; background: {{asset._bgColor}};"
               >
                 <view class="simple-avatar">
-                  <image wx:if="{{asset.displayIcon}}" class="simple-avatar-img" src="{{asset.displayIcon}}" mode="widthFix"></image>
+                  <image wx:if="{{asset.displayIcon}}" class="simple-avatar-img" src="{{asset.displayIcon}}" mode="aspectFill"></image>
                   <text wx:else class="simple-avatar-icon">{{asset.icon || '📦'}}</text>
                 </view>
                 <text class="simple-name">{{asset.name}}</text>
@@ -525,7 +525,7 @@
         >
           <!-- 资产图标 -->
           <view class="batch-asset-icon">
-            <image wx:if="{{item.displayIcon}}" class="icon-img" src="{{item.displayIcon}}" mode="aspectFit"></image>
+            <image wx:if="{{item.displayIcon}}" class="icon-img" src="{{item.displayIcon}}" mode="aspectFill"></image>
             <text wx:else class="icon-emoji">{{item.icon || '📦'}}</text>
           </view>
 

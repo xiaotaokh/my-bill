@@ -671,21 +671,22 @@ page {
 .asset-icon-box {
   width: 56rpx;
   height: 56rpx;
-  border-radius: 12rpx;
-  background: var(--bg-card);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .asset-icon {
   font-size: 28rpx;
+  line-height: 1;
 }
 
 .asset-icon-img {
-  width: 36rpx;
-  height: 36rpx;
+  width: 100%;
+  height: 100%;
 }
 
 .asset-info {

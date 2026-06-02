@@ -78,7 +78,7 @@ module.exports = {
 
         <view class="card-content">
           <view class="category-icon-wrap">
-            <image wx:if="{{item.displayIcon}}" src="{{item.displayIcon}}" mode="aspectFit" class="category-icon-img"></image>
+            <image wx:if="{{item.displayIcon}}" src="{{item.displayIcon}}" mode="aspectFill" class="category-icon-img"></image>
             <text wx:else class="category-emoji">{{item.icon || '📦'}}</text>
           </view>
           <view class="category-info">
@@ -328,7 +328,7 @@ module.exports = {
     <!-- 标题 -->
     <view class="detail-header">
       <view class="detail-icon-wrap">
-        <image wx:if="{{currentCategory.displayIcon}}" src="{{currentCategory.displayIcon}}" mode="aspectFit" class="detail-icon-img"></image>
+        <image wx:if="{{currentCategory.displayIcon}}" src="{{currentCategory.displayIcon}}" mode="aspectFill" class="detail-icon-img"></image>
         <text wx:else class="detail-emoji">{{currentCategory.icon || '📦'}}</text>
       </view>
       <view class="detail-title-wrap">

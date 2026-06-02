@@ -360,7 +360,7 @@
           </view>
           <!-- 显示类别图标：支持自定义图片和emoji -->
           <view class="category-icon-wrap">
-            <image wx:if="{{item.displayIcon}}" src="{{item.displayIcon}}" mode="aspectFit" class="category-icon-img"></image>
+            <image wx:if="{{item.displayIcon}}" src="{{item.displayIcon}}" mode="aspectFill" class="category-icon-img"></image>
             <text wx:else class="category-icon">{{item.icon || '🏷️'}}</text>
           </view>
           <text class="category-name">{{item.name}}</text>

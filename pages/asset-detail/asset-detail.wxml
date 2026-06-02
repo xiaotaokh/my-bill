@@ -45,7 +45,7 @@
       <view class="avatar-wrapper">
         <view class="avatar-ring"></view>
         <view class="avatar-container">
-          <image wx:if="{{displayIcon}}" class="avatar-img" src="{{displayIcon}}" mode="aspectFit" bindtap="previewIcon"></image>
+          <image wx:if="{{displayIcon}}" class="avatar-img" src="{{displayIcon}}" mode="aspectFill" bindtap="previewIcon"></image>
           <text wx:else class="avatar-emoji">{{asset.icon || '📦'}}</text>
         </view>
         <view class="avatar-glow"></view>
