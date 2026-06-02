@@ -416,7 +416,7 @@ Page({
         animationEasing: 'cubicOut',
         tooltip: {
           trigger: 'axis',
-          triggerOn: 'click',
+          triggerOn: 'mousemove',
           confine: true,
           backgroundColor: themeColors.bgCard,
           borderColor: themeColors.borderLight,

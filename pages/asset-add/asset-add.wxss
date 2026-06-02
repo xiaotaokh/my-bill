@@ -662,8 +662,9 @@
   flex: 1;
   position: relative;
   border-radius: 14rpx;
-  background: var(--bg-subtle);
-  border: 1.5rpx solid var(--border-default);
+  background: var(--bg-card);
+  border: 1rpx solid transparent;
+  box-shadow: 0 0 0 1rpx var(--border-default);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
@@ -673,9 +674,7 @@
 }
 
 .type-option.selected {
-  border-color: var(--primary-600);
-  background: var(--bg-card);
-  box-shadow: 0 4rpx 16rpx rgba(var(--primary-600-rgb, 79, 70, 229), 0.12);
+  box-shadow: 0 0 0 1.5rpx var(--primary-600), 0 4rpx 16rpx rgba(var(--primary-600-rgb, 79, 70, 229), 0.12);
 }
 
 /* 选中时背景装饰光晕 */

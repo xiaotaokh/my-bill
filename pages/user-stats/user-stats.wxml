@@ -73,7 +73,7 @@
   <view wx:if="{{!loading && accessChartData.length > 0}}" class="chart-section">
     <view class="chart-header">
       <image class="chart-header-icon" src="{{chartIcon}}" mode="aspectFit" />
-      <text class="chart-title">访问趋势</text>
+      <text class="chart-title">访问数据</text>
     </view>
     <view class="chart-wrapper">
       <ec-canvas id="access-chart" canvas-id="access-chart" ec="{{accessEc}}"></ec-canvas>
