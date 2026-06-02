@@ -1,6 +1,7 @@
 // pages/account/account.js
 const { themeManager } = require('../../utils/themeManager');
 const { supabase, uploadFileToStorage, getChinaTimeISO } = require('../../utils/supabase');
+const { isAdmin } = require('../../utils/auth');
 const app = getApp();
 
 Page({
@@ -9,6 +10,9 @@ Page({
     userInfo: null,
     loading: true,
     userId: '',
+
+    // 管理员标识
+    isAdmin: false,
 
     // 编辑模式
     isEditing: false,
@@ -125,6 +129,9 @@ Page({
   async queryUserInfo() {
     try {
       const openid = await app.getOpenid();
+      if (isAdmin(openid)) {
+        this.setData({ isAdmin: true });
+      }
 
       const { data, error } = await supabase
         .from('users')
@@ -194,8 +201,11 @@ Page({
 
   // 昵称输入
   onNicknameInput(e) {
-    const nickName = (e.detail.value || '').trim();
-    this.setData({ editNickName: nickName });
+    const raw = e.detail.value || '';
+    if (raw.length > 10) {
+      wx.showToast({ title: '昵称最多10个字', icon: 'none' });
+    }
+    this.setData({ editNickName: raw.slice(0, 10) });
   },
 
   // 昵称失去焦点

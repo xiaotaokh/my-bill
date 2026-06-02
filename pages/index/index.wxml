@@ -49,6 +49,11 @@
             <text class="date-week">{{currentWeek}}</text>
           </view>
         </view>
+        <!-- 用户头像和昵称 -->
+        <view class="user-profile" bindtap="navigateToAccount" wx:if="{{userNickName}}">
+          <image class="header-avatar" src="{{userAvatar}}" mode="aspectFill"></image>
+          <text class="header-nickname">{{userNickName}}</text>
+        </view>
         <!-- 天气显示 -->
         <view class="weather-info" wx:if="{{!weatherLoading && weatherText}}">
           <text class="weather-icon">{{weatherIcon}}</text>
@@ -408,7 +413,7 @@
       </view>
 
       <!-- 账号 -->
-      <view class="setting-item-full" bindtap="navigateToAccount" wx:if="{{!isAdmin}}">
+      <view class="setting-item-full" bindtap="navigateToAccount">
         <view class="setting-icon-box">
           <text>👤</text>
         </view>
@@ -624,7 +629,7 @@
     </view>
 
     <!-- 搜索和新增资产按钮组 -->
-    <view wx:if="{{!showSetting && !showReport && !showBatchDelete}}" class="action-fab-group">
+    <view wx:if="{{!showSetting && !showReport && !showBatchDelete}}" class="action-fab-group {{statsTotalCount <= 0 ? 'only-add' : ''}} {{!showBackToTop ? 'no-back-top' : ''}}">
       <!-- 新增资产悬浮按钮 -->
       <view class="add-asset-fab" bindtap="goToAdd">
         <image class="fab-icon-img" src="/images/add.svg" mode="aspectFit"></image>

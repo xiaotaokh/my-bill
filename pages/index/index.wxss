@@ -180,12 +180,43 @@
   color: var(--text-hint);
 }
 
+/* 用户头像和昵称 */
+.user-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+  padding: 4rpx 10rpx 2rpx;
+  border-radius: 32rpx;
+  flex-shrink: 0;
+}
+
+.user-profile:active {
+  opacity: 0.7;
+}
+
+.header-avatar {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.header-nickname {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: var(--text-default);
+  max-width: 120rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* 天气显示 */
 .weather-info {
   display: flex;
   align-items: center;
   gap: 12rpx;
-  margin-left: auto;
   padding: 14rpx 0;
 }
 
@@ -1686,6 +1717,14 @@
 }
 
 .action-fab-group > view:last-child::after {
+  display: none;
+}
+
+.action-fab-group.only-add > view::after {
+  display: none;
+}
+
+.action-fab-group.no-back-top > view:nth-last-child(2)::after {
   display: none;
 }
 

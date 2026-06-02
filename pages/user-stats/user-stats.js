@@ -233,7 +233,7 @@ Page({
       const users = data || [];
 
       // 处理用户数据（Supabase URL 直接使用）
-      const processedUsers = users.map(user => {
+      let processedUsers = users.map(user => {
         let avatarUrl = user.avatarUrl;
 
         if (!avatarUrl) {
@@ -270,6 +270,9 @@ Page({
           _expanded: false
         };
       });
+
+      // 过滤掉管理员
+      processedUsers = processedUsers.filter(u => u._openid !== ADMIN_OPENID);
 
       // 计算统计数据
       this.calculateStats(processedUsers);

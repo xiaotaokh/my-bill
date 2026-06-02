@@ -39,6 +39,10 @@ Page({
     showUserStats: false,
     isAdmin: false,
 
+    // 用户头像和昵称（头部显示）
+    userAvatar: '',
+    userNickName: '',
+
     // 资产列表
     assets: [],
     filteredAssets: [],
@@ -237,7 +241,6 @@ Page({
       // 管理员直接加载布局偏好
       if (isAdmin(openid)) {
         this.loadLayoutPreference();
-        return;
       }
 
       // 查询 Supabase 检查用户是否存在
@@ -269,6 +272,7 @@ Page({
             nickName: user.nickName,
             avatarUrl: user.avatarUrl
           };
+          this.syncUserProfile();
           // 更新访问时间
           await supabase
             .from('users')
@@ -279,8 +283,20 @@ Page({
     });
   },
 
+  // 同步用户头像和昵称到页面数据
+  syncUserProfile() {
+    const app = getApp();
+    const info = app.globalData.userInfo;
+    if (info && info.avatarUrl && info.nickName) {
+      this.setData({
+        userAvatar: info.avatarUrl,
+        userNickName: info.nickName
+      });
+    }
+  },
+
   // 显示欢迎提示弹窗
-  showWelcomeToast(message, subMessage = '', duration = 10) {
+  showWelcomeToast(message, subMessage = '', duration = 5) {
     const durationMs = duration * 1000;
     this.setData({
       showWelcomeToast: true,
@@ -324,7 +340,7 @@ Page({
 
     // 显示新用户欢迎提示
     if (isNewUser) {
-      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 15);
+      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 5);
     }
 
     try {
@@ -349,6 +365,7 @@ Page({
           nickName: randomNickname,
           avatarUrl: finalAvatarUrl
         };
+        this.syncUserProfile();
       }
     } catch (err) {
       console.error('自动创建用户信息失败:', err);
@@ -368,6 +385,7 @@ Page({
         nickName: randomNickname,
         avatarUrl: randomAvatar
       };
+      this.syncUserProfile();
     }
   },
 
@@ -383,7 +401,7 @@ Page({
 
     // 显示新用户欢迎提示
     if (isNewUser) {
-      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 15);
+      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 5);
     }
 
     try {
@@ -396,6 +414,7 @@ Page({
         nickName: randomNickname,
         avatarUrl: finalAvatarUrl
       };
+      this.syncUserProfile();
     } catch (err) {
       console.error('上传随机头像失败:', err);
       await supabase
@@ -406,6 +425,7 @@ Page({
         nickName: randomNickname,
         avatarUrl: randomAvatar
       };
+      this.syncUserProfile();
     }
   },
 
@@ -487,6 +507,7 @@ Page({
       this.setData({ showSetting: true, _fromSetting: false });
     }
 
+    this.syncUserProfile();
     this.loadCategories();
     this.loadAssets();
   },

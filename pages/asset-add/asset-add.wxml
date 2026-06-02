@@ -9,13 +9,33 @@
       <view class="asset-type-selector">
         <view class="type-option {{assetType === 'fixed' ? 'selected' : ''}}"
               bindtap="onAssetTypeChange" data-type="fixed">
-          <image class="type-icon-img" src="/images/fixed-asset.svg" mode="aspectFit"></image>
-          <text class="type-label">普通资产</text>
+          <view class="type-card-inner">
+            <view class="type-icon-wrap">
+              <image class="type-icon-img" src="/images/fixed-asset.svg" mode="aspectFit"></image>
+            </view>
+            <view class="type-text-group">
+              <text class="type-label">普通资产</text>
+              <text class="type-desc">一次性购入，长期持有</text>
+            </view>
+            <view class="type-check {{assetType === 'fixed' ? 'checked' : ''}}">
+              <text class="check-symbol">✓</text>
+            </view>
+          </view>
         </view>
         <view class="type-option {{assetType === 'subscription' ? 'selected' : ''}}"
               bindtap="onAssetTypeChange" data-type="subscription">
-          <image class="type-icon-img" src="/images/subscription-asset.svg" mode="aspectFit"></image>
-          <text class="type-label">订阅资产</text>
+          <view class="type-card-inner">
+            <view class="type-icon-wrap">
+              <image class="type-icon-img" src="/images/subscription-asset.svg" mode="aspectFit"></image>
+            </view>
+            <view class="type-text-group">
+              <text class="type-label">订阅资产</text>
+              <text class="type-desc">周期性付费，持续使用</text>
+            </view>
+            <view class="type-check {{assetType === 'subscription' ? 'checked' : ''}}">
+              <text class="check-symbol">✓</text>
+            </view>
+          </view>
         </view>
       </view>
     </view>
