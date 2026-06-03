@@ -1,6 +1,6 @@
 // pages/account/account.js
 const { themeManager } = require('../../utils/themeManager');
-const { supabase, uploadFileToStorage, getChinaTimeISO } = require('../../utils/supabase');
+const { supabase, uploadFileToStorage, deleteStorageFile, getChinaTimeISO } = require('../../utils/supabase');
 const { isAdmin } = require('../../utils/auth');
 const app = getApp();
 
@@ -265,7 +265,8 @@ Page({
 
   // 提交修改
   submitEdit() {
-    const { editNickName, editAvatarUrl, userId } = this.data;
+    const { editNickName, editAvatarUrl, userId, userInfo } = this.data;
+    const oldAvatarUrl = userInfo ? userInfo.avatarUrl : '';
 
     if (this.data.submitting) return;
 
@@ -286,7 +287,8 @@ Page({
     if (editAvatarUrl.includes('tmp') || editAvatarUrl.startsWith('wxfile://') || editAvatarUrl.includes('temporary')) {
       // 微信临时文件，需要上传到云存储
       this.uploadAvatar(editAvatarUrl).then(url => {
-        this.saveUserInfoToDb(userId, editNickName, url);
+        // 上传成功后保存到数据库，保存成功后才删除旧文件
+        this.saveUserInfoToDb(userId, editNickName, url, oldAvatarUrl);
       }).catch(err => {
         console.error('头像上传失败:', err);
         this.setData({ submitting: false });
@@ -294,14 +296,14 @@ Page({
       });
     } else if (editAvatarUrl.startsWith('data:image')) {
       // SVG data URL 直接使用
-      this.saveUserInfoToDb(userId, editNickName, editAvatarUrl);
+      this.saveUserInfoToDb(userId, editNickName, editAvatarUrl, oldAvatarUrl);
     } else if (editAvatarUrl.startsWith('http://') || editAvatarUrl.startsWith('https://')) {
       // 真正的网络URL，直接使用
-      this.saveUserInfoToDb(userId, editNickName, editAvatarUrl);
+      this.saveUserInfoToDb(userId, editNickName, editAvatarUrl, oldAvatarUrl);
     } else {
       // 其他未知格式，尝试上传
       this.uploadAvatar(editAvatarUrl).then(url => {
-        this.saveUserInfoToDb(userId, editNickName, url);
+        this.saveUserInfoToDb(userId, editNickName, url, oldAvatarUrl);
       }).catch(err => {
         console.error('头像上传失败:', err);
         this.setData({ submitting: false });
@@ -311,7 +313,7 @@ Page({
   },
 
   // 保存用户信息到 Supabase
-  async saveUserInfoToDb(userId, nickName, avatarUrl) {
+  async saveUserInfoToDb(userId, nickName, newAvatarUrl, oldAvatarUrl) {
     try {
       const openid = await app.getOpenid();
 
@@ -319,7 +321,7 @@ Page({
         .from('users')
         .update({
           nickName: nickName.trim(),
-          avatarUrl: avatarUrl,
+          avatarUrl: newAvatarUrl,
           updatedAt: getChinaTimeISO()
         })
         .eq('_openid', openid);
@@ -331,15 +333,22 @@ Page({
         return;
       }
 
+      // 保存成功后，删除旧头像（如果是 Storage 文件且与新头像不同）
+      if (oldAvatarUrl && oldAvatarUrl.includes('/avatars/') && oldAvatarUrl !== newAvatarUrl) {
+        deleteStorageFile('avatars', oldAvatarUrl).catch(err => {
+          console.log('删除旧头像失败（忽略）:', err);
+        });
+      }
+
       app.globalData.userInfo = {
         nickName: nickName.trim(),
-        avatarUrl: avatarUrl
+        avatarUrl: newAvatarUrl
       };
 
       this.setData({
         userInfo: {
           nickName: nickName.trim(),
-          avatarUrl: avatarUrl
+          avatarUrl: newAvatarUrl
         },
         isEditing: false,
         editNickName: '',

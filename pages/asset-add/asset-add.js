@@ -866,6 +866,7 @@ Page({
         return;
       }
 
+      // 注意：不在这里删除旧文件，保存成功后才删除
       this.setData({
         uploadedImagePath: publicUrl,
         customEmojiValue: ''
@@ -1393,13 +1394,6 @@ Page({
 
         let error;
         if (this.data.isEdit) {
-          // 如果图标变了，删除 Storage 中的旧图标文件
-          const originalIcon = this.data._originalIcon;
-          const newIcon = supabaseData.icon;
-          if (originalIcon && originalIcon.startsWith('http') && originalIcon !== newIcon) {
-            await deleteStorageFile('icons', originalIcon);
-          }
-
           // 更新资产
           const result = await supabase
             .from('assets')
@@ -1419,6 +1413,17 @@ Page({
         if (error) {
           wx.showToast({ title: error.message || '保存失败', icon: 'none', duration: 2000 });
           return;
+        }
+
+        // 保存成功后，删除旧图标（如果是 Storage 文件且与新图标不同）
+        if (this.data.isEdit) {
+          const originalIcon = this.data._originalIcon;
+          const newIcon = supabaseData.icon;
+          if (originalIcon && originalIcon.includes('/icons/') && originalIcon !== newIcon) {
+            deleteStorageFile('icons', originalIcon).catch(err => {
+              console.log('删除旧图标失败（忽略）:', err);
+            });
+          }
         }
 
         wx.showToast({ title: this.data.isEdit ? '更新成功' : '保存成功', icon: 'success' });

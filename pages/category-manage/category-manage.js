@@ -277,7 +277,8 @@ Page({
           selectedIconName: isBuiltinIcon ? (function(arr, val){ var f = arr.find(function(item){ return item.icon === val; }); return f && f.name || ''; }(this.data.builtinIcons, iconValue)) : (isUploadedImage ? '自定义图片' : (isCustomEmoji ? '自定义emoji' : '')),
           uploadedImagePath: isUploadedImage ? iconValue : '',
           customEmojiValue: isCustomEmoji ? iconValue : '',
-          tempDescription: category.description || ''
+          tempDescription: category.description || '',
+          _originalIcon: iconValue // 保存原始图标，用于后续删除旧文件
         });
       }
     }
@@ -509,6 +510,9 @@ Page({
         return;
       }
 
+      // 注意：不在这里删除旧文件，因为用户可能取消编辑
+      // 删除旧文件的操作在保存成功后进行（performEditCategory 中）
+
       this.setData({
         selectedIcon: publicUrl,
         selectedIconName: '自定义图片',
@@ -666,6 +670,14 @@ Page({
         return;
       }
 
+      // 保存成功后，删除旧图标（如果是 Storage 文件且与新图标不同）
+      const originalIcon = this.data._originalIcon;
+      if (originalIcon && originalIcon.includes('/category-icons/') && originalIcon !== selectedIcon) {
+        deleteStorageFile('category-icons', originalIcon).catch(err => {
+          console.log('删除旧分类图标失败（忽略）:', err);
+        });
+      }
+
       this.loadCategories();
       this.setData({
         dialogVisible: false,
@@ -676,7 +688,8 @@ Page({
         customEmojiValue: '',
         tempDescription: '',
         operationType: '',
-        editCategoryId: null
+        editCategoryId: null,
+        _originalIcon: ''
       });
       wx.showToast({ title: '修改成功', icon: 'success' });
     } catch (err) {
@@ -709,7 +722,8 @@ Page({
       customEmojiValue: '',
       tempDescription: '',
       operationType: '',
-      editCategoryId: null
+      editCategoryId: null,
+      _originalIcon: ''
     });
   },
 
