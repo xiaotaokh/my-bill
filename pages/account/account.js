@@ -18,6 +18,8 @@ Page({
     isEditing: false,
     editNickName: '',
     editAvatarUrl: '',
+    avatarLoading: false, // 头像加载状态
+    choosingAvatar: false, // 选择头像时的遮罩状态
 
     // 随机信息弹窗
     showRandomModal: false,
@@ -146,13 +148,18 @@ Page({
       }
 
       if (data) {
+        // 如果头像是 Storage URL，设置加载状态
+        const avatarUrl = data.avatarUrl || '';
+        const isLoading = avatarUrl.includes('/avatars/');
+
         this.setData({
           userInfo: {
             nickName: data.nickName || '',
-            avatarUrl: data.avatarUrl || ''
+            avatarUrl: avatarUrl
           },
           userId: data.id,
-          loading: false
+          loading: false,
+          avatarLoading: isLoading
         });
       } else {
         this.setData({
@@ -190,7 +197,18 @@ Page({
   onChooseAvatar(e) {
     if (this.data.submitting) return;
     const avatarUrl = e.detail.avatarUrl;
-    this.setData({ editAvatarUrl: avatarUrl });
+
+    // 设置选择状态，显示遮罩层阻止点击
+    this.setData({
+      editAvatarUrl: avatarUrl,
+      choosingAvatar: true
+    });
+
+    // 头像加载完成后隐藏遮罩
+    // 对于临时文件，给一个短暂延迟后隐藏
+    setTimeout(() => {
+      this.setData({ choosingAvatar: false });
+    }, 500);
   },
 
   // 点击按钮触发昵称选择
@@ -340,6 +358,9 @@ Page({
         });
       }
 
+      // 如果新头像是 Storage URL，设置加载状态
+      const isLoading = newAvatarUrl.includes('/avatars/');
+
       app.globalData.userInfo = {
         nickName: nickName.trim(),
         avatarUrl: newAvatarUrl
@@ -353,7 +374,8 @@ Page({
         isEditing: false,
         editNickName: '',
         editAvatarUrl: '',
-        submitting: false
+        submitting: false,
+        avatarLoading: isLoading
       });
 
       wx.showToast({ title: '修改成功', icon: 'success' });
@@ -364,13 +386,36 @@ Page({
     }
   },
 
+  // 头像图片加载完成
+  onAvatarLoad() {
+    this.setData({ avatarLoading: false });
+  },
+
+  // 头像图片加载失败
+  onAvatarImageError() {
+    this.setData({ avatarLoading: false });
+    console.log('头像图片加载失败');
+  },
+
+  // 阻止滚动和点击
+  preventTouchMove() {
+    return;
+  },
+  preventTap() {
+    return;
+  },
+
   // 上传头像到 Supabase Storage
   async uploadAvatar(tempFilePath) {
+    wx.showLoading({ title: '上传中...', mask: true });
+
     const timestamp = Date.now();
     const fileName = `${timestamp}.jpg`;
 
     try {
       const { publicUrl, error } = await uploadFileToStorage('avatars', fileName, tempFilePath);
+
+      wx.hideLoading();
 
       if (error) {
         console.error('Supabase Storage 上传失败:', error);
@@ -379,6 +424,7 @@ Page({
 
       return publicUrl;
     } catch (err) {
+      wx.hideLoading();
       console.error('头像上传失败:', err);
       throw err;
     }

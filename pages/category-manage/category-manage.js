@@ -30,6 +30,7 @@ Page({
     selectedIcon: '',
     selectedIconName: '',
     uploadedImagePath: '', // 用户上传的图片路径
+    imageLoading: false, // 图片加载状态
     tempDescription: '', // 分类描述
 
     // 自定义emoji相关
@@ -494,7 +495,7 @@ Page({
 
   // 上传图片到 Supabase Storage
   uploadImage: async function(filePath) {
-    wx.showLoading({ title: '上传中...' });
+    wx.showLoading({ title: '上传中...', mask: true });
 
     const timestamp = Date.now();
     const randomNum = Math.floor(Math.random() * 10000);
@@ -502,9 +503,9 @@ Page({
 
     try {
       const { publicUrl, error } = await uploadFileToStorage('category-icons', fileName, filePath);
-      wx.hideLoading();
 
       if (error) {
+        wx.hideLoading();
         console.error('上传失败', error);
         wx.showToast({ title: '上传失败: ' + (error.message || '请重试'), icon: 'none' });
         return;
@@ -513,18 +514,32 @@ Page({
       // 注意：不在这里删除旧文件，因为用户可能取消编辑
       // 删除旧文件的操作在保存成功后进行（performEditCategory 中）
 
+      // 设置图片加载状态
       this.setData({
         selectedIcon: publicUrl,
         selectedIconName: '自定义图片',
         uploadedImagePath: publicUrl,
-        customEmojiValue: ''
+        customEmojiValue: '',
+        imageLoading: true // 图片正在加载
       });
-      wx.showToast({ title: '上传成功', icon: 'success' });
+
+      wx.hideLoading();
     } catch (err) {
       wx.hideLoading();
       console.error('上传异常', err);
       wx.showToast({ title: '上传失败，请重试', icon: 'none' });
     }
+  },
+
+  // 图片加载完成
+  onImageLoad: function() {
+    this.setData({ imageLoading: false });
+  },
+
+  // 图片加载失败
+  onImageError: function() {
+    this.setData({ imageLoading: false });
+    wx.showToast({ title: '图片加载失败', icon: 'none' });
   },
 
   // 删除已上传的图片
@@ -685,6 +700,7 @@ Page({
         selectedIcon: '',
         selectedIconName: '',
         uploadedImagePath: '',
+        imageLoading: false,
         customEmojiValue: '',
         tempDescription: '',
         operationType: '',
@@ -719,6 +735,7 @@ Page({
       selectedIcon: '',
       selectedIconName: '',
       uploadedImagePath: '',
+      imageLoading: false,
       customEmojiValue: '',
       tempDescription: '',
       operationType: '',

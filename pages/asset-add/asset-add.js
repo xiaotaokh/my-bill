@@ -50,6 +50,7 @@ Page({
     selectedGroupName: '常用', // 选中的分组名称
     selectedIconIndex: 0, // 选中的图标索引
     uploadedImagePath: '', // 用户上传的图片路径
+    imageLoading: false, // 图片加载状态
 
     // 自定义emoji相关
     emojiDialogVisible: false, // emoji输入弹窗是否显示
@@ -852,7 +853,7 @@ Page({
 
   // 上传图标到 Supabase Storage
   async uploadIconToCloud(filePath) {
-    wx.showLoading({ title: '上传中...' });
+    wx.showLoading({ title: '上传中...', mask: true });
 
     const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.png`;
 
@@ -867,17 +868,30 @@ Page({
       }
 
       // 注意：不在这里删除旧文件，保存成功后才删除
+      // 设置图片加载状态
       this.setData({
         uploadedImagePath: publicUrl,
-        customEmojiValue: ''
+        customEmojiValue: '',
+        imageLoading: true // 图片正在加载
       });
+
       wx.hideLoading();
-      wx.showToast({ title: '上传成功', icon: 'success' });
     } catch (err) {
       wx.hideLoading();
       wx.showToast({ title: '上传失败，请重试', icon: 'none' });
       this.setData({ uploadedImagePath: '' });
     }
+  },
+
+  // 图片加载完成
+  onImageLoad: function() {
+    this.setData({ imageLoading: false });
+  },
+
+  // 图片加载失败
+  onImageError: function() {
+    this.setData({ imageLoading: false });
+    wx.showToast({ title: '图片加载失败', icon: 'none' });
   },
 
   // 物品名称输入

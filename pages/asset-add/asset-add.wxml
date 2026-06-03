@@ -317,7 +317,10 @@
               <text class="upload-hint-asset">jpg/png，≤2M</text>
             </view>
             <view wx:else class="upload-preview-asset">
-              <image class="preview-img-asset" src="{{uploadedImagePath}}" mode="aspectFill"></image>
+              <view class="image-loading-overlay" wx:if="{{imageLoading}}">
+                <text class="loading-spinner">⏳</text>
+              </view>
+              <image class="preview-img-asset" src="{{uploadedImagePath}}" mode="aspectFill" bindload="onImageLoad" binderror="onImageError"></image>
             </view>
           </view>
 

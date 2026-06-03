@@ -1,5 +1,8 @@
 <!--pages/account/account.wxml-->
 <view class="container theme-{{currentThemeKey}}" style="{{themeStyle}}">
+  <!-- 提交中的全屏遮罩层 -->
+  <view class="page-mask" wx:if="{{submitting || choosingAvatar}}" catchtouchmove="preventTouchMove" catchtap="preventTap"></view>
+
   <!-- 渐变背景头部 -->
   <view class="header-bg"></view>
 
@@ -30,12 +33,16 @@
       <!-- 头像区域 -->
       <view class="avatar-section">
         <view class="avatar-wrapper">
+          <view class="avatar-loading-overlay" wx:if="{{avatarLoading}}">
+            <text class="loading-spinner">⏳</text>
+          </view>
           <image
             wx:if="{{userInfo.avatarUrl}}"
             class="avatar-img"
             src="{{userInfo.avatarUrl}}"
             mode="aspectFill"
-            binderror="onAvatarError"
+            bindload="onAvatarLoad"
+            binderror="onAvatarImageError"
           ></image>
           <view wx:else class="avatar-placeholder">
             <text class="placeholder-icon">👤</text>

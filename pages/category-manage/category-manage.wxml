@@ -233,7 +233,10 @@ module.exports = {
                 <text class="upload-hint">jpg/png，≤2M</text>
               </view>
               <view wx:else class="upload-preview">
-                <image class="preview-img" src="{{uploadedImagePath}}" mode="aspectFill"></image>
+                <view class="image-loading-overlay" wx:if="{{imageLoading}}">
+                  <text class="loading-spinner">⏳</text>
+                </view>
+                <image class="preview-img" src="{{uploadedImagePath}}" mode="aspectFill" bindload="onImageLoad" binderror="onImageError"></image>
               </view>
             </view>
 
