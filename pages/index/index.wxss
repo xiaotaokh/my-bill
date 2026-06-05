@@ -1064,9 +1064,9 @@
   font-size: 18rpx;
   font-weight: 500;
   flex-shrink: 0;
-  background: var(--success-bg);
-  color: var(--success);
-  border: 1rpx solid rgba(var(--primary-600-rgb), 0.3);
+  background: var(--subscription-bg);
+  color: var(--subscription);
+  border: 1rpx solid rgba(var(--subscription-rgb), 0.3);
 }
 
 /* 已结束标签 */

@@ -46,6 +46,8 @@ page {
   --retired: #B45309;
   --sold: #6B7280;
   --gold: #FBBF24;
+  --subscription: #4F46E5;
+  --subscription-bg: #EEF2FF;
 
   /* 装饰色 - 用于气泡/边框渐变等 */
   --pink: #F472B6;
@@ -73,6 +75,7 @@ page {
   --retired-rgb: 180, 83, 9;
   --sold-rgb: 107, 114, 128;
   --gold-rgb: 251, 191, 36;
+  --subscription-rgb: 79, 70, 229;
   --glass-bg: rgba(var(--bg-card-rgb), 0.92);
   --glass-border: rgba(var(--neutral-900-rgb), 0.04);
   --shadow-soft: 0 8rpx 32rpx rgba(var(--shadow-rgb), 0.08);

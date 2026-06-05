@@ -59,6 +59,8 @@ const themes = {
       retired: '#B45309',
       sold: '#6B7280',
       gold: '#FBBF24',
+      subscription: '#4F46E5',
+      subscriptionBg: '#EEF2FF',
 
       // 用户活跃度状态色
       activityHigh: '#10B981',
@@ -79,6 +81,7 @@ const themes = {
       retiredRgb: '180, 83, 9',
       soldRgb: '107, 114, 128',
       goldRgb: '251, 191, 36',
+      subscriptionRgb: '79, 70, 229',
 
       // 复合变量
       accentColor: '#4F46E5',
@@ -194,6 +197,8 @@ const themes = {
       retired: '#B8A088',
       sold: '#A5A19C',
       gold: '#E8C84A',
+      subscription: '#A38472',
+      subscriptionBg: '#F6F0EC',
 
       // 用户活跃度状态色
       activityHigh: '#7B9E8A',
@@ -214,6 +219,7 @@ const themes = {
       retiredRgb: '184, 160, 136',
       soldRgb: '180, 178, 174',
       goldRgb: '232, 200, 74',
+      subscriptionRgb: '163, 132, 114',
 
       // 复合变量
       accentColor: '#A38472',
@@ -329,6 +335,8 @@ const themes = {
       retired: '#B45309',
       sold: '#6B7280',
       gold: '#D4AF37',
+      subscription: '#C9A962',
+      subscriptionBg: '#FDF4D8',
 
       // 用户活跃度状态色
       activityHigh: '#4ADE80',
@@ -349,6 +357,7 @@ const themes = {
       retiredRgb: '180, 83, 9',
       soldRgb: '107, 114, 128',
       goldRgb: '212, 175, 55',
+      subscriptionRgb: '201, 169, 98',
 
       // 复合变量
       accentColor: '#C9A962',
@@ -465,6 +474,8 @@ const themes = {
       retired: '#B45309',
       sold: '#6B7280',
       gold: '#FBBF24',
+      subscription: '#2563EB',
+      subscriptionBg: '#EFF6FF',
 
       // 用户活跃度状态色
       activityHigh: '#10B981',
@@ -485,6 +496,7 @@ const themes = {
       retiredRgb: '180, 83, 9',
       soldRgb: '107, 114, 128',
       goldRgb: '251, 191, 36',
+      subscriptionRgb: '37, 99, 235',
 
       // 复合变量
       accentColor: '#059669',
@@ -600,6 +612,8 @@ const themes = {
       retired: '#B45309',
       sold: '#6B7280',
       gold: '#FBBF24',
+      subscription: '#EA580C',
+      subscriptionBg: '#FFF7ED',
 
       // 用户活跃度状态色
       activityHigh: '#22C55E',
@@ -620,6 +634,7 @@ const themes = {
       retiredRgb: '180, 83, 9',
       soldRgb: '107, 114, 128',
       goldRgb: '251, 191, 36',
+      subscriptionRgb: '234, 88, 12',
 
       // 复合变量
       accentColor: '#EA580C',
@@ -735,6 +750,8 @@ const themes = {
       retired: '#B45309',
       sold: '#6B7280',
       gold: '#FBBF24',
+      subscription: '#8B5CF6',
+      subscriptionBg: '#F5F3FF',
 
       // 用户活跃度状态色
       activityHigh: '#10B981',
@@ -755,6 +772,7 @@ const themes = {
       retiredRgb: '180, 83, 9',
       soldRgb: '107, 114, 128',
       goldRgb: '251, 191, 36',
+      subscriptionRgb: '139, 92, 246',
 
       // 复合变量
       accentColor: '#8B5CF6',

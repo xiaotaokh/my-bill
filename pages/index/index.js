@@ -53,8 +53,8 @@ Page({
     activeStatus: 'all',
     statusMap: {
       all: '全部',
-      active: '服役中',
-      retired: '已退役',
+      active: '服役中/订阅中',
+      retired: '已退役/已结束',
       sold: '已卖出'
     },
 
@@ -971,6 +971,22 @@ Page({
     };
   },
 
+  getAssetStatusForStats(asset) {
+    if (asset.assetType !== 'subscription') return asset.status;
+
+    const subscriptionStatus = asset.subscriptionStatus || (asset.status === 'active' ? 'active' : '');
+    if (subscriptionStatus === 'active') return 'active';
+    if (subscriptionStatus === 'ended') return 'retired';
+    return subscriptionStatus;
+  },
+
+  getAssetAmountForStats(asset) {
+    if (asset.assetType === 'subscription') {
+      return Number(asset.totalInvestment) || 0;
+    }
+    return Number(asset.price) || 0;
+  },
+
   updateAssetsCategoryIcon() {
     const { assets, categoryList } = this.data;
     if (!assets.length || !categoryList || !categoryList.length) return;
@@ -992,7 +1008,7 @@ Page({
 
     // 按状态筛选
     if (activeStatus !== 'all') {
-      filtered = filtered.filter(a => a.status === activeStatus);
+      filtered = filtered.filter(a => this.getAssetStatusForStats(a) === activeStatus);
     }
 
     // 按分类筛选
@@ -1017,20 +1033,15 @@ Page({
     // 根据分类筛选计算统计数量
     const statsAssets = activeCategory === 'all' ? assets : assets.filter(a => a.category === activeCategory);
     statsAssets.forEach(asset => {
-      // 订阅资产统计
+      const statsStatus = this.getAssetStatusForStats(asset);
+      if (statsStatus === 'active') activeCount++;
+      else if (statsStatus === 'retired') retiredCount++;
+      else if (statsStatus === 'sold') soldCount++;
+
       if (asset.assetType === 'subscription') {
-        if (asset.subscriptionStatus === 'active' || (!asset.subscriptionStatus && asset.status === 'active')) {
-          subscriptionActiveCount++;
-        } else if (asset.subscriptionStatus === 'pending') {
-          subscriptionPendingCount++;
-        } else if (asset.subscriptionStatus === 'ended') {
-          subscriptionEndedCount++;
-        }
-      } else {
-        // 普通资产统计
-        if (asset.status === 'active') activeCount++;
-        else if (asset.status === 'retired') retiredCount++;
-        else if (asset.status === 'sold') soldCount++;
+        if (statsStatus === 'active') subscriptionActiveCount++;
+        else if (statsStatus === 'pending') subscriptionPendingCount++;
+        else if (statsStatus === 'retired') subscriptionEndedCount++;
       }
     });
 
@@ -1660,7 +1671,8 @@ Page({
 
       enrichedAssets.forEach(asset => {
         const cat = asset.category || '未分类';
-        const price = Number(asset.price) || 0;
+        const price = this.getAssetAmountForStats(asset);
+        const statsStatus = this.getAssetStatusForStats(asset);
         if (!categoryMap[cat]) {
           categoryMap[cat] = { name: cat, total: 0, count: 0, icon: '', displayIcon: '' };
           categoryAssetsMap[cat] = [];
@@ -1681,20 +1693,24 @@ Page({
         }
 
         // 计算日均成本（全部资产）- 复用首页逻辑
-        if (asset.status === 'active' && asset.dailyCost) {
+        if (asset.assetType === 'subscription') {
+          if (statsStatus === 'active' && asset.dailyCost) {
+            dailyCostTotal += parseFloat(asset.dailyCost);
+          }
+        } else if (asset.status === 'active' && asset.dailyCost) {
           dailyCostTotal += parseFloat(asset.dailyCost);
         } else if ((asset.status === 'retired' || asset.status === 'sold') && asset.dailyEquivalent) {
           dailyCostTotal += parseFloat(asset.dailyEquivalent);
         }
 
         // 状态统计
-        if (asset.status === 'active') {
+        if (statsStatus === 'active') {
           activeCount++;
           activePrice += price;
-        } else if (asset.status === 'retired') {
+        } else if (statsStatus === 'retired') {
           retiredCount++;
           retiredPrice += price;
-        } else if (asset.status === 'sold') {
+        } else if (statsStatus === 'sold') {
           soldCount++;
           soldPrice += price;
         }

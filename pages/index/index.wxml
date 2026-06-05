@@ -100,7 +100,7 @@
           </view>
           <view class="stat-content">
             <text class="stat-number">{{activeCount}}</text>
-            <text class="stat-name">服役中</text>
+            <text class="stat-name">服役中/订阅中</text>
           </view>
         </view>
         <view class="stat-item retired-item {{activeStatus === 'retired' ? 'stat-active' : ''}}" style="background: {{statBgColors[2]}};" bindtap="filterByStatus" data-status="retired">
@@ -109,7 +109,7 @@
           </view>
           <view class="stat-content">
             <text class="stat-number">{{retiredCount}}</text>
-            <text class="stat-name">已退役</text>
+            <text class="stat-name">已退役/已结束</text>
           </view>
         </view>
         <view class="stat-item sold-item {{activeStatus === 'sold' ? 'stat-active' : ''}}" style="background: {{statBgColors[3]}};" bindtap="filterByStatus" data-status="sold">
@@ -745,7 +745,7 @@
             </view>
             <view class="status-info">
               <view class="status-count">{{reportActiveCount}}<text class="status-unit">件</text></view>
-              <view class="status-label">服役中</view>
+              <view class="status-label">服役中/订阅中</view>
             </view>
             <view class="status-price">¥{{reportActivePrice}}</view>
           </view>
@@ -755,7 +755,7 @@
             </view>
             <view class="status-info">
               <view class="status-count">{{reportRetiredCount}}<text class="status-unit">件</text></view>
-              <view class="status-label">已退役</view>
+              <view class="status-label">已退役/已结束</view>
             </view>
             <view class="status-price">¥{{reportRetiredPrice}}</view>
           </view>
