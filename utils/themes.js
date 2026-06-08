@@ -47,11 +47,11 @@ const themes = {
       textInverse: '#FFFFFF',
 
       // 状态色
-      success: '#10B981',
+      success: '#047857',
       successBg: '#ECFDF5',
       error: '#EF4444',
       errorBg: '#FEF2F2',
-      warning: '#F59E0B',
+      warning: '#B45309',
       warningBg: '#FFFBEB',
       amber: '#B45309',
 
@@ -74,7 +74,7 @@ const themes = {
       // RGB 变量（用于 rgba）
       primary600Rgb: '79, 70, 229',
       errorRgb: '239, 68, 68',
-      warningRgb: '245, 158, 11',
+      warningRgb: '180, 83, 9',
       neutral900Rgb: '30, 41, 59',
       shadowRgb: '148, 163, 184',
       textInverseRgb: '255, 255, 255',
@@ -134,9 +134,6 @@ const themes = {
       simpleCardName: '#1E293B',
       simpleCardCost: '#3730A3',
 
-      // 卡片背景模式
-      cardBgMode: 'translucent',
-
       // 导航栏
       navBg: '#4F46E5',
       navTextStyle: '#ffffff',
@@ -185,11 +182,11 @@ const themes = {
       textInverse: '#FFFFFF',
 
       // 状态色 - 柔和但清晰可辨
-      success: '#7B9E8A',
+      success: '#4F7560',
       successBg: '#EFF4F1',
-      error: '#D49A8E',
+      error: '#9B5248',
       errorBg: '#F8F1EF',
-      warning: '#D4B08A',
+      warning: '#8A6438',
       warningBg: '#F6F2EC',
       amber: '#B8935A',
 
@@ -211,8 +208,8 @@ const themes = {
 
       // RGB 变量（用于 rgba）
       primary600Rgb: '163, 132, 114',
-      errorRgb: '212, 154, 142',
-      warningRgb: '212, 176, 138',
+      errorRgb: '155, 82, 72',
+      warningRgb: '138, 100, 56',
       neutral900Rgb: '44, 42, 40',
       shadowRgb: '165, 161, 156',
       textInverseRgb: '255, 255, 255',
@@ -271,9 +268,6 @@ const themes = {
       // 简单模式资产卡片文字色
       simpleCardName: '#2C2A28',
       simpleCardCost: '#8B6F5E',
-
-      // 卡片背景模式
-      cardBgMode: 'translucent',
 
       // 导航栏
       navBg: '#A38472',
@@ -335,7 +329,7 @@ const themes = {
       retired: '#B45309',
       sold: '#6B7280',
       gold: '#D4AF37',
-      subscription: '#C9A962',
+      subscription: '#7A5A18',
       subscriptionBg: '#FDF4D8',
 
       // 用户活跃度状态色
@@ -357,7 +351,7 @@ const themes = {
       retiredRgb: '180, 83, 9',
       soldRgb: '107, 114, 128',
       goldRgb: '212, 175, 55',
-      subscriptionRgb: '201, 169, 98',
+      subscriptionRgb: '122, 90, 24',
 
       // 复合变量
       accentColor: '#C9A962',
@@ -411,9 +405,6 @@ const themes = {
       simpleCardName: '#F5F5F5',
       simpleCardCost: '#C9A962',
 
-      // 卡片背景模式 - 实色背景
-      cardBgMode: 'solid',
-
       // 导航栏
       navBg: '#1A1A1A',
       navTextStyle: '#ffffff',
@@ -462,11 +453,11 @@ const themes = {
       textInverse: '#FFFFFF',
 
       // 状态色
-      success: '#10B981',
+      success: '#047857',
       successBg: '#ECFDF5',
       error: '#EF4444',
       errorBg: '#FEF2F2',
-      warning: '#F59E0B',
+      warning: '#B45309',
       warningBg: '#FFFBEB',
       amber: '#B45309',
 
@@ -489,7 +480,7 @@ const themes = {
       // RGB 变量
       primary600Rgb: '5, 150, 105',
       errorRgb: '239, 68, 68',
-      warningRgb: '245, 158, 11',
+      warningRgb: '180, 83, 9',
       neutral900Rgb: '20, 83, 45',
       shadowRgb: '134, 239, 172',
       textInverseRgb: '255, 255, 255',
@@ -549,9 +540,6 @@ const themes = {
       simpleCardName: '#14532D',
       simpleCardCost: '#065F46',
 
-      // 卡片背景模式
-      cardBgMode: 'translucent',
-
       // 导航栏
       navBg: '#059669',
       navTextStyle: '#ffffff',
@@ -600,11 +588,11 @@ const themes = {
       textInverse: '#FFFFFF',
 
       // 状态色
-      success: '#22C55E',
+      success: '#15803D',
       successBg: '#F0FDF4',
       error: '#EF4444',
       errorBg: '#FEF2F2',
-      warning: '#F59E0B',
+      warning: '#B45309',
       warningBg: '#FFFBEB',
       amber: '#B45309',
 
@@ -627,7 +615,7 @@ const themes = {
       // RGB 变量
       primary600Rgb: '234, 88, 12',
       errorRgb: '239, 68, 68',
-      warningRgb: '245, 158, 11',
+      warningRgb: '180, 83, 9',
       neutral900Rgb: '67, 20, 7',
       shadowRgb: '253, 186, 116',
       textInverseRgb: '255, 255, 255',
@@ -687,9 +675,6 @@ const themes = {
       simpleCardName: '#431407',
       simpleCardCost: '#C2410C',
 
-      // 卡片背景模式
-      cardBgMode: 'translucent',
-
       // 导航栏
       navBg: '#EA580C',
       navTextStyle: '#ffffff',
@@ -738,11 +723,11 @@ const themes = {
       textInverse: '#FFFFFF',
 
       // 状态色
-      success: '#10B981',
+      success: '#047857',
       successBg: '#ECFDF5',
       error: '#EF4444',
       errorBg: '#FEF2F2',
-      warning: '#F59E0B',
+      warning: '#B45309',
       warningBg: '#FFFBEB',
       amber: '#B45309',
 
@@ -765,7 +750,7 @@ const themes = {
       // RGB 变量
       primary600Rgb: '139, 92, 246',
       errorRgb: '239, 68, 68',
-      warningRgb: '245, 158, 11',
+      warningRgb: '180, 83, 9',
       neutral900Rgb: '30, 27, 75',
       shadowRgb: '196, 181, 253',
       textInverseRgb: '255, 255, 255',
@@ -827,9 +812,6 @@ const themes = {
       simpleCardName: '#1E1B4B',
       simpleCardCost: '#5B21B6',
 
-      // 卡片背景模式
-      cardBgMode: 'translucent',
-
       // 导航栏
       navBg: '#8B5CF6',
       navTextStyle: '#ffffff',
@@ -869,40 +851,40 @@ function getThemeColors(themeKey) {
 // 简单视图卡片背景色（按主题）
 const cardBgColors = {
   fintech: [
-    '#E2E8F0', '#D1D9E6', '#E8ECF4', '#C8D0DC', '#EDF2F7',
-    '#D4DAE8', '#E6EDF6', '#C5CCD8', '#E0E7FF', '#C2CAD6',
-    '#E4E9F2', '#CDD6E4', '#E8EEF4', '#CED6E2', '#DEE4EE',
-    '#CCD3E0', '#DCE3F8', '#D0D8E4', '#D8E0F2', '#C0C8D4'
+    '#FEFEFE', '#F8F8F8', '#FCFCFC', '#F5F5F5', '#FAFAFA',
+    '#F3F3F3', '#FDFDFD', '#F6F6F6', '#FBFBFB', '#F4F4F4',
+    '#F9F9F9', '#F1F1F1', '#FEFEFE', '#F7F7F7', '#FCFCFC',
+    '#F2F2F2', '#FAFAFA', '#F6F6F6', '#FDFDFD', '#F4F4F4'
   ],
   minimal: [
-    '#E8D5C4', '#C4D8D0', '#D0D0E0', '#D4DCC8', '#E0D0D8',
-    '#C8D8DC', '#ECE4C8', '#E0D5C8', '#C8D0E0', '#DCD4D0',
-    '#D0DCC8', '#E4D8C8', '#C8D8D4', '#D8C8D8', '#D8DCD0',
-    '#E0D0C8', '#D0D0D8', '#E8DCC8', '#C8D4DC', '#DCD0D8'
+    '#EBC7B0', '#B9CEE0', '#D0B8D8', '#C3C8E8', '#E9B8B3',
+    '#B8D8CC', '#E0B8A8', '#B9D9C8', '#EFE0B5', '#B7DDE0',
+    '#D8C6BA', '#B6C5E0', '#D4DFA8', '#BCC9E0', '#DCC3D9',
+    '#C8DFAE', '#E5BFA8', '#AFCDBD', '#EAD3A6', '#D8BED0'
   ],
   obsidian: [
-    '#4A1E1E', '#1E4A2E', '#1E1E5A', '#5A4A1E', '#1E4A4A',
-    '#4A1E4A', '#3A3A3A', '#5A2E1E', '#1E3A1E', '#1E2E5A',
-    '#5A1E2E', '#2E5A1E', '#1E2E4A', '#4A2E4A', '#2E4A2E',
-    '#1E1E4A', '#5A4A1E', '#1E5A4A', '#4A1E2E', '#2E4A4A'
+    '#2A2118', '#4A3320', '#1B2A24', '#3A4A32', '#1E2435',
+    '#3C3554', '#2A1C28', '#4A2E3A', '#2B2B2B', '#454545',
+    '#211A2A', '#4A3A5A', '#1A2A2E', '#33505A', '#2E241A',
+    '#5A4428', '#1F2E1F', '#365036', '#2E1E1E', '#5A302A'
   ],
   forest: [
-    '#A7F3D0', '#D1FAE5', '#ECFDF5', '#BBF7D0', '#86EFAC',
-    '#FCD34D', '#FBBF24', '#F9A8D4', '#A78BFA', '#38BDF8',
-    '#3B82F6', '#C4B5FD', '#DDD6FE', '#F0FDF4', '#FED7AA',
-    '#FFEDD5', '#FB923C', '#10B981', '#34D399', '#22C55E'
+    '#ECFDF5', '#DCFCE7', '#CCFBF1', '#EFF6FF', '#D9F99D',
+    '#F7FEE7', '#DDFBE8', '#D1FAE5', '#F0FDF4', '#FEF3C7',
+    '#F5F3FF', '#F0F9FF', '#EAF3ED', '#FFF7ED', '#E0F2FE',
+    '#EDE9FE', '#BBF7D0', '#E7F8EE', '#CFFAEA', '#DBEAFE'
   ],
   sunset: [
-    '#FED7AA', '#FFEDD5', '#FFF7ED', '#FDBA74', '#FB923C',
-    '#FCD34D', '#FBBF24', '#F9A8D4', '#A78BFA', '#38BDF8',
-    '#3B82F6', '#A7F3D0', '#D1FAE5', '#FFFBEB', '#FEF3C7',
-    '#FDE68A', '#EA580C', '#F97316', '#22C55E', '#10B981'
+    '#FFF7ED', '#FCE7F3', '#FEF0D8', '#F5E7D8', '#FEE2E2',
+    '#F3E8FF', '#E7F8EE', '#FDE7D3', '#FFEDD5', '#DCFCE7',
+    '#E0F2FE', '#D1FAE5', '#FFFBEB', '#F8E1CC', '#EDE9FE',
+    '#FEF3C7', '#FED7AA', '#FDE68A', '#FDBA74', '#FAD7C3'
   ],
   aurora: [
-    '#C4B5FD', '#DDD6FE', '#EDE9FE', '#F5F3FF', '#A78BFA',
-    '#F9A8D4', '#F472B6', '#EC4899', '#38BDF8', '#06B6D4',
-    '#3B82F6', '#A7F3D0', '#D1FAE5', '#FCD34D', '#FBBF24',
-    '#FB923C', '#8B5CF6', '#10B981', '#34D399', '#22C55E'
+    '#F5F3FF', '#EDE9FE', '#DDD6FE', '#DBEAFE', '#CFFAFE',
+    '#E7F8EE', '#FDE7F3', '#FCE7F3', '#FDF2F8', '#D1FAE5',
+    '#F0F9FF', '#F3E8FF', '#F8E8FF', '#EAF3FF', '#E0F2FE',
+    '#ECFEFF', '#FAE8FF', '#F9A8D4', '#E0E7FF', '#DDF4FF'
   ]
 };
 

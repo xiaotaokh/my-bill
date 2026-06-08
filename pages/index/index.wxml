@@ -268,13 +268,28 @@
             <view class="card-stats">
               <!-- 订阅资产统计 -->
               <block wx:if="{{item.assetType === 'subscription'}}">
-                <view class="stat-item">
-                  <text class="stat-label">日均成本</text>
-                  <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
-                </view>
-                <view class="stat-divider"></view>
+                <block wx:if="{{item.subscriptionStatus === 'ended'}}">
+                  <view class="stat-item">
+                    <text class="stat-label">折合每日</text>
+                    <text class="stat-value cost">¥{{item.dailyEquivalent}}/天</text>
+                  </view>
+                  <view class="stat-divider"></view>
+                  <view class="stat-item has-badge">
+                    <text class="stat-label">日均成本</text>
+                    <text class="stat-value cost excluded">¥{{item.dailyCost}}/天</text>
+                    <text class="exclude-badge">不计入</text>
+                  </view>
+                  <view class="stat-divider"></view>
+                </block>
+                <block wx:else>
+                  <view class="stat-item">
+                    <text class="stat-label">日均成本</text>
+                    <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
+                  </view>
+                  <view class="stat-divider"></view>
+                </block>
                 <view class="stat-item" wx:if="{{item.subscriptionStatus !== 'pending'}}">
-                  <text class="stat-label">已订阅</text>
+                  <text class="stat-label">{{item.subscriptionStatus === 'ended' ? '订阅时长' : '已订阅'}}</text>
                   <text class="stat-value">{{item.usedDays}}天</text>
                 </view>
                 <view class="stat-divider" wx:if="{{item.subscriptionStatus !== 'pending'}}"></view>
@@ -308,7 +323,7 @@
                   <view class="stat-divider"></view>
                 </block>
                 <view class="stat-item">
-                  <text class="stat-label">已使用(含今天)</text>
+                  <text class="stat-label">{{item.status === 'active' ? '已服役' : '服役时长'}}</text>
                   <text class="stat-value">{{item.usedDays}}天</text>
                 </view>
                 <view class="stat-divider"></view>

@@ -684,14 +684,9 @@ Page({
       const assets = assetsWithIcon.map(a => this.calculateAssetFields(a));
       // 为复杂模式资产卡片分配背景色
       const cardBgColors = themeManager.getCardBgColors();
-      const cardBgMode = themeManager.getThemeColors().cardBgMode;
-      const opacity = cardBgMode === 'solid' ? 1 : 0.30;
       assets.forEach((a, i) => {
         const hex = cardBgColors[(i * 7) % cardBgColors.length];
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        a._cardBg = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        a._cardBg = hex;
       });
       this.setData({ assets, isLoading: false });
 
@@ -900,10 +895,11 @@ Page({
         totalInvestment = asset.periodAmount * result.completedPeriods;
       }
 
-      // 订阅资产日均成本 = 总投入 / 已订阅天数
-      const dailyCost = (asset.subscriptionStatus !== 'pending' && usedDays > 0 && totalInvestment > 0)
+      // 订阅资产折合每日 = 总投入 / 已订阅天数
+      const dailyEquivalent = (asset.subscriptionStatus !== 'pending' && usedDays > 0 && totalInvestment > 0)
         ? (totalInvestment / usedDays).toFixed(2)
         : '0.00';
+      const dailyCost = asset.subscriptionStatus === 'ended' ? '0.00' : dailyEquivalent;
 
       const startDate = this.formatDate(asset.subscriptionStartDate || asset.purchaseDate);
       const dateRangeEnd = asset.subscriptionStatus === 'ended' && asset.subscriptionEndDate
@@ -917,7 +913,7 @@ Page({
         ...asset,
         usedDays,
         dailyCost,
-        dailyEquivalent: '0.00',
+        dailyEquivalent,
         totalInvestment: totalInvestment.toFixed(2),
         periodAmountDisplay: this.formatPeriodAmount(asset).amount,
         periodTypeDisplay: this.formatPeriodAmount(asset).period,
@@ -1065,6 +1061,8 @@ Page({
         // 订阅资产日均成本
         if (asset.subscriptionStatus !== 'pending' && asset.subscriptionStatus !== 'ended' && asset.dailyCost) {
           filteredDailyTotal += parseFloat(asset.dailyCost);
+        } else if (asset.subscriptionStatus === 'ended' && asset.dailyEquivalent) {
+          filteredDailyTotal += parseFloat(asset.dailyEquivalent);
         }
 
         if (!excludeTotal) {
@@ -1403,15 +1401,10 @@ Page({
 
   _updateSimpleCols(filteredAssets) {
     const cols = this._splitIntoCols(filteredAssets);
-    // 同步更新复杂模式的 _cardBg（从 _splitIntoCols 赋值的 _bgColor 转换）
-    const cardBgMode = themeManager.getThemeColors().cardBgMode;
-    const opacity = cardBgMode === 'solid' ? 1 : 0.30;
+    // 同步更新复杂模式的 _cardBg
     filteredAssets.forEach(a => {
       if (a._bgColor && a._bgColor.startsWith('#')) {
-        const r = parseInt(a._bgColor.slice(1, 3), 16);
-        const g = parseInt(a._bgColor.slice(3, 5), 16);
-        const b = parseInt(a._bgColor.slice(5, 7), 16);
-        a._cardBg = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        a._cardBg = a._bgColor;
       }
     });
     this.setData({

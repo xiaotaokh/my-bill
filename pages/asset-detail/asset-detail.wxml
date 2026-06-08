@@ -137,13 +137,13 @@
           </view>
         </view>
 
-        <!-- 已订阅时长 -->
+        <!-- 订阅时长 -->
         <view class="info-card highlight" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
           <view class="card-icon">
             <image class="card-icon-svg" src="/images/subscription-duration.svg" mode="aspectFit"></image>
           </view>
           <view class="card-content">
-            <view class="card-label">已订阅时长</view>
+            <view class="card-label">{{asset.subscriptionStatus === 'ended' ? '订阅时长' : '已订阅'}}</view>
             <view class="card-value highlight-value">{{displayInfo.usedDays}} 天</view>
           </view>
           <view class="card-decoration"></view>
@@ -160,16 +160,27 @@
           </view>
         </view>
 
+        <!-- 折合每日（已结束订阅显示） -->
+        <view class="info-card" wx:if="{{asset.subscriptionStatus === 'ended'}}">
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/daily-cost.svg" mode="aspectFit"></image>
+          </view>
+          <view class="card-content">
+            <view class="card-label">折合每日</view>
+            <view class="card-value">¥{{displayInfo.dailyEquivalent}}/天</view>
+          </view>
+        </view>
+
         <!-- 日均成本 -->
-        <view class="info-card highlight" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
+        <view class="info-card {{asset.subscriptionStatus === 'ended' ? '' : 'highlight'}}" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
           <view class="card-icon">
             <image class="card-icon-svg" src="/images/daily-cost.svg" mode="aspectFit"></image>
           </view>
           <view class="card-content">
             <view class="card-label">日均成本</view>
-            <view class="card-value highlight-value">¥{{displayInfo.dailyCost}}/天</view>
+            <view class="card-value {{asset.subscriptionStatus === 'ended' ? '' : 'highlight-value'}}">¥{{displayInfo.dailyCost}}/天</view>
           </view>
-          <view class="card-decoration"></view>
+          <view class="card-decoration" wx:if="{{asset.subscriptionStatus !== 'ended'}}"></view>
         </view>
 
         <!-- 总投入 -->
@@ -242,6 +253,17 @@
           </view>
         </view>
 
+        <!-- 折合每日 (退役/卖出状态显示) -->
+        <view class="info-card" wx:if="{{(asset.status === 'retired' || asset.status === 'sold') && asset.price && asset.purchaseDate}}">
+          <view class="card-icon">
+            <image class="card-icon-svg" src="/images/daily-cost.svg" mode="aspectFit"></image>
+          </view>
+          <view class="card-content">
+            <view class="card-label">折合每日</view>
+            <view class="card-value">¥{{displayInfo.dailyEquivalent}}/天</view>
+          </view>
+        </view>
+
         <!-- 日均成本 (退役/卖出状态显示) -->
         <view class="info-card" wx:if="{{(asset.status === 'retired' || asset.status === 'sold') && asset.price && asset.purchaseDate}}">
           <view class="card-icon">
@@ -249,17 +271,17 @@
           </view>
           <view class="card-content">
             <view class="card-label">日均成本</view>
-            <view class="card-value">¥{{displayInfo.dailyEquivalent}}/天</view>
+            <view class="card-value">¥{{displayInfo.dailyCost}}/天</view>
           </view>
         </view>
 
-        <!-- 服役时长 (服役中状态显示) -->
+        <!-- 已服役 (服役中状态显示) -->
         <view class="info-card highlight" wx:if="{{asset.status === 'active' && asset.purchaseDate}}">
           <view class="card-icon">
             <image class="card-icon-svg" src="/images/active-duration.svg" mode="aspectFit"></image>
           </view>
           <view class="card-content">
-            <view class="card-label">服役时长</view>
+            <view class="card-label">已服役</view>
             <view class="card-value highlight-value">{{displayInfo.usedDays}} 天</view>
           </view>
           <view class="card-decoration"></view>

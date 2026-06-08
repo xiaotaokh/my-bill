@@ -204,7 +204,6 @@ Page({
       dailyCost = (asset.price / usedDays).toFixed(2);
     } else if ((asset.status === 'retired' || asset.status === 'sold') && asset.price && usedDays >= 1) {
       dailyEquivalent = (asset.price / usedDays).toFixed(2);
-      dailyCost = dailyEquivalent;
     }
 
     // 计算日期范围
@@ -374,11 +373,12 @@ Page({
       totalInvestment = (asset.periodAmount * completedPeriods).toFixed(2);
     }
 
-    // 计算日均成本 = 总投入 / 已使用天数（与首页保持一致）
-    let dailyCost = '0.00';
+    // 计算折合每日 = 总投入 / 已使用天数（与首页保持一致）
+    let dailyEquivalent = '0.00';
     if (asset.subscriptionStatus !== 'pending' && usedDays > 0 && parseFloat(totalInvestment) > 0) {
-      dailyCost = (parseFloat(totalInvestment) / usedDays).toFixed(2);
+      dailyEquivalent = (parseFloat(totalInvestment) / usedDays).toFixed(2);
     }
+    const dailyCost = asset.subscriptionStatus === 'ended' ? '0.00' : dailyEquivalent;
 
     // 周期类型文本
     const periodTypeText = this.getPeriodTypeText(asset.periodType, asset.periodDays);
@@ -400,7 +400,7 @@ Page({
       soldDateFormatted: '',
       usedDays: usedDays,
       dailyCost: dailyCost,
-      dailyEquivalent: '0.00',
+      dailyEquivalent: dailyEquivalent,
       dateRange: dateRange,
       periodTypeText: periodTypeText,
       periodCount: completedPeriods,
