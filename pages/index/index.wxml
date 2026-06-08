@@ -74,11 +74,24 @@
 
     <!-- 总资产卡片 -->
     <view class="total-card">
-      <view class="total-label">总资产 (CNY)<image class="amount-toggle" src="{{showAmount ? '/images/eye.svg' : '/images/eye-off.svg'}}" mode="aspectFit" bindtap="toggleAmountVisible" /></view>
+      <view class="total-label">
+        <text>计入总资产</text>
+        <image class="metric-tip-icon" src="/images/about.svg" mode="aspectFit" bindtap="showTotalAssetTip" />
+        <image class="amount-toggle" src="{{showAmount ? '/images/eye.svg' : '/images/eye-off.svg'}}" mode="aspectFit" bindtap="toggleAmountVisible" />
+      </view>
       <text class="total-value" style="font-size: {{totalPriceSize}}rpx;">{{showAmount ? ('¥ ' + totalPrice) : '****'}}</text>
       <view class="card-divider"></view>
-      <view class="daily-label">总日均成本</view>
+      <view class="daily-label">
+        <text>计入总日均成本</text>
+        <image class="metric-tip-icon" src="/images/about.svg" mode="aspectFit" bindtap="showDailyCostTip" />
+      </view>
       <text class="daily-value" style="font-size: {{dailyCostSize}}rpx;">¥ {{dailyCost}}</text>
+      <view class="excluded-summary" wx:if="{{excludedTotalCount > 0 || excludedDailyCount > 0}}">
+        <text>已排除：</text>
+        <text wx:if="{{excludedTotalCount > 0}}">不计入总资产 {{excludedTotalCount}} 项</text>
+        <text wx:if="{{excludedTotalCount > 0 && excludedDailyCount > 0}}">，</text>
+        <text wx:if="{{excludedDailyCount > 0}}">不计入总日均 {{excludedDailyCount}} 项</text>
+      </view>
       <view class="total-glow"></view>
     </view>
 

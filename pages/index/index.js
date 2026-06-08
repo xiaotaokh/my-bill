@@ -1,5 +1,6 @@
 // index.js
 const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+const WELCOME_ENTER_MS = 400;
 
 // 引入 echarts
 const echarts = require('../../components/ec-canvas/echarts');
@@ -30,6 +31,8 @@ Page({
     dailyCost: 0,
     totalPriceSize: 64,
     dailyCostSize: 32,
+    excludedTotalCount: 0,
+    excludedDailyCount: 0,
     activeCount: 0,
     retiredCount: 0,
     soldCount: 0,
@@ -297,7 +300,7 @@ Page({
 
   // 显示欢迎提示弹窗
   showWelcomeToast(message, subMessage = '', duration = 5) {
-    const durationMs = duration * 1000;
+    const durationMs = duration * 1000 + WELCOME_ENTER_MS;
     this.setData({
       showWelcomeToast: true,
       welcomeMessage: message,
@@ -340,7 +343,7 @@ Page({
 
     // 显示新用户欢迎提示
     if (isNewUser) {
-      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 5);
+      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 10);
     }
 
     try {
@@ -401,7 +404,7 @@ Page({
 
     // 显示新用户欢迎提示
     if (isNewUser) {
-      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 5);
+      this.showWelcomeToast(`欢迎，${randomNickname}`, '可在设置-账号中管理你的信息，请开启您的资产管理之旅吧！', 10);
     }
 
     try {
@@ -1027,6 +1030,7 @@ Page({
     let totalPrice = 0, dailyCostTotal = 0;
     let filteredTotal = 0; // 当前筛选条件下所有资产总金额
     let filteredDailyTotal = 0; // 当前筛选条件下所有资产的日均总和
+    let excludedTotalCount = 0, excludedDailyCount = 0;
     let activeCount = 0, retiredCount = 0, soldCount = 0;
     let subscriptionActiveCount = 0, subscriptionPendingCount = 0, subscriptionEndedCount = 0;
 
@@ -1047,6 +1051,11 @@ Page({
 
     // 从筛选后的资产计算金额统计
     filteredAssets.forEach(asset => {
+      const excludeTotal = asset.excludeTotal === true || asset.excludeTotal === 'true';
+      const excludeDaily = asset.excludeDaily === true || asset.excludeDaily === 'true';
+      if (excludeTotal) excludedTotalCount++;
+      if (excludeDaily) excludedDailyCount++;
+
       // 订阅资产处理
       if (asset.assetType === 'subscription') {
         // 订阅资产使用 totalInvestment 作为总金额
@@ -1058,12 +1067,13 @@ Page({
           filteredDailyTotal += parseFloat(asset.dailyCost);
         }
 
-        if (asset.excludeTotal === true || asset.excludeTotal === 'true') return;
-        totalPrice += investment;
+        if (!excludeTotal) {
+          totalPrice += investment;
+        }
 
         // 订阅资产的日均成本计入统计（待生效和已结束的不计入）
         if (asset.subscriptionStatus !== 'pending' && asset.subscriptionStatus !== 'ended' &&
-            asset.excludeDaily !== true && asset.excludeDaily !== 'true' && asset.dailyCost) {
+            !excludeDaily && asset.dailyCost) {
           dailyCostTotal += parseFloat(asset.dailyCost);
         }
         return;
@@ -1079,10 +1089,11 @@ Page({
         filteredDailyTotal += parseFloat(asset.dailyEquivalent);
       }
 
-      if (asset.excludeTotal === true || asset.excludeTotal === 'true') return;
-      totalPrice += asset.price || 0;
+      if (!excludeTotal) {
+        totalPrice += asset.price || 0;
+      }
 
-      if (asset.status === 'active' && asset.excludeDaily !== true && asset.excludeDaily !== 'true' && asset.dailyCost) {
+      if (asset.status === 'active' && !excludeDaily && asset.dailyCost) {
         dailyCostTotal += parseFloat(asset.dailyCost);
       }
     });
@@ -1107,9 +1118,29 @@ Page({
       dailyCost: dailyCostStr,
       totalPriceSize: calcFontSize(totalPriceStr, 48, 26),
       dailyCostSize: calcFontSize(dailyCostStr, 28, 20),
+      excludedTotalCount,
+      excludedDailyCount,
       activeCount, retiredCount, soldCount,
       subscriptionActiveCount, subscriptionPendingCount, subscriptionEndedCount,
       statsTotalCount: statsAssets.length
+    });
+  },
+
+  showTotalAssetTip() {
+    wx.showModal({
+      title: '计入总资产',
+      content: '这里统计的是已计入总资产的资产金额，不包含标记为“不计入总资产”的资产。',
+      showCancel: false,
+      confirmText: '知道了'
+    });
+  },
+
+  showDailyCostTip() {
+    wx.showModal({
+      title: '计入总日均成本',
+      content: '这里统计的是已计入总日均的当前日均成本，不包含标记为“不计入总日均”的资产。',
+      showCancel: false,
+      confirmText: '知道了'
     });
   },
 
