@@ -156,7 +156,13 @@ Page({
         this.setData({
           userInfo: {
             nickName: data.nickName || '',
-            avatarUrl: avatarUrl
+            avatarUrl: avatarUrl,
+            createdAt: data.createdAt || '',
+            updatedAt: data.updatedAt || '',
+            lastAccessTime: data.lastAccessTime || '',
+            createdAtText: this.formatDateTime(data.createdAt),
+            updatedAtText: this.formatDateTime(data.updatedAt),
+            lastAccessTimeText: this.formatDateTime(data.lastAccessTime)
           },
           userId: data.id,
           loading: false,
@@ -174,6 +180,15 @@ Page({
       console.error('获取用户信息失败:', err);
       this.setData({ loading: false });
     }
+  },
+
+  formatDateTime(value) {
+    if (!value) return '-';
+    const date = value instanceof Date ? value : new Date(value);
+    if (isNaN(date.getTime())) return '-';
+
+    const pad = num => String(num).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
   },
 
   // 进入编辑模式
@@ -389,13 +404,14 @@ Page({
   async saveUserInfoToDb(userId, nickName, newAvatarUrl, oldAvatarUrl) {
     try {
       const openid = await app.getOpenid();
+      const updatedAt = getChinaTimeISO();
 
       const { error } = await supabase
         .from('users')
         .update({
           nickName: nickName.trim(),
           avatarUrl: newAvatarUrl,
-          updatedAt: getChinaTimeISO()
+          updatedAt: updatedAt
         })
         .eq('_openid', openid);
 
@@ -421,10 +437,18 @@ Page({
         avatarUrl: newAvatarUrl
       };
 
+      const currentUserInfo = this.data.userInfo || {};
+
       this.setData({
         userInfo: {
           nickName: nickName.trim(),
-          avatarUrl: newAvatarUrl
+          avatarUrl: newAvatarUrl,
+          createdAt: currentUserInfo.createdAt || '',
+          updatedAt: updatedAt,
+          lastAccessTime: currentUserInfo.lastAccessTime || '',
+          createdAtText: this.formatDateTime(currentUserInfo.createdAt),
+          updatedAtText: this.formatDateTime(updatedAt),
+          lastAccessTimeText: this.formatDateTime(currentUserInfo.lastAccessTime)
         },
         isEditing: false,
         editNickName: '',

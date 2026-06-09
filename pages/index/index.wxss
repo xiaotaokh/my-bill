@@ -593,37 +593,43 @@
   color: var(--primary-600);
   border-color: transparent;
   box-shadow: none;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .category-pill.active::after {
   content: '';
   position: absolute;
-  left: 12rpx;
-  right: 10rpx;
-  bottom: 8rpx;
-  height: 18rpx;
+  left: 8rpx;
+  right: 8rpx;
+  bottom: 6rpx;
+  height: 24rpx;
   z-index: 0;
-  border-radius: 70% 42% 58% 46% / 48% 62% 38% 54%;
-  background: rgba(var(--primary-600-rgb), 0.22);
-  transform: rotate(-2deg) skewX(-8deg);
+  border-radius: 72% 38% 64% 44% / 52% 68% 36% 58%;
+  background: linear-gradient(
+    100deg,
+    rgba(var(--primary-600-rgb), 0.16) 0%,
+    rgba(var(--primary-600-rgb), 0.42) 24%,
+    rgba(var(--primary-600-rgb), 0.36) 68%,
+    rgba(var(--primary-600-rgb), 0.14) 100%
+  );
+  transform: rotate(-2deg) skewX(-7deg);
   box-shadow:
-    -6rpx 2rpx 0 rgba(var(--primary-600-rgb), 0.12),
-    8rpx -1rpx 0 rgba(var(--primary-600-rgb), 0.10),
-    0 5rpx 0 rgba(var(--primary-600-rgb), 0.08);
+    -6rpx 2rpx 0 rgba(var(--primary-600-rgb), 0.18),
+    8rpx -1rpx 0 rgba(var(--primary-600-rgb), 0.16),
+    0 5rpx 0 rgba(var(--primary-600-rgb), 0.14);
 }
 
 .category-pill.active::before {
   content: '';
   position: absolute;
-  left: 22rpx;
-  right: 18rpx;
-  bottom: 14rpx;
-  height: 6rpx;
+  left: 18rpx;
+  right: 16rpx;
+  bottom: 15rpx;
+  height: 8rpx;
   z-index: 0;
   border-radius: 999rpx;
-  background: rgba(var(--primary-600-rgb), 0.18);
-  transform: rotate(1deg);
+  background: rgba(var(--primary-600-rgb), 0.52);
+  transform: rotate(1deg) skewX(8deg);
 }
 
 /* 分类图标 - emoji */

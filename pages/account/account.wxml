@@ -3,21 +3,18 @@
   <!-- 提交中的全屏遮罩层 -->
   <view class="page-mask" wx:if="{{submitting || choosingAvatar}}" catchtouchmove="preventTouchMove" catchtap="preventTap"></view>
 
-  <!-- 渐变背景头部 -->
   <view class="header-bg"></view>
+  <view class="bg-decoration"></view>
 
-  <!-- 装饰气泡 -->
-  <view class="bg-decoration">
-    <view class="bubble bubble-1"></view>
-    <view class="bubble bubble-2"></view>
-    <view class="bubble bubble-3"></view>
-    <view class="bubble bubble-4"></view>
-  </view>
-
-  <!-- 页面标题区域 -->
   <view class="page-header">
-    <text class="page-title">账号</text>
-    <text class="page-subtitle">{{isAdmin ? '管理员' : '您的账号信息'}}</text>
+    <view>
+      <text class="page-kicker">Account</text>
+      <text class="page-title">账号身份</text>
+    </view>
+    <view class="role-badge">
+      <text class="role-dot"></text>
+      <text>{{isAdmin ? '管理员' : '普通用户'}}</text>
+    </view>
   </view>
 
   <!-- 加载状态 -->
@@ -26,89 +23,126 @@
     <text class="loading-text">加载中...</text>
   </view>
 
-  <!-- 账号信息卡片 -->
-  <view wx:elif="{{userInfo}}" class="account-card">
+  <view wx:elif="{{userInfo}}" class="account-card {{isEditing ? 'is-editing' : ''}}">
     <!-- 非编辑模式 -->
     <view wx:if="{{!isEditing}}">
-      <!-- 头像区域 -->
-      <view class="avatar-section">
-        <view class="avatar-wrapper">
-          <view class="avatar-loading-overlay" wx:if="{{avatarLoading}}">
-            <text class="loading-spinner">⏳</text>
+      <view class="profile-panel">
+        <view class="avatar-section">
+          <view class="avatar-wrapper">
+            <view class="avatar-aura"></view>
+            <view class="avatar-loading-overlay" wx:if="{{avatarLoading}}">
+              <view class="avatar-loader"></view>
+            </view>
+            <image
+              wx:if="{{userInfo.avatarUrl}}"
+              class="avatar-img {{canPreviewAvatar ? 'can-preview' : ''}}"
+              src="{{userInfo.avatarUrl}}"
+              mode="aspectFill"
+              bindload="onAvatarLoad"
+              binderror="onAvatarImageError"
+              bindtap="previewAvatar"
+            ></image>
+            <view wx:else class="avatar-placeholder">
+              <text class="placeholder-icon">人</text>
+            </view>
           </view>
-          <image
-            wx:if="{{userInfo.avatarUrl}}"
-            class="avatar-img {{canPreviewAvatar ? 'can-preview' : ''}}"
-            src="{{userInfo.avatarUrl}}"
-            mode="aspectFill"
-            bindload="onAvatarLoad"
-            binderror="onAvatarImageError"
-            bindtap="previewAvatar"
-          ></image>
-          <view wx:else class="avatar-placeholder">
-            <text class="placeholder-icon">👤</text>
+        </view>
+
+        <view class="identity-copy">
+          <text class="identity-label">当前昵称</text>
+          <text class="identity-name">{{userInfo.nickName || '未设置'}}</text>
+          <view class="identity-meta">
+            <text class="meta-pill">{{canPreviewAvatar ? '头像可预览' : '随机头像'}}</text>
+            <text wx:if="{{isAdmin}}" class="meta-pill">管理权限</text>
           </view>
         </view>
       </view>
 
-      <!-- 昵称信息 -->
-      <view class="info-section">
-        <text class="info-label">昵称</text>
-        <text class="info-value">{{userInfo.nickName || '未设置'}}</text>
+      <view class="account-time-panel">
+        <view class="time-row">
+          <text class="time-label">创建时间</text>
+          <text class="time-value">{{userInfo.createdAtText || '-'}}</text>
+        </view>
+        <view class="time-row">
+          <text class="time-label">资料更新时间</text>
+          <text class="time-value">{{userInfo.updatedAtText || '-'}}</text>
+        </view>
+        <view class="time-row">
+          <text class="time-label">最近访问时间</text>
+          <text class="time-value">{{userInfo.lastAccessTimeText || '-'}}</text>
+        </view>
       </view>
 
-      <!-- 分割线 -->
-      <view class="divider"></view>
-
-      <!-- 提示文字 -->
       <view class="edit-tip">
-        <text class="tip-icon">💡</text>
-        <text class="tip-text">头像和昵称可随时修改</text>
+        <text class="tip-text">头像和昵称可随时修改，仅用于账号展示。</text>
       </view>
 
-      <!-- 编辑按钮 -->
       <button class="edit-btn" bindtap="startEdit">
-        <text class="btn-icon">✏️</text>
         <text class="btn-text">修改头像昵称</text>
       </button>
     </view>
 
     <!-- 编辑模式 -->
     <view wx:else class="edit-mode">
-      <!-- 提示信息 -->
-      <view class="edit-notice">
-        <text class="notice-text">点击右侧头像和昵称可选择微信头像和昵称，仅用于小程序内展示使用，不会泄漏任何隐私，请放心使用。</text>
+      <view class="edit-heading">
+        <text class="edit-title">修改展示资料</text>
+        <text class="edit-subtitle">选择微信资料、相册原图，或生成一套随机形象。</text>
       </view>
 
-      <!-- 头像选择 -->
-      <view class="edit-row">
-        <text class="edit-label">头像</text>
-        <view class="avatar-edit-actions">
-          <button class="avatar-select-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" disabled="{{submitting}}">
-            <image wx:if="{{editAvatarUrl}}" class="avatar-preview" src="{{editAvatarUrl}}" mode="aspectFill"></image>
-            <text wx:else class="avatar-empty-text">点击获取头像</text>
-            <text class="select-arrow">›</text>
+      <view class="edit-notice">
+        <text class="notice-text">这些信息只在小程序内展示，不会公开分享。</text>
+      </view>
+
+      <view class="edit-group">
+        <view class="avatar-editor">
+          <view class="avatar-editor-header">
+            <view>
+              <text class="edit-label">头像</text>
+              <text class="edit-help">选择后会在这里统一预览</text>
+            </view>
+          </view>
+
+          <view class="avatar-preview-stage">
+            <image wx:if="{{editAvatarUrl}}" class="edit-avatar-preview" src="{{editAvatarUrl}}" mode="aspectFill"></image>
+            <view wx:else class="edit-avatar-empty">
+              <text class="edit-avatar-empty-text">头像</text>
+            </view>
+          </view>
+
+          <view class="avatar-source-actions">
+            <button class="avatar-source-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" disabled="{{submitting}}">
+              <text class="source-title">微信头像</text>
+              <text class="source-desc">使用微信资料</text>
+            </button>
+            <button class="avatar-source-btn" bindtap="chooseAvatarFromAlbum" disabled="{{submitting}}">
+              <text class="source-title">相册头像</text>
+              <text class="source-desc">上传原图</text>
+            </button>
+          </view>
+        </view>
+
+        <view class="nickname-editor">
+          <view class="nickname-editor-header">
+            <view>
+              <text class="edit-label">昵称</text>
+              <text class="edit-help">最多 10 个字</text>
+            </view>
+          </view>
+          <button class="nickname-select-btn" bindtap="chooseNickname" disabled="{{submitting}}">
+            <text class="nickname-text {{editNickName ? 'filled' : 'empty'}}">{{editNickName || '点击获取昵称'}}</text>
+            <text class="nickname-action">点击修改</text>
           </button>
-          <button class="avatar-album-btn" bindtap="chooseAvatarFromAlbum" disabled="{{submitting}}">
-            <text class="avatar-album-text">从相册选原图</text>
-          </button>
+          <input class="nickname-hidden-input" type="nickname" focus="{{nicknameFocus}}" bindinput="onNicknameInput" bindblur="onNicknameBlur" />
         </view>
       </view>
 
-      <!-- 昵称输入 -->
-      <view class="edit-row">
-        <text class="edit-label">昵称</text>
-        <button class="nickname-select-btn" bindtap="chooseNickname" disabled="{{submitting}}">
-          <text class="nickname-text {{editNickName ? 'filled' : 'empty'}}">{{editNickName || '点击获取昵称'}}</text>
-          <text class="select-arrow">›</text>
-        </button>
-        <input class="nickname-hidden-input" type="nickname" focus="{{nicknameFocus}}" bindinput="onNicknameInput" bindblur="onNicknameBlur" />
-      </view>
-
-      <!-- 随机选择提示 -->
       <view class="random-tip" bindtap="showRandomPicker">
-        <text class="random-icon">🎲</text>
-        <text class="random-text">不想填写？使用随机头像和昵称</text>
+        <view class="random-mark">R</view>
+        <view class="random-copy">
+          <text class="random-text">使用随机头像和昵称</text>
+          <text class="random-subtext">快速生成一套轻量身份</text>
+        </view>
+        <text class="random-action">生成</text>
       </view>
 
       <!-- 操作按钮 -->
