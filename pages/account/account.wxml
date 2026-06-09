@@ -38,11 +38,12 @@
           </view>
           <image
             wx:if="{{userInfo.avatarUrl}}"
-            class="avatar-img"
+            class="avatar-img {{canPreviewAvatar ? 'can-preview' : ''}}"
             src="{{userInfo.avatarUrl}}"
             mode="aspectFill"
             bindload="onAvatarLoad"
             binderror="onAvatarImageError"
+            bindtap="previewAvatar"
           ></image>
           <view wx:else class="avatar-placeholder">
             <text class="placeholder-icon">👤</text>

@@ -88,9 +88,9 @@
       <text class="daily-value" style="font-size: {{dailyCostSize}}rpx;">¥ {{dailyCost}}</text>
       <view class="excluded-summary" wx:if="{{excludedTotalCount > 0 || excludedDailyCount > 0}}">
         <text>已排除：</text>
-        <text wx:if="{{excludedTotalCount > 0}}">不计入总资产 {{excludedTotalCount}} 项</text>
+        <text wx:if="{{excludedTotalCount > 0}}">不计入总资产 <text class="excluded-count">{{excludedTotalCount}}</text> 件</text>
         <text wx:if="{{excludedTotalCount > 0 && excludedDailyCount > 0}}">，</text>
-        <text wx:if="{{excludedDailyCount > 0}}">不计入总日均 {{excludedDailyCount}} 项</text>
+        <text wx:if="{{excludedDailyCount > 0}}">不计入总日均 <text class="excluded-count">{{excludedDailyCount}}</text> 件</text>
       </view>
       <view class="total-glow"></view>
     </view>
@@ -98,22 +98,22 @@
     <!-- 统计指标卡片 -->
     <view class="stats-section">
       <view class="stat-row">
-        <view class="stat-item total-item {{activeStatus === 'all' ? 'stat-active' : ''}}" style="background: {{statBgColors[0]}};" bindtap="filterByStatus" data-status="all">
-          <view class="stat-icon total-icon">
-            <text class="iconfont">🗂️</text>
-          </view>
-          <view class="stat-content">
-            <text class="stat-number">{{statsTotalCount}}</text>
-            <text class="stat-name">资产总数</text>
-          </view>
-        </view>
-        <view class="stat-item active-item {{activeStatus === 'active' ? 'stat-active' : ''}}" style="background: {{statBgColors[1]}};" bindtap="filterByStatus" data-status="active">
+        <view class="stat-item active-item {{activeStatus === 'active' ? 'stat-active' : ''}}" style="background: {{statBgColors[0]}};" bindtap="filterByStatus" data-status="active">
           <view class="stat-icon active-icon">
             <image class="stat-icon-svg" src="/images/active.svg" mode="aspectFit"></image>
           </view>
           <view class="stat-content">
             <text class="stat-number">{{activeCount}}</text>
             <text class="stat-name">服役中/订阅中</text>
+          </view>
+        </view>
+        <view class="stat-item pending-item {{activeStatus === 'pending' ? 'stat-active' : ''}}" style="background: {{statBgColors[1]}};" bindtap="filterByStatus" data-status="pending">
+          <view class="stat-icon pending-icon">
+            <image class="stat-icon-svg" src="/images/pending.svg" mode="aspectFit"></image>
+          </view>
+          <view class="stat-content">
+            <text class="stat-number">{{subscriptionPendingCount}}</text>
+            <text class="stat-name">待生效</text>
           </view>
         </view>
         <view class="stat-item retired-item {{activeStatus === 'retired' ? 'stat-active' : ''}}" style="background: {{statBgColors[2]}};" bindtap="filterByStatus" data-status="retired">
@@ -137,36 +137,28 @@
       </view>
     </view>
 
-    <!-- 筛选和排序 -->
-    <view class="filter-section">
-      <!-- 分类筛选 - 带图标 -->
-      <view class="category-bar">
-        <!-- 全部分类 -->
-        <view
-          class="category-pill {{activeCategory === 'all' ? 'active' : ''}}"
-          bindtap="filterByCategory"
-          data-category="all"
-        >
-          <text class="pill-icon">🏷️</text>
-          <text class="pill-text">全部</text>
+    <view class="asset-content-panel">
+      <!-- 筛选和排序 -->
+      <view class="filter-section">
+        <!-- 分类筛选 - 带图标 -->
+        <view class="category-bar">
+          <!-- 分类列表 -->
+          <block wx:for="{{categoryList}}" wx:key="name">
+            <view
+              class="category-pill {{activeCategory === item.name ? 'active' : ''}}"
+              bindtap="filterByCategory"
+              data-category="{{item.name}}"
+            >
+              <image wx:if="{{item.displayIcon}}" class="pill-icon-img" src="{{item.displayIcon}}" mode="aspectFit"></image>
+              <text wx:else class="pill-icon">{{item.icon}}</text>
+              <text class="pill-text">{{item.name}}</text>
+            </view>
+          </block>
         </view>
-        <!-- 分类列表 -->
-        <block wx:for="{{categoryList}}" wx:key="name">
-          <view
-            class="category-pill {{activeCategory === item.name ? 'active' : ''}}"
-            bindtap="filterByCategory"
-            data-category="{{item.name}}"
-          >
-            <image wx:if="{{item.displayIcon}}" class="pill-icon-img" src="{{item.displayIcon}}" mode="aspectFit"></image>
-            <text wx:else class="pill-icon">{{item.icon}}</text>
-            <text class="pill-text">{{item.name}}</text>
-          </view>
-        </block>
       </view>
-    </view>
 
-    <!-- 资产列表 -->
-    <view class="asset-list">
+      <!-- 资产列表 -->
+      <view class="asset-list">
       <view class="list-header">
         <view class="sort-wrapper">
           <picker mode="selector" range="{{sortOptions}}" bindchange="changeSort">
@@ -386,6 +378,7 @@
       </block>
 
       <view class="list-bottom-spacer"></view>
+      </view>
     </view>
   </view>
 
@@ -710,53 +703,69 @@
           <image class="section-icon-svg" src="/images/overview.svg" mode="aspectFit"></image>
         </view>
 
-        <!-- 主资产卡片 - 视觉焦点 -->
-        <view class="main-asset-card">
-          <view class="main-asset-header">
-            <text class="main-asset-label">全部资产</text>
-            <view class="main-asset-badge">{{reportTotalAssets}}件</view>
-          </view>
-          <view class="main-asset-value">¥{{reportTotalPrice}}</view>
-          <view class="main-asset-glow"></view>
-        </view>
-
-        <!-- 次要数据网格 -->
-        <view class="overview-grid">
-          <view class="overview-item">
-            <view class="overview-icon">🗂️</view>
-            <view class="overview-info">
-              <view class="overview-value">{{reportTotalAssets}}<text class="overview-unit">件</text></view>
-              <view class="overview-label">资产总数</view>
+        <!-- 全部口径核心指标 -->
+        <view class="main-metric-grid">
+          <view class="main-asset-card">
+            <view class="main-asset-header">
+              <text class="main-asset-label">全部总资产</text>
+              <view class="main-asset-badge">{{reportTotalAssets}}件</view>
             </view>
+            <view class="main-asset-value">¥{{reportAllTotalPrice}}</view>
+            <view class="main-asset-glow"></view>
           </view>
-          <view class="overview-item">
-            <view class="overview-icon">🏷️</view>
-            <view class="overview-info">
-              <view class="overview-value">{{reportCategoryStats.length}}<text class="overview-unit">个</text></view>
-              <view class="overview-label">分类</view>
+          <view class="main-asset-card daily-main">
+            <view class="main-asset-header">
+              <text class="main-asset-label">全部总日均</text>
+              <view class="main-asset-badge">{{reportTotalAssets}}件</view>
             </view>
+            <view class="main-asset-value">¥{{reportAllDailyCost}}</view>
+            <view class="main-asset-glow"></view>
           </view>
         </view>
 
-        <!-- 日均成本和不计入 -->
-        <view class="overview-grid">
-          <view class="overview-item daily">
+        <!-- 计入口径 -->
+        <view class="overview-grid overview-compare included-scope">
+          <view class="overview-item included-total">
+            <view class="overview-icon">¥</view>
+            <view class="overview-info">
+              <view class="overview-value">¥{{reportIncludedTotalPrice}}</view>
+              <view class="overview-label">计入总资产</view>
+            </view>
+            <view class="overview-count-badge">{{reportIncludedCount}}件</view>
+          </view>
+          <view class="overview-item included-daily">
             <view class="overview-icon">
-              <image class="overview-icon-svg" src="/images/daily-cost.svg" mode="aspectFit" aria-label="日均成本"></image>
+              <image class="overview-icon-svg" src="/images/daily-cost.svg" mode="aspectFit" aria-label="计入总日均"></image>
             </view>
             <view class="overview-info">
-              <view class="overview-value">¥{{reportDailyCost}}<text class="overview-unit">/天</text></view>
-              <view class="overview-label">日均成本(全部资产)</view>
+              <view class="overview-value">¥{{reportIncludedDailyCost}}</view>
+              <view class="overview-label">计入总日均</view>
             </view>
+            <view class="overview-count-badge">{{reportIncludedDailyCount}}件</view>
           </view>
+        </view>
+
+        <!-- 不计入口径 -->
+        <view class="overview-grid">
           <view class="overview-item exclude">
             <view class="overview-icon">
               <image class="overview-icon-svg" src="/images/exclude.svg" mode="aspectFit" aria-label="不计入总资产"></image>
             </view>
             <view class="overview-info">
-              <view class="overview-value">¥{{reportExcludedPrice}}</view>
-              <view class="overview-label">不计入总资产 ({{reportExcludedCount}}件)</view>
+              <view class="overview-value">¥{{reportExcludedTotalPrice}}</view>
+              <view class="overview-label">不计入总资产</view>
             </view>
+            <view class="overview-count-badge">{{reportExcludedTotalCount}}件</view>
+          </view>
+          <view class="overview-item exclude">
+            <view class="overview-icon">
+              <image class="overview-icon-svg" src="/images/exclude.svg" mode="aspectFit" aria-label="不计入总日均"></image>
+            </view>
+            <view class="overview-info">
+              <view class="overview-value">¥{{reportExcludedDailyCost}}</view>
+              <view class="overview-label">不计入总日均</view>
+            </view>
+            <view class="overview-count-badge">{{reportExcludedDailyCount}}件</view>
           </view>
         </view>
 
@@ -776,6 +785,16 @@
               <view class="status-label">服役中/订阅中</view>
             </view>
             <view class="status-price">¥{{reportActivePrice}}</view>
+          </view>
+          <view class="status-item pending">
+            <view class="status-icon">
+              <image class="status-icon-svg" src="/images/pending.svg" mode="aspectFit"></image>
+            </view>
+            <view class="status-info">
+              <view class="status-count">{{reportPendingCount}}<text class="status-unit">件</text></view>
+              <view class="status-label">待生效</view>
+            </view>
+            <view class="status-price">¥{{reportPendingPrice}}</view>
           </view>
           <view class="status-item retired">
             <view class="status-icon">
@@ -803,23 +822,118 @@
       <!-- 环形图 -->
       <view class="report-chart-section">
         <view class="section-header">
-          <text class="section-title">资产分类</text>
+          <view class="section-title-group">
+            <text class="section-title">资产分类</text>
+            <text class="section-scope-badge" bindtap="showCategoryScopeTip">全量统计</text>
+            <text class="section-count-badge">{{reportCategoryStats.length}}</text>
+          </view>
           <image class="section-icon-svg" src="/images/pie-chart.svg" mode="aspectFit"></image>
         </view>
-        <view class="chart-wrapper" style="height: 450rpx;">
+        <view wx:if="{{!showCategoryScopeModal}}" class="chart-wrapper" style="height: 450rpx;">
           <ec-canvas id="pie-chart" canvas-id="pie-chart" ec="{{ pieEc }}"></ec-canvas>
         </view>
         <view class="category-list" wx:if="{{reportCategoryStats.length > 0}}">
-          <view class="category-item" wx:for="{{reportCategoryStats}}" wx:key="name">
-            <view class="category-left">
-              <view class="category-dot" style="background: {{reportColors[index % reportColors.length]}}"></view>
-              <image wx:if="{{item.displayIcon}}" class="category-icon" src="{{item.displayIcon}}" mode="aspectFit"></image>
-              <text wx:elif="{{item.icon}}" class="category-emoji">{{item.icon}}</text>
-              <text class="category-name">{{item.name}}</text>
+          <view class="category-entry {{selectedCategoryLabel === item.name ? 'expanded' : ''}} {{item.count <= 0 ? 'disabled' : ''}}" wx:for="{{reportCategoryStats}}" wx:key="name">
+            <view
+              class="category-item {{selectedCategoryLabel === item.name ? 'expanded' : ''}}"
+              bindtap="{{item.count > 0 ? 'toggleCategoryAssets' : ''}}"
+              data-category="{{item.name}}"
+            >
+              <view class="category-left">
+                <view class="category-dot" style="background: {{item.color}}"></view>
+                <image wx:if="{{item.displayIcon}}" class="category-icon" src="{{item.displayIcon}}" mode="aspectFit"></image>
+                <text wx:elif="{{item.icon}}" class="category-emoji">{{item.icon}}</text>
+                <text class="category-name">{{item.name}}</text>
+                <text class="category-count">{{item.count}}件</text>
+                <text class="category-percent">{{item.percentFixed}}%</text>
+              </view>
+              <view class="category-right">
+                <text class="category-price">¥{{item.totalFixed}}</text>
+              </view>
             </view>
-            <view class="category-right">
-              <text class="category-count">{{item.count}}件</text>
-              <text class="category-price">¥{{item.totalFixed}}</text>
+            <view wx:if="{{selectedCategoryLabel === item.name && selectedCategoryAssets.length > 0}}" class="period-asset-list category-inline-asset-list">
+              <view class="period-asset-header">
+                <text class="period-asset-title">{{selectedCategoryLabel}}的资产</text>
+                <view class="period-asset-header-right">
+                  <text class="period-asset-count">{{selectedCategoryAssets.length}}件</text>
+                  <text class="period-asset-close" catchtap="closeCategoryAssets">✕</text>
+                </view>
+              </view>
+              <view class="period-asset-item" wx:for="{{selectedCategoryAssets}}" wx:key="name" wx:for-item="asset">
+                <view class="period-asset-top">
+                  <view class="period-asset-main">
+                    <image
+                      class="period-asset-type-icon"
+                      src="{{asset.assetType === 'subscription' ? '/images/subscription-asset.svg' : '/images/fixed-asset.svg'}}"
+                      mode="aspectFit"
+                    ></image>
+                    <text class="period-asset-name">{{asset.name}}</text>
+                  </view>
+                  <text
+                    class="period-asset-status {{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? 'pending' : asset.subscriptionStatus === 'ended' ? 'ended' : 'subscribing') : asset.status}}"
+                  >{{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? '待生效' : asset.subscriptionStatus === 'ended' ? '已结束' : '订阅中') : (asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出')}}</text>
+                </view>
+                <view class="period-asset-meta">
+                  <view class="period-category-tag">
+                    <image wx:if="{{asset.categoryIconUrl}}" class="period-category-icon-img" src="{{asset.categoryIconUrl}}" mode="aspectFit"></image>
+                    <text wx:else class="period-category-icon">{{asset.categoryIcon || '📦'}}</text>
+                    <text class="period-category-text">{{asset.category}}</text>
+                  </view>
+                  <text wx:if="{{asset.excludeTotal}}" class="period-exclude-tag total">不计入总资产</text>
+                  <text wx:if="{{asset.excludeDaily}}" class="period-exclude-tag daily">不计入总日均</text>
+                </view>
+                <text class="period-asset-date">{{asset.dateRange}}</text>
+                <view class="period-asset-stats">
+                  <block wx:if="{{asset.assetType === 'subscription'}}">
+                    <view class="period-mini-stat period-amount-stat" wx:if="{{asset.periodAmountDisplay}}">
+                      <text class="period-mini-label">每期金额</text>
+                      <text class="period-mini-value price">¥{{asset.periodAmountDisplay}}/{{asset.periodTypeDisplay}}</text>
+                    </view>
+                    <block wx:if="{{asset.subscriptionStatus === 'ended'}}">
+                      <view class="period-mini-stat">
+                        <text class="period-mini-label">折合每日</text>
+                        <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                      </view>
+                    </block>
+                    <block wx:else>
+                      <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
+                        <text class="period-mini-label">日均成本</text>
+                        <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                      </view>
+                    </block>
+                    <view class="period-mini-stat" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
+                      <text class="period-mini-label">{{asset.subscriptionStatus === 'ended' ? '订阅时长' : '已订阅'}}</text>
+                      <text class="period-mini-value">{{asset.usedDays}}天</text>
+                    </view>
+                    <view class="period-mini-stat {{asset.excludeTotal ? 'excluded' : ''}}">
+                      <text class="period-mini-label">总投入</text>
+                      <text class="period-mini-value price">¥{{asset.totalInvestment}}</text>
+                    </view>
+                  </block>
+                  <block wx:else>
+                    <block wx:if="{{asset.status === 'active'}}">
+                      <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
+                        <text class="period-mini-label">日均成本</text>
+                        <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                      </view>
+                    </block>
+                    <block wx:else>
+                      <view class="period-mini-stat">
+                        <text class="period-mini-label">折合每日</text>
+                        <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                      </view>
+                    </block>
+                    <view class="period-mini-stat">
+                      <text class="period-mini-label">{{asset.status === 'active' ? '已服役' : '服役时长'}}</text>
+                      <text class="period-mini-value">{{asset.usedDays}}天</text>
+                    </view>
+                    <view class="period-mini-stat {{asset.excludeTotal ? 'excluded' : ''}}">
+                      <text class="period-mini-label">价格</text>
+                      <text class="period-mini-value price">¥{{asset.price}}</text>
+                    </view>
+                  </block>
+                </view>
+              </view>
             </view>
           </view>
         </view>
@@ -831,8 +945,92 @@
           <text class="section-title">购买趋势</text>
           <image class="section-icon-svg" src="/images/line-chart.svg" mode="aspectFit"></image>
         </view>
-        <view class="chart-wrapper" style="height: 500rpx;">
+        <view wx:if="{{!showCategoryScopeModal}}" class="chart-wrapper" style="height: 500rpx;">
           <ec-canvas id="line-chart" canvas-id="line-chart" ec="{{ lineEc }}"></ec-canvas>
+        </view>
+        <view wx:if="{{selectedLineAssets.length > 0}}" class="period-asset-list">
+          <view class="period-asset-header">
+            <text class="period-asset-title">{{selectedLineLabel}}的资产</text>
+            <view class="period-asset-header-right">
+              <text class="period-asset-count">{{selectedLineAssets.length}}件</text>
+              <text class="period-asset-close" bindtap="closeLineAssets">✕</text>
+            </view>
+          </view>
+          <view class="period-asset-item" wx:for="{{selectedLineAssets}}" wx:key="name" wx:for-item="asset">
+            <view class="period-asset-top">
+              <view class="period-asset-main">
+                <image
+                  class="period-asset-type-icon"
+                  src="{{asset.assetType === 'subscription' ? '/images/subscription-asset.svg' : '/images/fixed-asset.svg'}}"
+                  mode="aspectFit"
+                ></image>
+                <text class="period-asset-name">{{asset.name}}</text>
+              </view>
+              <text
+                class="period-asset-status {{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? 'pending' : asset.subscriptionStatus === 'ended' ? 'ended' : 'subscribing') : asset.status}}"
+              >{{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? '待生效' : asset.subscriptionStatus === 'ended' ? '已结束' : '订阅中') : (asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出')}}</text>
+            </view>
+            <view class="period-asset-meta">
+              <view class="period-category-tag">
+                <image wx:if="{{asset.categoryIconUrl}}" class="period-category-icon-img" src="{{asset.categoryIconUrl}}" mode="aspectFit"></image>
+                <text wx:else class="period-category-icon">{{asset.categoryIcon || '📦'}}</text>
+                <text class="period-category-text">{{asset.category}}</text>
+              </view>
+              <text wx:if="{{asset.excludeTotal}}" class="period-exclude-tag total">不计入总资产</text>
+              <text wx:if="{{asset.excludeDaily}}" class="period-exclude-tag daily">不计入总日均</text>
+            </view>
+            <text class="period-asset-date">{{asset.dateRange}}</text>
+            <view class="period-asset-stats">
+              <block wx:if="{{asset.assetType === 'subscription'}}">
+                <view class="period-mini-stat period-amount-stat" wx:if="{{asset.periodAmountDisplay}}">
+                  <text class="period-mini-label">每期金额</text>
+                  <text class="period-mini-value price">¥{{asset.periodAmountDisplay}}/{{asset.periodTypeDisplay}}</text>
+                </view>
+                <block wx:if="{{asset.subscriptionStatus === 'ended'}}">
+                  <view class="period-mini-stat">
+                    <text class="period-mini-label">折合每日</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                  </view>
+                </block>
+                <block wx:else>
+                  <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
+                    <text class="period-mini-label">日均成本</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                  </view>
+                </block>
+                <view class="period-mini-stat" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
+                  <text class="period-mini-label">{{asset.subscriptionStatus === 'ended' ? '订阅时长' : '已订阅'}}</text>
+                  <text class="period-mini-value">{{asset.usedDays}}天</text>
+                </view>
+                <view class="period-mini-stat {{asset.excludeTotal ? 'excluded' : ''}}">
+                  <text class="period-mini-label">总投入</text>
+                  <text class="period-mini-value price">¥{{asset.totalInvestment}}</text>
+                </view>
+              </block>
+              <block wx:else>
+                <block wx:if="{{asset.status === 'active'}}">
+                  <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
+                    <text class="period-mini-label">日均成本</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                  </view>
+                </block>
+                <block wx:else>
+                  <view class="period-mini-stat">
+                    <text class="period-mini-label">折合每日</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                  </view>
+                </block>
+                <view class="period-mini-stat">
+                  <text class="period-mini-label">{{asset.status === 'active' ? '已服役' : '服役时长'}}</text>
+                  <text class="period-mini-value">{{asset.usedDays}}天</text>
+                </view>
+                <view class="period-mini-stat {{asset.excludeTotal ? 'excluded' : ''}}">
+                  <text class="period-mini-label">价格</text>
+                  <text class="period-mini-value price">¥{{asset.price}}</text>
+                </view>
+              </block>
+            </view>
+          </view>
         </view>
       </view>
 
@@ -883,7 +1081,7 @@
         </view>
 
         <!-- 柱状图 -->
-        <view wx:if="{{timePeriodStats && timePeriodStats.data.length > 0}}" class="chart-wrapper" style="height: 400rpx;">
+        <view wx:if="{{!showCategoryScopeModal && timePeriodStats && timePeriodStats.data.length > 0}}" class="chart-wrapper" style="height: 400rpx;">
           <ec-canvas id="time-chart" canvas-id="time-chart" ec="{{ timePeriodEc }}"></ec-canvas>
         </view>
 
@@ -897,8 +1095,79 @@
             </view>
           </view>
           <view class="period-asset-item" wx:for="{{selectedPeriodAssets}}" wx:key="name" wx:for-item="asset">
-            <text class="period-asset-name">{{asset.name}}</text>
-            <text class="period-asset-price">¥{{asset.price}}</text>
+            <view class="period-asset-top">
+              <view class="period-asset-main">
+                <image
+                  class="period-asset-type-icon"
+                  src="{{asset.assetType === 'subscription' ? '/images/subscription-asset.svg' : '/images/fixed-asset.svg'}}"
+                  mode="aspectFit"
+                ></image>
+                <text class="period-asset-name">{{asset.name}}</text>
+              </view>
+              <text
+                class="period-asset-status {{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? 'pending' : asset.subscriptionStatus === 'ended' ? 'ended' : 'subscribing') : asset.status}}"
+              >{{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? '待生效' : asset.subscriptionStatus === 'ended' ? '已结束' : '订阅中') : (asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出')}}</text>
+            </view>
+            <view class="period-asset-meta">
+              <view class="period-category-tag">
+                <image wx:if="{{asset.categoryIconUrl}}" class="period-category-icon-img" src="{{asset.categoryIconUrl}}" mode="aspectFit"></image>
+                <text wx:else class="period-category-icon">{{asset.categoryIcon || '📦'}}</text>
+                <text class="period-category-text">{{asset.category}}</text>
+              </view>
+              <text wx:if="{{asset.excludeTotal}}" class="period-exclude-tag total">不计入总资产</text>
+              <text wx:if="{{asset.excludeDaily}}" class="period-exclude-tag daily">不计入总日均</text>
+            </view>
+            <text class="period-asset-date">{{asset.dateRange}}</text>
+            <view class="period-asset-stats">
+              <block wx:if="{{asset.assetType === 'subscription'}}">
+                <view class="period-mini-stat period-amount-stat" wx:if="{{asset.periodAmountDisplay}}">
+                  <text class="period-mini-label">每期金额</text>
+                  <text class="period-mini-value price">¥{{asset.periodAmountDisplay}}/{{asset.periodTypeDisplay}}</text>
+                </view>
+                <block wx:if="{{asset.subscriptionStatus === 'ended'}}">
+                  <view class="period-mini-stat">
+                    <text class="period-mini-label">折合每日</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                  </view>
+                </block>
+                <block wx:else>
+                  <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
+                    <text class="period-mini-label">日均成本</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                  </view>
+                </block>
+                <view class="period-mini-stat" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
+                  <text class="period-mini-label">{{asset.subscriptionStatus === 'ended' ? '订阅时长' : '已订阅'}}</text>
+                  <text class="period-mini-value">{{asset.usedDays}}天</text>
+                </view>
+                <view class="period-mini-stat {{asset.excludeTotal ? 'excluded' : ''}}">
+                  <text class="period-mini-label">总投入</text>
+                  <text class="period-mini-value price">¥{{asset.totalInvestment}}</text>
+                </view>
+              </block>
+              <block wx:else>
+                <block wx:if="{{asset.status === 'active'}}">
+                  <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
+                    <text class="period-mini-label">日均成本</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                  </view>
+                </block>
+                <block wx:else>
+                  <view class="period-mini-stat">
+                    <text class="period-mini-label">折合每日</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                  </view>
+                </block>
+                <view class="period-mini-stat">
+                  <text class="period-mini-label">{{asset.status === 'active' ? '已服役' : '服役时长'}}</text>
+                  <text class="period-mini-value">{{asset.usedDays}}天</text>
+                </view>
+                <view class="period-mini-stat {{asset.excludeTotal ? 'excluded' : ''}}">
+                  <text class="period-mini-label">价格</text>
+                  <text class="period-mini-value price">¥{{asset.price}}</text>
+                </view>
+              </block>
+            </view>
           </view>
         </view>
 
@@ -918,6 +1187,37 @@
       <view class="decor-circle decor-3"></view>
     </view>
   </view>
+
+  <!-- 资产分类统计口径弹窗 -->
+  <cover-view class="category-scope-modal {{showCategoryScopeModal ? 'show' : ''}}" wx:if="{{showCategoryScopeModal}}">
+    <cover-view class="category-scope-mask" bindtap="closeCategoryScopeModal"></cover-view>
+    <cover-view class="category-scope-panel">
+      <cover-view class="category-scope-header">
+        <cover-view>
+          <cover-view class="category-scope-title">全量统计</cover-view>
+          <cover-view class="category-scope-subtitle">资产分类金额计算说明</cover-view>
+        </cover-view>
+        <cover-view class="category-scope-close" bindtap="closeCategoryScopeModal">✕</cover-view>
+      </cover-view>
+      <cover-view class="category-scope-body">
+        <cover-view class="scope-rule-card">
+          <cover-view class="scope-rule-label">普通资产</cover-view>
+          <cover-view class="scope-rule-text">按资产价格计算，服役中、已退役、已卖出都会计入。</cover-view>
+        </cover-view>
+        <cover-view class="scope-rule-card">
+          <cover-view class="scope-rule-label">订阅资产</cover-view>
+          <cover-view class="scope-rule-text">按总投入计算，订阅中和已结束按已完成周期累计，待生效为 0。</cover-view>
+        </cover-view>
+        <cover-view class="scope-rule-card">
+          <cover-view class="scope-rule-label">统计范围</cover-view>
+          <cover-view class="scope-rule-text">包含不计入总资产的资产，用于查看全部资产的分类分布。</cover-view>
+        </cover-view>
+      </cover-view>
+      <cover-view class="category-scope-footer" bindtap="closeCategoryScopeModal">
+        <cover-view class="category-scope-footer-text">知道了</cover-view>
+      </cover-view>
+    </cover-view>
+  </cover-view>
 
   <!-- 关于弹窗 -->
   <view class="about-modal {{showAboutModal ? 'show' : ''}}" wx:if="{{showAboutModal}}">

@@ -64,7 +64,13 @@ class ThemeManager {
    * @returns {Array} 主题列表数组
    */
   getAllThemes() {
-    return Object.entries(themes).map(([key, value]) => ({
+    const orderedKeys = ['fintech', 'obsidian'];
+    const entries = [
+      ...orderedKeys.filter(key => themes[key]).map(key => [key, themes[key]]),
+      ...Object.entries(themes).filter(([key]) => !orderedKeys.includes(key))
+    ];
+
+    return entries.map(([key, value]) => ({
       key,
       name: value.name,
       description: value.description,

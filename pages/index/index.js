@@ -34,6 +34,7 @@ Page({
     excludedTotalCount: 0,
     excludedDailyCount: 0,
     activeCount: 0,
+    subscriptionPendingCount: 0,
     retiredCount: 0,
     soldCount: 0,
     statsTotalCount: 0,
@@ -57,6 +58,7 @@ Page({
     statusMap: {
       all: '全部',
       active: '服役中/订阅中',
+      pending: '待生效',
       retired: '已退役/已结束',
       sold: '已卖出'
     },
@@ -81,20 +83,31 @@ Page({
     reportEmpty: false,
     reportTotalAssets: 0,
     reportTotalPrice: 0,
+    reportAllTotalPrice: 0,
+    reportIncludedTotalPrice: 0,
     reportExcludedPrice: 0,
+    reportExcludedTotalPrice: 0,
     reportIncludedCount: 0,
     reportExcludedCount: 0,
+    reportExcludedTotalCount: 0,
+    reportIncludedDailyCount: 0,
     reportCategoryStats: [],
     reportColors: [],  // 由 initTheme() 动态设置
 
     // 状态统计
     reportActiveCount: 0,
     reportActivePrice: 0,
+    reportPendingCount: 0,
+    reportPendingPrice: 0,
     reportRetiredCount: 0,
     reportRetiredPrice: 0,
     reportSoldCount: 0,
     reportSoldPrice: 0,
     reportDailyCost: 0,
+    reportAllDailyCost: 0,
+    reportIncludedDailyCost: 0,
+    reportExcludedDailyCost: 0,
+    reportExcludedDailyCount: 0,
 
     // 图表配置 - 使用延迟加载
     pieEc: { lazyLoad: true },
@@ -105,6 +118,10 @@ Page({
     activeTimePeriod: 'all',
     activeGranularity: 'year',
     timePeriodStats: null,
+    selectedCategoryLabel: '',
+    selectedCategoryAssets: [],
+    selectedLineLabel: '',
+    selectedLineAssets: [],
     selectedPeriodLabel: '',
     selectedPeriodAssets: [],
 
@@ -134,6 +151,7 @@ Page({
 
     // 关于弹窗
     showAboutModal: false,
+    showCategoryScopeModal: false,
 
     // 主题设置
     showThemeModal: false,
@@ -723,6 +741,10 @@ Page({
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   },
 
+  sortAssetsByPurchaseDateDesc(assets) {
+    return [...assets].sort((a, b) => this.parseDate(b.purchaseDate).getTime() - this.parseDate(a.purchaseDate).getTime());
+  },
+
   // 获取周期类型显示文本
   getPeriodTypeText(periodType, periodDays) {
     const periodTextMap = {
@@ -986,6 +1008,78 @@ Page({
     return Number(asset.price) || 0;
   },
 
+  getAssetDailyForReport(asset) {
+    const statsStatus = this.getAssetStatusForStats(asset);
+
+    if (asset.assetType === 'subscription') {
+      if (statsStatus === 'active') return Number(asset.dailyCost) || 0;
+      if (statsStatus === 'retired') return Number(asset.dailyEquivalent) || 0;
+      return 0;
+    }
+
+    if (statsStatus === 'active') return Number(asset.dailyCost) || 0;
+    if (statsStatus === 'retired' || statsStatus === 'sold') return Number(asset.dailyEquivalent) || 0;
+    return 0;
+  },
+
+  getChartAssetInfo(asset) {
+    const amount = this.getAssetAmountForStats(asset);
+    return {
+      name: asset.name,
+      price: amount.toFixed(2),
+      assetType: asset.assetType === 'subscription' ? 'subscription' : 'fixed',
+      subscriptionStatus: asset.subscriptionStatus,
+      status: asset.status,
+      category: asset.category || '未分类',
+      categoryIcon: asset.categoryIcon || '',
+      categoryIconUrl: asset.categoryIconUrl || '',
+      dateRange: asset.dateRange,
+      dailyCost: asset.dailyCost || '0.00',
+      dailyEquivalent: asset.dailyEquivalent || '0.00',
+      usedDays: asset.usedDays || 0,
+      totalInvestment: asset.totalInvestment || '0.00',
+      periodAmountDisplay: asset.periodAmountDisplay || '',
+      periodTypeDisplay: asset.periodTypeDisplay || '',
+      excludeTotal: asset.excludeTotal === true || asset.excludeTotal === 'true',
+      excludeDaily: asset.excludeDaily === true || asset.excludeDaily === 'true'
+    };
+  },
+
+  hslToHex(h, s, l) {
+    s /= 100;
+    l /= 100;
+    const k = n => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    const toHex = x => Math.round(255 * x).toString(16).padStart(2, '0');
+    return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`.toUpperCase();
+  },
+
+  getDistinctReportColors(count) {
+    const baseColors = [
+      '#2563EB', '#DC2626', '#16A34A', '#F59E0B',
+      '#7C3AED', '#0891B2', '#DB2777', '#65A30D',
+      '#EA580C', '#4F46E5', '#0D9488', '#9333EA',
+      '#B91C1C', '#0284C7', '#CA8A04', '#BE185D',
+      '#047857', '#6D28D9', '#C2410C', '#0F766E'
+    ];
+    const colors = baseColors.slice(0, count);
+    const used = new Set(colors.map(color => color.toUpperCase()));
+
+    for (let i = 0; colors.length < count; i++) {
+      const hue = (23 + i * 137.508) % 360;
+      const saturation = 68 + (i % 3) * 7;
+      const lightness = 42 + (i % 2) * 8;
+      const color = this.hslToHex(hue, saturation, lightness);
+      if (!used.has(color)) {
+        colors.push(color);
+        used.add(color);
+      }
+    }
+
+    return colors;
+  },
+
   updateAssetsCategoryIcon() {
     const { assets, categoryList } = this.data;
     if (!assets.length || !categoryList || !categoryList.length) return;
@@ -1143,7 +1237,8 @@ Page({
   },
 
   filterByStatus(e) {
-    this.setData({ activeStatus: e.currentTarget.dataset.status });
+    const status = e.currentTarget.dataset.status;
+    this.setData({ activeStatus: this.data.activeStatus === status ? 'all' : status });
     this.applyFilters();
     if (!this.data.sortDbFields[this.data.currentSortIndex]) {
       this.applySort();
@@ -1151,7 +1246,8 @@ Page({
   },
 
   filterByCategory(e) {
-    this.setData({ activeCategory: e.currentTarget.dataset.category });
+    const category = e.currentTarget.dataset.category;
+    this.setData({ activeCategory: this.data.activeCategory === category ? 'all' : category });
     this.applyFilters();
     if (!this.data.sortDbFields[this.data.currentSortIndex]) {
       this.applySort();
@@ -1672,16 +1768,22 @@ Page({
       // 计算分类统计和资产映射
       const categoryMap = {};
       const categoryAssetsMap = {}; // 分类资产映射
-      let totalPrice = 0;
-      let excludedPrice = 0; // 不计入总资产的金额
+      let allTotalPrice = 0;
+      let includedTotalPrice = 0;
+      let excludedTotalPrice = 0; // 不计入总资产的金额
       let includedCount = 0; // 计入总资产的资产数
-      let excludedCount = 0; // 不计入总资产的资产数
+      let excludedTotalCount = 0; // 不计入总资产的资产数
+      let allDailyCost = 0;
+      let includedDailyCost = 0;
+      let excludedDailyCost = 0;
+      let includedDailyCount = 0;
+      let excludedDailyCount = 0;
 
       // 状态统计
       let activeCount = 0, activePrice = 0;
+      let pendingCount = 0, pendingPrice = 0;
       let retiredCount = 0, retiredPrice = 0;
       let soldCount = 0, soldPrice = 0;
-      let dailyCostTotal = 0; // 日均成本（全部资产）
 
       // 先初始化所有分类
       const categoryList = this.data.categoryList || [];
@@ -1693,44 +1795,50 @@ Page({
       // 使用 calculateAssetFields 处理每个资产，复用首页的计算逻辑
       const enrichedAssets = assets.map(a => this.calculateAssetFields(a));
 
-      enrichedAssets.forEach(asset => {
+      this.sortAssetsByPurchaseDateDesc(enrichedAssets).forEach(asset => {
         const cat = asset.category || '未分类';
         const price = this.getAssetAmountForStats(asset);
+        const dailyCost = this.getAssetDailyForReport(asset);
         const statsStatus = this.getAssetStatusForStats(asset);
+        const excludeTotal = asset.excludeTotal === true || asset.excludeTotal === 'true';
+        const excludeDaily = asset.excludeDaily === true || asset.excludeDaily === 'true';
         if (!categoryMap[cat]) {
           categoryMap[cat] = { name: cat, total: 0, count: 0, icon: '', displayIcon: '' };
           categoryAssetsMap[cat] = [];
         }
         categoryMap[cat].total += price;
         categoryMap[cat].count++;
-        categoryAssetsMap[cat].push({ name: asset.name, price: price });
+        categoryAssetsMap[cat].push(this.getChartAssetInfo(asset));
 
-        // 总资产 = 所有资产金额总和
-        totalPrice += price;
+        // 全部总资产 = 所有资产金额总和
+        allTotalPrice += price;
+        allDailyCost += dailyCost;
 
         // 统计不计入总资产的金额
-        if (asset.excludeTotal === true || asset.excludeTotal === 'true') {
-          excludedPrice += price;
-          excludedCount++;
+        if (excludeTotal) {
+          excludedTotalPrice += price;
+          excludedTotalCount++;
         } else {
+          includedTotalPrice += price;
           includedCount++;
         }
 
-        // 计算日均成本（全部资产）- 复用首页逻辑
-        if (asset.assetType === 'subscription') {
-          if (statsStatus === 'active' && asset.dailyCost) {
-            dailyCostTotal += parseFloat(asset.dailyCost);
-          }
-        } else if (asset.status === 'active' && asset.dailyCost) {
-          dailyCostTotal += parseFloat(asset.dailyCost);
-        } else if ((asset.status === 'retired' || asset.status === 'sold') && asset.dailyEquivalent) {
-          dailyCostTotal += parseFloat(asset.dailyEquivalent);
+        // 统计不计入总日均的日均金额
+        if (excludeDaily) {
+          excludedDailyCost += dailyCost;
+          excludedDailyCount++;
+        } else {
+          includedDailyCost += dailyCost;
+          includedDailyCount++;
         }
 
         // 状态统计
         if (statsStatus === 'active') {
           activeCount++;
           activePrice += price;
+        } else if (statsStatus === 'pending') {
+          pendingCount++;
+          pendingPrice += price;
         } else if (statsStatus === 'retired') {
           retiredCount++;
           retiredPrice += price;
@@ -1740,31 +1848,49 @@ Page({
         }
       });
 
-      const reportCategoryStats = Object.values(categoryMap)
-        .sort((a, b) => b.total - a.total)
-        .map(item => ({ ...item, totalFixed: item.total.toFixed(2) }));
+      const sortedCategoryStats = Object.values(categoryMap).sort((a, b) => b.total - a.total);
+      const distinctReportColors = this.getDistinctReportColors(sortedCategoryStats.length);
+      const categoryTotal = sortedCategoryStats.reduce((sum, item) => sum + item.total, 0);
+      const reportCategoryStats = sortedCategoryStats
+        .map((item, index) => ({
+          ...item,
+          color: distinctReportColors[index],
+          totalFixed: item.total.toFixed(2),
+          percentFixed: categoryTotal > 0 ? ((item.total / categoryTotal) * 100).toFixed(1) : '0.0'
+        }));
 
       this.setData({
         reportLoading: false,
         reportEmpty: assets.length === 0,
-        reportAssets: assets,
+        reportAssets: enrichedAssets,
         reportTotalAssets: assets.length,
-        reportTotalPrice: totalPrice.toFixed(2),
-        reportExcludedPrice: excludedPrice.toFixed(2),
+        reportTotalPrice: allTotalPrice.toFixed(2),
+        reportAllTotalPrice: allTotalPrice.toFixed(2),
+        reportIncludedTotalPrice: includedTotalPrice.toFixed(2),
+        reportExcludedPrice: excludedTotalPrice.toFixed(2),
+        reportExcludedTotalPrice: excludedTotalPrice.toFixed(2),
         reportIncludedCount: includedCount,
-        reportExcludedCount: excludedCount,
+        reportExcludedCount: excludedTotalCount,
+        reportExcludedTotalCount: excludedTotalCount,
+        reportIncludedDailyCount: includedDailyCount,
         reportCategoryStats,
         reportCategoryAssetsMap: categoryAssetsMap,
-        pieCenterText: '¥' + totalPrice.toFixed(2),
-        pieCenterSubText: '总资产',
+        pieCenterText: '¥' + allTotalPrice.toFixed(2),
+        pieCenterSubText: '全部总资产',
         // 状态统计
         reportActiveCount: activeCount,
         reportActivePrice: activePrice.toFixed(2),
+        reportPendingCount: pendingCount,
+        reportPendingPrice: pendingPrice.toFixed(2),
         reportRetiredCount: retiredCount,
         reportRetiredPrice: retiredPrice.toFixed(2),
         reportSoldCount: soldCount,
         reportSoldPrice: soldPrice.toFixed(2),
-        reportDailyCost: dailyCostTotal.toFixed(2)
+        reportDailyCost: allDailyCost.toFixed(2),
+        reportAllDailyCost: allDailyCost.toFixed(2),
+        reportIncludedDailyCost: includedDailyCost.toFixed(2),
+        reportExcludedDailyCost: excludedDailyCost.toFixed(2),
+        reportExcludedDailyCount: excludedDailyCount
       });
 
       if (assets.length > 0) {
@@ -1780,7 +1906,7 @@ Page({
   },
 
   initPieChart() {
-    const { reportCategoryStats, reportColors, pieCenterText, pieCenterSubText } = this.data;
+    const { reportCategoryStats, pieCenterText, pieCenterSubText } = this.data;
     if (!reportCategoryStats.length) return;
 
     // 获取当前主题颜色（用于图表样式）
@@ -1800,7 +1926,8 @@ Page({
       const total = reportCategoryStats.reduce((sum, i) => sum + i.total, 0);
       const pieData = reportCategoryStats.map((item, i) => ({
         name: item.name,
-        value: item.total
+        value: item.total,
+        itemStyle: { color: item.color }
       }));
 
       // 保存 chart 实例以便后续更新
@@ -1808,7 +1935,7 @@ Page({
       this.pieTotal = total;
 
       chart.setOption({
-        color: reportColors,
+        color: reportCategoryStats.map(item => item.color),
         tooltip: {
           trigger: 'item',
           confine: true,
@@ -1889,15 +2016,6 @@ Page({
         }]
       });
 
-      // 点击事件
-      chart.on('click', params => {
-        if (params.componentType === 'series') {
-          const value = params.value;
-          const name = params.name;
-          this.updatePieCenterText('¥' + value.toFixed(2), name);
-        }
-      });
-
       // 图例点击事件 - 重置为总金额
       chart.on('legendselectchanged', () => {
         this.updatePieCenterText('¥' + this.pieTotal.toFixed(2), '总资产');
@@ -1952,6 +2070,50 @@ Page({
     });
   },
 
+  showCategoryScopeTip() {
+    this.setData({ showCategoryScopeModal: true });
+  },
+
+  closeCategoryScopeModal() {
+    this.setData({ showCategoryScopeModal: false }, () => {
+      if (this.data.showReport) {
+        setTimeout(() => {
+          if (this.data.reportCategoryStats.length > 0) {
+            this.initPieChart();
+          }
+          if (this.data.reportAssets.length > 0) {
+            this.initLineChart();
+          }
+          if (this.data.timePeriodStats && this.data.timePeriodStats.data.length > 0) {
+            this.initTimeChart();
+          }
+        }, 100);
+      }
+    });
+  },
+
+  toggleCategoryAssets(e) {
+    const category = e.currentTarget.dataset.category;
+    if (!category) return;
+    if (this.data.selectedCategoryLabel === category) {
+      this.closeCategoryAssets();
+      return;
+    }
+    const assets = this.data.reportCategoryAssetsMap[category] || [];
+    this.setData({
+      selectedCategoryLabel: category,
+      selectedCategoryAssets: assets,
+      selectedLineLabel: '',
+      selectedLineAssets: [],
+      selectedPeriodLabel: '',
+      selectedPeriodAssets: []
+    });
+  },
+
+  closeCategoryAssets() {
+    this.setData({ selectedCategoryLabel: '', selectedCategoryAssets: [] });
+  },
+
   initLineChart() {
     const { reportAssets } = this.data;
     if (!reportAssets.length) return;
@@ -1963,16 +2125,17 @@ Page({
     if (!component) return;
 
     const sorted = [...reportAssets].sort((a, b) => new Date(a.purchaseDate) - new Date(b.purchaseDate));
+    const assetsDesc = this.sortAssetsByPurchaseDateDesc(reportAssets);
 
     // 日期到资产的映射（同一天可能有多笔资产）
     const dateAssetsMap = {};
-    sorted.forEach(a => {
+    assetsDesc.forEach(a => {
       const d = new Date(a.purchaseDate);
       const dateKey = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
       if (!dateAssetsMap[dateKey]) {
         dateAssetsMap[dateKey] = [];
       }
-      dateAssetsMap[dateKey].push(a);
+      dateAssetsMap[dateKey].push(this.getChartAssetInfo(a));
     });
 
     component.init((canvas, width, height, dpr) => {
@@ -2021,7 +2184,7 @@ Page({
             const dayTotal = params[0].value;
             const dayAssets = this.lineDateAssetsMap[dateKey] || [];
 
-            let assetList = dayAssets.map(asset => `${asset.name}: ¥${Number(asset.price || 0).toFixed(2)}`).join('\n');
+            let assetList = dayAssets.map(asset => `${asset.name}: ¥${asset.price}`).join('\n');
 
             return `${dateKey}\n金额: ¥${dayTotal.toFixed(2)}\n${assetList}`;
           }
@@ -2064,6 +2227,27 @@ Page({
         ]
       });
 
+      // tooltip 显示时展示对应日期资产列表
+      chart.on('showTip', params => {
+        const dataIndex = params.dataIndex != null ? params.dataIndex : (params.seriesData && params.seriesData[0] ? params.seriesData[0].dataIndex : -1);
+        if (dataIndex < 0 || dataIndex >= dates.length) return;
+        const dateKey = dates[dataIndex];
+        const dayAssets = this.lineDateAssetsMap[dateKey] || [];
+        if (!dayAssets.length) return;
+        this.setData({
+          selectedLineLabel: dateKey,
+          selectedLineAssets: dayAssets
+        });
+      });
+
+      // tooltip 消失时隐藏资产列表
+      chart.on('hideTip', () => {
+        if (this.data.selectedLineAssets.length > 0) {
+          this.setData({ selectedLineLabel: '', selectedLineAssets: [] });
+        }
+      });
+
+      this.lineChart = chart;
       return chart;
     });
   },
@@ -2114,7 +2298,7 @@ Page({
 
     const groupMap = {};
 
-    assets.forEach(asset => {
+    this.sortAssetsByPurchaseDateDesc(assets).forEach(asset => {
       const purchaseDate = new Date(asset.purchaseDate);
       let label;
 
@@ -2136,9 +2320,10 @@ Page({
       if (!groupMap[label]) {
         groupMap[label] = { label, totalAmount: 0, count: 0, assets: [] };
       }
-      groupMap[label].totalAmount += Number(asset.price) || 0;
+      const amount = this.getAssetAmountForStats(asset);
+      groupMap[label].totalAmount += amount;
       groupMap[label].count++;
-      groupMap[label].assets.push({ name: asset.name, price: Number(asset.price) || 0 });
+      groupMap[label].assets.push(this.getChartAssetInfo(asset));
     });
 
     // 按时间排序
@@ -2162,6 +2347,11 @@ Page({
       all: '全部'
     };
     return labels[period] || period;
+  },
+
+  // 关闭选中时段的资产列表
+  closeLineAssets() {
+    this.setData({ selectedLineLabel: '', selectedLineAssets: [] });
   },
 
   // 关闭选中时段的资产列表
@@ -2247,7 +2437,7 @@ Page({
             if (!params || !params.length) return '';
             const d = params[0];
             const dataItem = timePeriodStats.data[d.dataIndex];
-            let assetList = dataItem.assets.slice(0, 5).map(a => `${a.name}: ¥${a.price.toFixed(2)}`).join('\n');
+            let assetList = dataItem.assets.slice(0, 5).map(a => `${a.name}: ¥${a.price}`).join('\n');
             if (dataItem.assets.length > 5) {
               assetList += `\n... 等${dataItem.assets.length}项`;
             }

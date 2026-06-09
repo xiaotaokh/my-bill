@@ -890,12 +890,12 @@ const cardBgColors = {
 
 // 四个资产状态背景色（按主题）- 五彩实色，类似资产卡片背景
 const statBgColors = {
-  fintech: ['#C7D2FE', '#A7F3D0', '#FDE68A', '#E2E8F0'],
-  minimal: ['#E2D3C9', '#C8DCD0', '#E8CCD0', '#D0D0DC'],
-  obsidian: ['#F8E8B8', '#A7F3D0', '#FDE68A', '#E0C080'],  // 深色主题用亮色背景配深色文字
-  forest: ['#A7F3D0', '#D1FAE5', '#FCD34D', '#BBF7D0'],
-  sunset: ['#FED7AA', '#A7F3D0', '#FCD34D', '#FFEDD5'],
-  aurora: ['#C4B5FD', '#F9A8D4', '#FCD34D', '#38BDF8']
+  fintech: ['#A7F3D0', '#DBEAFE', '#FDE68A', '#E2E8F0'],
+  minimal: ['#C8DCD0', '#D7E0E8', '#E8CCD0', '#D0D0DC'],
+  obsidian: ['#A7F3D0', '#BFDBFE', '#FDE68A', '#E0C080'],  // 深色主题用亮色背景配深色文字
+  forest: ['#D1FAE5', '#BFDBFE', '#FCD34D', '#BBF7D0'],
+  sunset: ['#A7F3D0', '#DBEAFE', '#FCD34D', '#FFEDD5'],
+  aurora: ['#F9A8D4', '#CFFAFE', '#FCD34D', '#38BDF8']
 };
 
 // 图表配色（按主题）

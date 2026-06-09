@@ -119,6 +119,14 @@
   border: 4rpx solid var(--border-default);
 }
 
+.avatar-img.can-preview {
+  box-shadow: 0 8rpx 24rpx rgba(var(--shadow-rgb), 0.18);
+}
+
+.avatar-img.can-preview:active {
+  transform: scale(0.96);
+}
+
 .avatar-placeholder {
   position: absolute;
   top: 0;

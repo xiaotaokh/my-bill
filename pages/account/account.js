@@ -20,6 +20,7 @@ Page({
     editAvatarUrl: '',
     avatarLoading: false, // 头像加载状态
     choosingAvatar: false, // 选择头像时的遮罩状态
+    canPreviewAvatar: false,
 
     // 随机信息弹窗
     showRandomModal: false,
@@ -159,13 +160,15 @@ Page({
           },
           userId: data.id,
           loading: false,
-          avatarLoading: isLoading
+          avatarLoading: isLoading,
+          canPreviewAvatar: this.canPreviewAvatar(avatarUrl)
         });
       } else {
-        this.setData({
-          userInfo: {},
-          loading: false
-        });
+      this.setData({
+        userInfo: {},
+        loading: false,
+        canPreviewAvatar: false
+      });
       }
     } catch (err) {
       console.error('获取用户信息失败:', err);
@@ -375,7 +378,8 @@ Page({
         editNickName: '',
         editAvatarUrl: '',
         submitting: false,
-        avatarLoading: isLoading
+        avatarLoading: isLoading,
+        canPreviewAvatar: this.canPreviewAvatar(newAvatarUrl)
       });
 
       wx.showToast({ title: '修改成功', icon: 'success' });
@@ -395,6 +399,20 @@ Page({
   onAvatarImageError() {
     this.setData({ avatarLoading: false });
     console.log('头像图片加载失败');
+  },
+
+  canPreviewAvatar(avatarUrl) {
+    if (!avatarUrl) return false;
+    return !avatarUrl.startsWith('data:image');
+  },
+
+  previewAvatar() {
+    const avatarUrl = this.data.userInfo && this.data.userInfo.avatarUrl;
+    if (!this.canPreviewAvatar(avatarUrl)) return;
+    wx.previewImage({
+      current: avatarUrl,
+      urls: [avatarUrl]
+    });
   },
 
   // 阻止滚动和点击
@@ -432,6 +450,6 @@ Page({
 
   // 头像加载失败时显示默认占位
   onAvatarError() {
-    this.setData({ 'userInfo.avatarUrl': '' });
+    this.setData({ 'userInfo.avatarUrl': '', canPreviewAvatar: false });
   }
 });
