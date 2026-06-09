@@ -314,7 +314,7 @@
             <view wx:if="{{!uploadedImagePath}}" class="upload-placeholder-asset">
               <text class="upload-icon-asset">📷</text>
               <text class="upload-text-asset">上传图片</text>
-              <text class="upload-hint-asset">jpg/png，≤2M</text>
+              <text class="upload-hint-asset">常见图片格式，≤5M</text>
             </view>
             <view wx:else class="upload-preview-asset">
               <view class="image-loading-overlay" wx:if="{{imageLoading}}">

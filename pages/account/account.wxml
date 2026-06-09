@@ -83,11 +83,16 @@
       <!-- 头像选择 -->
       <view class="edit-row">
         <text class="edit-label">头像</text>
-        <button class="avatar-select-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" disabled="{{submitting}}">
-          <image wx:if="{{editAvatarUrl}}" class="avatar-preview" src="{{editAvatarUrl}}" mode="aspectFill"></image>
-          <text wx:else class="avatar-empty-text">点击获取头像</text>
-          <text class="select-arrow">›</text>
-        </button>
+        <view class="avatar-edit-actions">
+          <button class="avatar-select-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" disabled="{{submitting}}">
+            <image wx:if="{{editAvatarUrl}}" class="avatar-preview" src="{{editAvatarUrl}}" mode="aspectFill"></image>
+            <text wx:else class="avatar-empty-text">点击获取头像</text>
+            <text class="select-arrow">›</text>
+          </button>
+          <button class="avatar-album-btn" bindtap="chooseAvatarFromAlbum" disabled="{{submitting}}">
+            <text class="avatar-album-text">从相册选原图</text>
+          </button>
+        </view>
       </view>
 
       <!-- 昵称输入 -->

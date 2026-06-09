@@ -230,7 +230,7 @@ module.exports = {
               <view wx:if="{{!uploadedImagePath}}" class="upload-placeholder">
                 <text class="upload-icon">📷</text>
                 <text class="upload-text">上传图片</text>
-                <text class="upload-hint">jpg/png，≤2M</text>
+                <text class="upload-hint">常见图片格式，≤5M</text>
               </view>
               <view wx:else class="upload-preview">
                 <view class="image-loading-overlay" wx:if="{{imageLoading}}">

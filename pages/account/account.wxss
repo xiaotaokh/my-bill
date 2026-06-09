@@ -262,7 +262,6 @@
 }
 
 .avatar-select-btn {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -271,6 +270,15 @@
   background: transparent;
   border: none;
   line-height: normal;
+}
+
+.avatar-edit-actions {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18rpx;
+  min-width: 0;
 }
 
 .avatar-preview {
@@ -283,6 +291,29 @@
 .avatar-empty-text {
   font-size: 26rpx;
   color: var(--text-hint);
+}
+
+.avatar-album-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56rpx;
+  padding: 0 18rpx;
+  margin: 0;
+  background: var(--bg-subtle);
+  border: 1rpx solid var(--border-default);
+  border-radius: 28rpx;
+  line-height: normal;
+}
+
+.avatar-album-btn::after {
+  border: none;
+}
+
+.avatar-album-text {
+  font-size: 24rpx;
+  color: var(--primary-600);
+  white-space: nowrap;
 }
 
 .nickname-select-btn {

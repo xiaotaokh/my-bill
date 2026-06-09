@@ -473,13 +473,26 @@ Page({
       camera: 'back',
       success(res) {
         const tempFilePath = res.tempFiles[0].tempFilePath;
+        const extMatch = String(tempFilePath).match(/\.([a-zA-Z0-9]+)(?:\?|$)/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : '';
+        const allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif'];
 
-        // 检查文件大小 (最大2M)
-        const maxSize = 2 * 1024 * 1024; // 2MB
+        // 检查文件大小 (最大5M)
+        const maxSize = 5 * 1024 * 1024;
         if (res.tempFiles[0].size > maxSize) {
           wx.showToast({
-            title: '图片过大，请选择小于2M的图片',
+            title: '分类图片不能超过5M',
             icon: 'none'
+          });
+          return;
+        }
+
+        if (!allowedTypes.includes(ext)) {
+          wx.showModal({
+            title: '格式不支持',
+            content: '支持的图片格式：jpg、jpeg、png、gif、webp、bmp、svg、heic、heif。文件后缀不区分大小写，例如 JPG 和 jpg 会按同一种格式处理。',
+            showCancel: false,
+            confirmText: '知道了'
           });
           return;
         }
@@ -499,7 +512,9 @@ Page({
 
     const timestamp = Date.now();
     const randomNum = Math.floor(Math.random() * 10000);
-    const fileName = `${timestamp}-${randomNum}.png`;
+    const extMatch = String(filePath).match(/\.([a-zA-Z0-9]+)(?:\?|$)/);
+    const ext = extMatch[1].toLowerCase();
+    const fileName = `${timestamp}-${randomNum}.${ext}`;
 
     try {
       const { publicUrl, error } = await uploadFileToStorage('category-icons', fileName, filePath);

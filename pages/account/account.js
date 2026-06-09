@@ -214,6 +214,54 @@ Page({
     }, 500);
   },
 
+  // 从相册选择原图头像
+  chooseAvatarFromAlbum() {
+    if (this.data.submitting) return;
+
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album'],
+      sizeType: ['original'],
+      success: (res) => {
+        const file = res.tempFiles && res.tempFiles[0];
+        if (!file || !file.tempFilePath) return;
+
+        const extMatch = String(file.tempFilePath).match(/\.([a-zA-Z0-9]+)(?:\?|$)/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : '';
+        const allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif'];
+
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size && file.size > maxSize) {
+          wx.showToast({
+            title: '头像不能超过5M',
+            icon: 'none'
+          });
+          return;
+        }
+
+        if (!allowedTypes.includes(ext)) {
+          wx.showModal({
+            title: '格式不支持',
+            content: '支持的图片格式：jpg、jpeg、png、gif、webp、bmp、svg、heic、heif。文件后缀不区分大小写，例如 JPG 和 jpg 会按同一种格式处理。',
+            showCancel: false,
+            confirmText: '知道了'
+          });
+          return;
+        }
+
+        this.setData({
+          editAvatarUrl: file.tempFilePath,
+          choosingAvatar: true
+        });
+
+        setTimeout(() => {
+          this.setData({ choosingAvatar: false });
+        }, 500);
+      }
+    });
+  },
+
   // 点击按钮触发昵称选择
   chooseNickname() {
     if (this.data.submitting) return;
@@ -313,7 +361,9 @@ Page({
       }).catch(err => {
         console.error('头像上传失败:', err);
         this.setData({ submitting: false });
-        wx.showToast({ title: '头像上传失败，请重试', icon: 'none' });
+        if (!err || err.message !== 'UNSUPPORTED_IMAGE_FORMAT') {
+          wx.showToast({ title: '头像上传失败，请重试', icon: 'none' });
+        }
       });
     } else if (editAvatarUrl.startsWith('data:image')) {
       // SVG data URL 直接使用
@@ -328,7 +378,9 @@ Page({
       }).catch(err => {
         console.error('头像上传失败:', err);
         this.setData({ submitting: false });
-        wx.showToast({ title: '头像上传失败，请重试', icon: 'none' });
+        if (!err || err.message !== 'UNSUPPORTED_IMAGE_FORMAT') {
+          wx.showToast({ title: '头像上传失败，请重试', icon: 'none' });
+        }
       });
     }
   },
@@ -425,10 +477,23 @@ Page({
 
   // 上传头像到 Supabase Storage
   async uploadAvatar(tempFilePath) {
+    const timestamp = Date.now();
+    const extMatch = String(tempFilePath).match(/\.([a-zA-Z0-9]+)(?:\?|$)/);
+    const ext = extMatch ? extMatch[1].toLowerCase() : '';
+    const allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif'];
+    if (!allowedTypes.includes(ext)) {
+      wx.showModal({
+        title: '格式不支持',
+        content: '支持的图片格式：jpg、jpeg、png、gif、webp、bmp、svg、heic、heif。文件后缀不区分大小写，例如 JPG 和 jpg 会按同一种格式处理。',
+        showCancel: false,
+        confirmText: '知道了'
+      });
+      throw new Error('UNSUPPORTED_IMAGE_FORMAT');
+    }
+
     wx.showLoading({ title: '上传中...', mask: true });
 
-    const timestamp = Date.now();
-    const fileName = `${timestamp}.jpg`;
+    const fileName = `${timestamp}.${ext}`;
 
     try {
       const { publicUrl, error } = await uploadFileToStorage('avatars', fileName, tempFilePath);
