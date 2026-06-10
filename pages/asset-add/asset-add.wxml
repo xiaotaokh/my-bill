@@ -15,7 +15,7 @@
             </view>
             <view class="type-text-group">
               <text class="type-label">普通资产</text>
-              <text class="type-desc">一次性购入，长期持有</text>
+              <text class="type-desc">一次性购入，比如设备、家具、车辆、首饰等固定资产</text>
             </view>
             <view class="type-check {{assetType === 'fixed' ? 'checked' : ''}}">
               <text class="check-symbol">✓</text>
@@ -30,7 +30,7 @@
             </view>
             <view class="type-text-group">
               <text class="type-label">订阅资产</text>
-              <text class="type-desc">周期性付费，持续使用</text>
+              <text class="type-desc">周期性付费，比如会员、分期、话费、油费等持续消费</text>
             </view>
             <view class="type-check {{assetType === 'subscription' ? 'checked' : ''}}">
               <text class="check-symbol">✓</text>
