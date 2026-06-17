@@ -1,6 +1,7 @@
 // asset-add.js
 const { themeManager } = require('../../utils/themeManager');
 const { supabase, uploadFileToStorage, deleteStorageFile, getChinaTimeISO } = require('../../utils/supabase');
+const { checkImageSecurity, prepareImageForSecurityCheck } = require('../../utils/contentSecurity');
 
 Page({
   data: {
@@ -822,7 +823,7 @@ Page({
       sourceType: ['album', 'camera'],
       maxDuration: 30,
       camera: 'back',
-      success: (res) => {
+      success: async (res) => {
         const tempFilePath = res.tempFiles[0].tempFilePath;
         const size = res.tempFiles[0].size;
         const allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif'];
@@ -849,17 +850,46 @@ Page({
           return;
         }
 
-        // 设置临时路径作为预览，并清空之前选择的内置图标
-        this.setData({
-          selectedIcon: '', // 清空之前选择的内置图标
-          selectedIconName: '',
-          selectedGroupName: '',
-          selectedIconIndex: 0,
-          uploadedImagePath: tempFilePath // 设置上传图片的临时路径
-        });
+        wx.showLoading({ title: '安全校验中...', mask: true });
 
-        // 上传图片到云存储
-        this.uploadIconToCloud(tempFilePath);
+        try {
+          const securityFilePath = await prepareImageForSecurityCheck(tempFilePath, size);
+          const checkResult = await checkImageSecurity(securityFilePath, 'asset-icon');
+          wx.hideLoading();
+
+          if (!checkResult.ok) {
+            wx.showModal({
+              title: checkResult.isRiskContent ? '图片校验未通过' : '图片校验失败',
+              content: checkResult.isRiskContent
+                ? '你选择的图片可能包含违规信息，请更换后重试。'
+                : `微信图片安全接口未通过本次校验：${checkResult.errMsg || checkResult.errCode || '未知原因'}`,
+              showCancel: false,
+              confirmText: '知道了'
+            });
+            return;
+          }
+
+          // 设置临时路径作为预览，并清空之前选择的内置图标
+          this.setData({
+            selectedIcon: '',
+            selectedIconName: '',
+            selectedGroupName: '',
+            selectedIconIndex: 0,
+            uploadedImagePath: tempFilePath
+          });
+
+          // 上传图片到云存储
+          this.uploadIconToCloud(tempFilePath);
+        } catch (err) {
+          wx.hideLoading();
+          console.error('资产图片安全校验失败', err);
+          wx.showModal({
+            title: '安全校验失败',
+            content: `图片内容安全校验失败：${(err && err.message) || '未知错误'}`,
+            showCancel: false,
+            confirmText: '知道了'
+          });
+        }
       },
       fail: (err) => {
         if (err.errMsg && err.errMsg.includes('cancel')) {

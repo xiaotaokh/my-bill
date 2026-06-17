@@ -67,6 +67,47 @@ function invokeFunction(functionName, data) {
   });
 }
 
+// 上传文件到 Edge Function
+function uploadFileToFunction(functionName, filePath, formData) {
+  const url = `${SUPABASE_URL}/functions/v1/${functionName}`;
+
+  return new Promise((resolve, reject) => {
+    wx.uploadFile({
+      url: url,
+      filePath: filePath,
+      name: 'file',
+      formData: formData || {},
+      header: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      },
+      success: function(res) {
+        let body = null;
+        try {
+          body = JSON.parse(res.data);
+        } catch (e) {
+          body = null;
+        }
+
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve({ data: body, error: null });
+        } else {
+          resolve({
+            data: body,
+            error: {
+              message: body ? (body.error || body.errMsg || body.errmsg || body.message || res.data || '请求失败') : (res.data || '请求失败'),
+              code: res.statusCode
+            }
+          });
+        }
+      },
+      fail: function(err) {
+        reject(err);
+      }
+    });
+  });
+}
+
 // 模拟 Supabase 客户端
 var supabase = {
   from: function(table) {
@@ -333,6 +374,7 @@ module.exports = {
   getOpenid: getOpenid,
   getPublicUrl: getPublicUrl,
   uploadFileToStorage: uploadFileToStorage,
+  uploadFileToFunction: uploadFileToFunction,
   deleteStorageFile: deleteStorageFile,
   getChinaTimeISO: getChinaTimeISO
 };

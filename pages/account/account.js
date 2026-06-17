@@ -2,6 +2,7 @@
 const { themeManager } = require('../../utils/themeManager');
 const { supabase, uploadFileToStorage, deleteStorageFile, getChinaTimeISO } = require('../../utils/supabase');
 const { isAdmin } = require('../../utils/auth');
+const { checkImageSecurity, prepareImageForSecurityCheck } = require('../../utils/contentSecurity');
 const app = getApp();
 
 Page({
@@ -212,9 +213,40 @@ Page({
   },
 
   // 选择头像
-  onChooseAvatar(e) {
+  async onChooseAvatar(e) {
     if (this.data.submitting) return;
     const avatarUrl = e.detail.avatarUrl;
+    if (!avatarUrl) return;
+
+    wx.showLoading({ title: '安全校验中...', mask: true });
+
+    try {
+      const securityFilePath = await prepareImageForSecurityCheck(avatarUrl);
+      const checkResult = await checkImageSecurity(securityFilePath, 'avatar');
+      wx.hideLoading();
+
+      if (!checkResult.ok) {
+        wx.showModal({
+          title: checkResult.isRiskContent ? '图片校验未通过' : '图片校验失败',
+          content: checkResult.isRiskContent
+            ? '你选择的图片可能包含违规信息，请更换后重试。'
+            : `微信图片安全接口未通过本次校验：${checkResult.errMsg || checkResult.errCode || '未知原因'}`,
+          showCancel: false,
+          confirmText: '知道了'
+        });
+        return;
+      }
+    } catch (err) {
+      wx.hideLoading();
+      console.error('头像安全校验失败', err);
+      wx.showModal({
+        title: '安全校验失败',
+        content: `图片内容安全校验失败：${(err && err.message) || '未知错误'}`,
+        showCancel: false,
+        confirmText: '知道了'
+      });
+      return;
+    }
 
     // 设置选择状态，显示遮罩层阻止点击
     this.setData({
@@ -238,7 +270,7 @@ Page({
       mediaType: ['image'],
       sourceType: ['album'],
       sizeType: ['original'],
-      success: (res) => {
+      success: async (res) => {
         const file = res.tempFiles && res.tempFiles[0];
         if (!file || !file.tempFilePath) return;
 
@@ -259,6 +291,36 @@ Page({
           wx.showModal({
             title: '格式不支持',
             content: '支持的图片格式：jpg、jpeg、png、gif、webp、bmp、svg、heic、heif。文件后缀不区分大小写，例如 JPG 和 jpg 会按同一种格式处理。',
+            showCancel: false,
+            confirmText: '知道了'
+          });
+          return;
+        }
+
+        wx.showLoading({ title: '安全校验中...', mask: true });
+
+        try {
+          const securityFilePath = await prepareImageForSecurityCheck(file.tempFilePath, file.size);
+          const checkResult = await checkImageSecurity(securityFilePath, 'avatar');
+          wx.hideLoading();
+
+          if (!checkResult.ok) {
+            wx.showModal({
+              title: checkResult.isRiskContent ? '图片校验未通过' : '图片校验失败',
+              content: checkResult.isRiskContent
+                ? '你选择的图片可能包含违规信息，请更换后重试。'
+                : `微信图片安全接口未通过本次校验：${checkResult.errMsg || checkResult.errCode || '未知原因'}`,
+              showCancel: false,
+              confirmText: '知道了'
+            });
+            return;
+          }
+        } catch (err) {
+          wx.hideLoading();
+          console.error('头像安全校验失败', err);
+          wx.showModal({
+            title: '安全校验失败',
+            content: `图片内容安全校验失败：${(err && err.message) || '未知错误'}`,
             showCancel: false,
             confirmText: '知道了'
           });
