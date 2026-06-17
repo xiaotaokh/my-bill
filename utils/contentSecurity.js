@@ -20,9 +20,33 @@ function compressImage(filePath) {
   });
 }
 
+function getFileSize(filePath) {
+  return new Promise((resolve, reject) => {
+    wx.getFileInfo({
+      filePath,
+      success(res) {
+        resolve(res.size || 0);
+      },
+      fail(err) {
+        reject(err);
+      }
+    });
+  });
+}
+
 async function prepareImageForSecurityCheck(filePath, size) {
   const maxDirectCheckSize = 1024 * 1024;
-  if (!size || size <= maxDirectCheckSize) {
+  let actualSize = size;
+
+  if (!actualSize) {
+    try {
+      actualSize = await getFileSize(filePath);
+    } catch (err) {
+      actualSize = 0;
+    }
+  }
+
+  if (!actualSize || actualSize <= maxDirectCheckSize) {
     return filePath;
   }
 
