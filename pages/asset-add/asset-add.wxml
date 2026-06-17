@@ -250,29 +250,40 @@
       </view>
     </view>
 
-    <!-- 其他设置（订阅资产） -->
-    <view class="form-group" wx:if="{{assetType === 'subscription'}}">
+    <!-- 类别选择 -->
+    <view class="form-group">
       <view class="form-header">
-        <text class="form-title">其他</text>
+        <text class="form-title">分类</text>
       </view>
-      <view class="switch-list">
-        <view class="switch-item">
-          <text class="switch-label">不计入总资产</text>
-          <switch
-            checked="{{excludeTotal}}"
-            bindchange="onExcludeTotalChange"
-            class="switch-primary"
-          />
+      <view class="category-grid">
+        <view
+          class="category-item {{item.selected ? 'selected' : ''}}"
+          wx:for="{{categories}}"
+          wx:key="name"
+          bindtap="toggleCategory"
+          data-category="{{item.name}}"
+          data-index="{{index}}"
+        >
+          <!-- 显示类别图标：支持自定义图片和emoji -->
+          <view class="category-icon-wrap">
+            <image wx:if="{{item.displayIcon}}" src="{{item.displayIcon}}" mode="aspectFill" class="category-icon-img"></image>
+            <text wx:else class="category-icon">{{item.icon || '🏷️'}}</text>
+          </view>
+          <text class="category-name">{{item.name}}</text>
+          <!-- 单选圆点样式 -->
+          <view class="radio-dot {{item.selected ? 'checked' : ''}}">
+            <view class="radio-inner" wx:if="{{item.selected}}"></view>
+          </view>
         </view>
-        <view class="switch-item">
-          <text class="switch-label">不计入总日均</text>
-          <switch
-            checked="{{excludeDaily}}"
-            bindchange="onExcludeDailyChange"
-            class="switch-primary"
-            disabled="{{endSubscription}}"
-          />
+
+        <!-- 空状态 -->
+        <view class="category-empty" wx:if="{{categories.length === 0}}">
+          <text class="empty-icon">📦</text>
+          <text class="empty-text">暂无类别</text>
         </view>
+      </view>
+      <view class="category-error" wx:if="{{errors.category}}">
+        <text>{{errors.category}}</text>
       </view>
     </view>
 
@@ -280,15 +291,23 @@
     <view class="form-group">
       <view class="form-header">
         <text class="form-title">选择缩略图</text>
+        <view class="icon-groups-toggle-all" bindtap="toggleAllIconGroups">
+          <text>{{iconGroupsAllCollapsed ? '全部展开' : '全部折叠'}}</text>
+        </view>
       </view>
       <view class="icon-selector">
         <!-- 内置图标分组选择 -->
         <view class="icon-groups-container">
           <view wx:for="{{builtinIconGroups}}" wx:key="name" wx:for-item="group" wx:for-index="idx">
             <!-- 分组标题 -->
-            <view class="group-title {{idx === 0 ? 'first' : ''}}">{{group.name}}</view>
+            <view class="group-title {{idx === 0 ? 'first' : ''}}" bindtap="toggleGroup" data-group-name="{{group.name}}">
+              <text class="group-title-text">{{group.name}}</text>
+              <view class="group-toggle-btn">
+                <text class="group-toggle-icon {{collapsedIconGroups[group.name] ? 'collapsed' : ''}}">›</text>
+              </view>
+            </view>
             <!-- 分组图标列表 -->
-            <view class="group-icons">
+            <view class="group-icons" wx:if="{{!collapsedIconGroups[group.name]}}">
               <view class="group-icon-item {{selectedGroupName === group.name && selectedIconIndex === index && !uploadedImagePath && !customEmojiValue ? 'selected' : ''}}"
                     wx:for="{{group.icons}}"
                     wx:key="name"
@@ -343,43 +362,6 @@
       </view>
     </view>
 
-    <!-- 类别选择 -->
-    <view class="form-group">
-      <view class="form-header">
-        <text class="form-title">分类</text>
-      </view>
-      <view class="category-grid">
-        <view
-          class="category-item {{item.selected ? 'selected' : ''}}"
-          wx:for="{{categories}}"
-          wx:key="name"
-          bindtap="toggleCategory"
-          data-category="{{item.name}}"
-          data-index="{{index}}"
-        >
-          <!-- 单选圆点样式 -->
-          <view class="radio-dot {{item.selected ? 'checked' : ''}}">
-            <view class="radio-inner" wx:if="{{item.selected}}"></view>
-          </view>
-          <!-- 显示类别图标：支持自定义图片和emoji -->
-          <view class="category-icon-wrap">
-            <image wx:if="{{item.displayIcon}}" src="{{item.displayIcon}}" mode="aspectFill" class="category-icon-img"></image>
-            <text wx:else class="category-icon">{{item.icon || '🏷️'}}</text>
-          </view>
-          <text class="category-name">{{item.name}}</text>
-        </view>
-
-        <!-- 空状态 -->
-        <view class="category-empty" wx:if="{{categories.length === 0}}">
-          <text class="empty-icon">📦</text>
-          <text class="empty-text">暂无类别</text>
-        </view>
-      </view>
-      <view class="category-error" wx:if="{{errors.category}}">
-        <text>{{errors.category}}</text>
-      </view>
-    </view>
-
     <!-- 备注 -->
     <view class="form-group">
       <view class="form-header">
@@ -396,6 +378,32 @@
           bindinput="onRemarkInput"
         />
         <text class="char-count">{{remark.length}}/200</text>
+      </view>
+    </view>
+
+    <!-- 其他设置（订阅资产） -->
+    <view class="form-group" wx:if="{{assetType === 'subscription'}}">
+      <view class="form-header">
+        <text class="form-title">其他</text>
+      </view>
+      <view class="switch-list">
+        <view class="switch-item">
+          <text class="switch-label">不计入总资产</text>
+          <switch
+            checked="{{excludeTotal}}"
+            bindchange="onExcludeTotalChange"
+            class="switch-primary"
+          />
+        </view>
+        <view class="switch-item">
+          <text class="switch-label">不计入总日均</text>
+          <switch
+            checked="{{excludeDaily}}"
+            bindchange="onExcludeDailyChange"
+            class="switch-primary"
+            disabled="{{endSubscription}}"
+          />
+        </view>
       </view>
     </view>
 

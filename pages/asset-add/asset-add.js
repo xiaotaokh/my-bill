@@ -293,8 +293,9 @@ Page({
       }
     ],
 
-    // 当前展开的分组索引
-    expandedGroupIndex: 0,  // 默认展开第一个分组（常用）
+    // 当前折叠的分组状态
+    collapsedIconGroups: {},
+    iconGroupsAllCollapsed: false,
 
     // 类别 - 初始为空，从数据库加载
     categories: [],
@@ -739,14 +740,33 @@ Page({
 
   // 切换分组展开/收起
   toggleGroup(e) {
-    const index = parseInt(e.currentTarget.dataset.index);
-    if (this.data.expandedGroupIndex === index) {
-      // 如果点击的是已展开的分组，则收起
-      this.setData({ expandedGroupIndex: -1 });
-    } else {
-      // 否则展开该分组
-      this.setData({ expandedGroupIndex: index });
+    const groupName = e.currentTarget.dataset.groupName;
+    if (!groupName) return;
+
+    const collapsedIconGroups = { ...this.data.collapsedIconGroups };
+    collapsedIconGroups[groupName] = !collapsedIconGroups[groupName];
+    const iconGroupsAllCollapsed = this.data.builtinIconGroups.every(group => collapsedIconGroups[group.name]);
+    this.setData({ collapsedIconGroups, iconGroupsAllCollapsed });
+  },
+
+  // 切换全部图标分组展开/折叠
+  toggleAllIconGroups() {
+    if (this.data.iconGroupsAllCollapsed) {
+      this.setData({
+        collapsedIconGroups: {},
+        iconGroupsAllCollapsed: false
+      });
+      return;
     }
+
+    const collapsedIconGroups = {};
+    this.data.builtinIconGroups.forEach(group => {
+      collapsedIconGroups[group.name] = true;
+    });
+    this.setData({
+      collapsedIconGroups,
+      iconGroupsAllCollapsed: true
+    });
   },
 
   // 根据分组名称、图标和名称查找对应的索引（用于编辑模式回显）

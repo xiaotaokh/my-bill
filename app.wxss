@@ -72,6 +72,7 @@ page {
   --neutral-900-rgb: 30, 41, 59;
   --shadow-rgb: 148, 163, 184;
   --text-inverse-rgb: 255, 255, 255;
+  --glass-highlight-rgb: 255, 255, 255;
   --retired-rgb: 180, 83, 9;
   --sold-rgb: 107, 114, 128;
   --gold-rgb: 251, 191, 36;
