@@ -729,7 +729,7 @@
   width: 92%;
   max-width: 680rpx;
   max-height: 85vh;
-  background: var(--bg-card);
+  background: var(--bg-subtle);
   border-radius: 16rpx;
   z-index: 1001;
   opacity: 0;
@@ -758,7 +758,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 36rpx 32rpx 28rpx;
+  padding: 24rpx 32rpx;
   border-bottom: 1rpx solid var(--border-default);
   flex-shrink: 0;
 }
@@ -766,17 +766,18 @@
 .dialog-title-wrap {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .dialog-emoji {
-  font-size: 44rpx;
+  font-size: 36rpx;
 }
 
 .dialog-title {
-  font-size: 38rpx;
+  font-size: 32rpx;
   font-weight: 700;
   color: var(--text-default);
+  letter-spacing: 1rpx;
 }
 
 .dialog-close {
@@ -792,12 +793,12 @@
 }
 
 .dialog-close:active {
-  background: var(--bg-subtle);
+  background: var(--bg-hover);
   color: var(--text-default);
 }
 
 .dialog-form {
-  padding: 32rpx;
+  padding: 28rpx 32rpx;
   overflow-x: hidden;
   box-sizing: border-box;
   overflow-y: auto;
@@ -817,10 +818,10 @@
   display: flex;
   align-items: center;
   gap: 10rpx;
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: var(--text-default);
-  margin-bottom: 16rpx;
+  color: var(--text-muted);
+  margin-bottom: 20rpx;
 }
 
 .label-icon {
@@ -829,7 +830,7 @@
 
 .required {
   color: var(--error);
-  font-size: 28rpx;
+  font-size: 32rpx;
   font-weight: bold;
 }
 
@@ -839,17 +840,15 @@
 
 .item-input {
   width: 100%;
-  height: 96rpx;
-  padding: 0 28rpx;
-  background: var(--bg-subtle);
+  min-height: 96rpx;
+  padding: 28rpx 32rpx;
+  background: var(--bg-card);
   border: 1rpx solid var(--border-default);
   border-radius: 12rpx;
   font-size: 30rpx;
   color: var(--text-default);
   box-sizing: border-box;
-  transition: background 0.2s ease, border-color 0.2s ease;
-  display: flex;
-  align-items: center;
+  transition: none;
 }
 
 .item-input:focus {
@@ -858,23 +857,24 @@
 }
 
 .input-placeholder {
-  font-size: 30rpx;
+  font-size: 26rpx;
   color: var(--text-hint);
-  padding-top: 2rpx;
+  padding-left: 4rpx;
 }
 
 .item-textarea {
   width: 100%;
-  height: 220rpx;
-  padding: 30rpx 28rpx;
-  background: var(--bg-subtle);
+  min-height: 220rpx;
+  padding: 28rpx 32rpx;
+  background: var(--bg-card);
   border: 1rpx solid var(--border-default);
   border-radius: 12rpx;
   font-size: 30rpx;
   color: var(--text-default);
   box-sizing: border-box;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: none;
   line-height: 1.5;
+  resize: none;
 }
 
 .item-textarea:focus {
@@ -883,7 +883,7 @@
 }
 
 .textarea-placeholder {
-  font-size: 30rpx;
+  font-size: 26rpx;
   color: var(--text-hint);
 }
 
@@ -908,11 +908,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40rpx 20rpx;
-  border: 1rpx dashed var(--border-default);
+  padding: 24rpx 16rpx;
+  border: 1rpx dashed rgba(var(--neutral-900-rgb), 0.18);
   border-radius: 12rpx;
-  background: var(--bg-subtle);
-  transition: all 0.2s ease;
+  background: var(--bg-card);
+  transition: none;
   box-sizing: border-box;
 }
 
@@ -931,11 +931,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40rpx 20rpx;
-  border: 1rpx dashed var(--border-default);
+  padding: 24rpx 16rpx;
+  border: 1rpx dashed rgba(var(--neutral-900-rgb), 0.18);
   border-radius: 12rpx;
-  background: var(--bg-subtle);
-  transition: all 0.2s ease;
+  background: var(--bg-card);
+  transition: none;
   box-sizing: border-box;
 }
 
@@ -989,8 +989,9 @@
   grid-template-columns: repeat(5, 1fr);
   gap: 12rpx;
   padding: 20rpx;
-  background: var(--bg-subtle);
+  background: var(--bg-card);
   border-radius: 12rpx;
+  border: 1rpx solid var(--border-default);
 }
 
 .icon-option {
@@ -998,11 +999,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16rpx 8rpx;
+  padding: 12rpx 6rpx;
   border-radius: 12rpx;
   background: var(--bg-card);
   border: 1rpx solid var(--border-default);
-  transition: all 0.2s ease;
+  transition: none;
 }
 
 .icon-option:active {
@@ -1014,18 +1015,22 @@
   background: var(--bg-subtle);
 }
 
+.icon-option.selected .icon-name {
+  color: var(--primary-600);
+  font-weight: 600;
+}
+
 .icon-emoji {
-  font-size: 44rpx;
-  margin-bottom: 4rpx;
+  font-size: 36rpx;
+  margin-bottom: 6rpx;
 }
 
 .icon-name {
-  font-size: 20rpx;
+  font-size: 18rpx;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
+  text-align: center;
+  line-height: 1.3;
+  word-break: break-all;
 }
 
 .upload-box:active {
@@ -1063,7 +1068,7 @@
 }
 
 .upload-icon {
-  font-size: 64rpx;
+  font-size: 48rpx;
 }
 
 .upload-text {
@@ -1164,8 +1169,9 @@
 }
 
 .dialog-btn.cancel {
-  background: var(--bg-subtle);
+  background: var(--bg-card);
   color: var(--text-muted);
+  border: 1rpx solid var(--border-default);
 }
 
 .dialog-btn.cancel:active {
@@ -1398,3 +1404,11 @@
   opacity: 0.9;
   transform: scale(0.98);
 }
+
+/* ========== 主题适配：弹窗背景与新增资产页面背景一致 ========== */
+.theme-fintech .dialog-container { background: #F8FAFC; }
+.theme-minimal .dialog-container { background: #F6F4F1; }
+.theme-obsidian .dialog-container { background: #0D0D0D; }
+.theme-forest .dialog-container { background: #F0FDF4; }
+.theme-sunset .dialog-container { background: #FFFBEB; }
+.theme-aurora .dialog-container { background: #FAFAFA; }

@@ -22,9 +22,10 @@ Page({
 
     // 添加/编辑弹窗相关
     dialogVisible: false,
-    dialogTitle: '添加分类',
+    dialogTitle: '新增分类',
     operationType: '', // 'add' 或 'edit'
     editCategoryId: null,
+    dialogBg: '#F8FAFC', // 弹窗背景色，跟随主题变化
 
     // 表单数据
     tempCategoryName: '',
@@ -62,11 +63,26 @@ Page({
     ]
   },
 
+  // 根据主题获取弹窗背景色（与新增资产页面 bg-base 一致）
+  getDialogBg: function(themeKey) {
+    const bgMap = {
+      fintech: '#F8FAFC',
+      minimal: '#F6F4F1',
+      obsidian: '#0D0D0D',
+      forest: '#F0FDF4',
+      sunset: '#FFFBEB',
+      aurora: '#FAFAFA'
+    };
+    return bgMap[themeKey] || '#F8FAFC';
+  },
+
   onLoad: function () {
     // 初始化主题
+    const currentTheme = themeManager.getCurrentTheme();
     this.setData({
       themeStyle: themeManager.getCurrentStyle(),
-      currentThemeKey: themeManager.getCurrentTheme()
+      currentThemeKey: currentTheme,
+      dialogBg: this.getDialogBg(currentTheme)
     });
     // 初始化导航栏颜色
     const initNavColors = themeManager.getThemeColors();
@@ -75,7 +91,11 @@ Page({
       frontColor: initNavColors.navTextStyle
     });
     themeManager.addListener((style, themeKey) => {
-      this.setData({ themeStyle: style, currentThemeKey: themeKey });
+      this.setData({
+        themeStyle: style,
+        currentThemeKey: themeKey,
+        dialogBg: this.getDialogBg(themeKey)
+      });
       const navColors = themeManager.getThemeColors();
       wx.setNavigationBarColor({
         backgroundColor: navColors.navBg,
@@ -249,7 +269,7 @@ Page({
       // 添加分类时先设置初始数据
       this.setData({
         dialogVisible: true,
-        dialogTitle: '添加分类',
+        dialogTitle: '新增分类',
         operationType: 'add',
         tempCategoryName: '',
         selectedIcon: this.data.builtinIcons[0].icon,

@@ -289,7 +289,7 @@ const themes = {
       primary400: '#E0C080',
       primary200: '#F0D890',
       primary100: '#F8E8B8',
-      primarySoft: '#FDF4D8',
+      primarySoft: '#3D3520',
 
       // 中性色 - 深灰系
       neutral900: '#F5F5F5',
@@ -426,7 +426,7 @@ const themes = {
       primary400: '#34D399',
       primary200: '#A7F3D0',
       primary100: '#D1FAE5',
-      primarySoft: '#ECFDF5',
+      primarySoft: '#EFF6FF',
 
       // 中性色 - 深绿灰系
       neutral900: '#14532D',
@@ -457,7 +457,7 @@ const themes = {
 
       // 状态色
       success: '#047857',
-      successBg: '#ECFDF5',
+      successBg: '#D1FAE5',
       error: '#EF4444',
       errorBg: '#FEF2F2',
       warning: '#B45309',
@@ -562,7 +562,7 @@ const themes = {
       primary400: '#FB923C',
       primary200: '#FED7AA',
       primary100: '#FFEDD5',
-      primarySoft: '#FFF7ED',
+      primarySoft: '#FEF2F2',
 
       // 中性色 - 暖棕灰系
       neutral900: '#431407',
@@ -698,7 +698,7 @@ const themes = {
       primary400: '#C4B5FD',
       primary200: '#DDD6FE',
       primary100: '#EDE9FE',
-      primarySoft: '#F5F3FF',
+      primarySoft: '#FCE7F3',
 
       // 中性色 - 深紫灰系
       neutral900: '#1E1B4B',
@@ -898,10 +898,10 @@ const cardBgColors = {
 const statBgColors = {
   fintech: ['#A7F3D0', '#DBEAFE', '#FDE68A', '#E2E8F0'],
   minimal: ['#C8DCD0', '#D7E0E8', '#E8CCD0', '#D0D0DC'],
-  obsidian: ['#A7F3D0', '#BFDBFE', '#FDE68A', '#E0C080'],  // 深色主题用亮色背景配深色文字
-  forest: ['#D1FAE5', '#BFDBFE', '#FCD34D', '#BBF7D0'],
-  sunset: ['#A7F3D0', '#DBEAFE', '#FCD34D', '#FFEDD5'],
-  aurora: ['#F9A8D4', '#CFFAFE', '#FCD34D', '#38BDF8']
+  obsidian: ['#A7F3D0', '#D8D0B8', '#FDE68A', '#E0C080'],  // 深色主题用暖调亮色背景配深色文字
+  forest: ['#6EE7B7', '#93C5FD', '#FDE68A', '#D1D5DB'],
+  sunset: ['#86EFAC', '#C4B5FD', '#FED7AA', '#E2E8F0'],
+  aurora: ['#A7F3D0', '#C4B5FD', '#FCA5A5', '#67E8F9']
 };
 
 // 图表配色（按主题）

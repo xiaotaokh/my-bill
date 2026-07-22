@@ -147,7 +147,7 @@ module.exports = {
 
 <!-- 自定义弹窗 -->
 <view class="dialog-mask {{dialogVisible ? 'show' : ''}}" wx:if="{{dialogVisible}}" bindtap="closeDialog"></view>
-<view class="dialog-container {{dialogVisible ? 'show' : ''}}" wx:if="{{dialogVisible}}">
+<view class="dialog-container {{dialogVisible ? 'show' : ''}}" wx:if="{{dialogVisible}}" style="{{themeStyle}} background: {{dialogBg}};">
   <view class="dialog-content">
     <!-- 标题 -->
     <view class="dialog-header">
@@ -263,9 +263,7 @@ module.exports = {
     <!-- 底部按钮 -->
     <view class="dialog-footer">
       <button class="dialog-btn cancel" bindtap="closeDialog">取消</button>
-      <button class="dialog-btn confirm" bindtap="confirmCategoryOperation">
-        <text>{{operationType === 'add' ? '🌱 添加' : '✨ 保存'}}</text>
-      </button>
+      <button class="dialog-btn confirm" bindtap="confirmCategoryOperation">保存</button>
     </view>
   </view>
 </view>
