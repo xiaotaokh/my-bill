@@ -1721,14 +1721,15 @@
   gap: 12rpx;
   background: linear-gradient(
     135deg,
-    rgba(var(--bg-card-rgb), 0.42) 0%,
-    rgba(var(--bg-card-rgb), 0.22) 100%
+    rgba(var(--bg-card-rgb), 0.32) 0%,
+    rgba(var(--bg-card-rgb), 0.16) 100%
   );
   border-radius: 50rpx;
   padding: 16rpx 24rpx;
   border: 1rpx solid rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.46);
   box-shadow:
-    0 18rpx 44rpx rgba(var(--neutral-900-rgb), 0.10),
+    0 20rpx 50rpx rgba(var(--neutral-900-rgb), 0.22),
+    0 8rpx 20rpx rgba(var(--neutral-900-rgb), 0.12),
     inset 0 1rpx 0 rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.66),
     inset 0 -1rpx 0 rgba(var(--neutral-900-rgb), 0.04);
   -webkit-backdrop-filter: blur(36rpx) saturate(190%);
@@ -1800,14 +1801,15 @@
   pointer-events: auto;
   background: linear-gradient(
     135deg,
-    rgba(var(--bg-card-rgb), 0.42) 0%,
-    rgba(var(--bg-card-rgb), 0.20) 100%
+    rgba(var(--bg-card-rgb), 0.32) 0%,
+    rgba(var(--bg-card-rgb), 0.16) 100%
   );
   border-radius: 50rpx;
   padding: 14rpx 16rpx;
   border: 1rpx solid rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.46);
   box-shadow:
-    0 18rpx 44rpx rgba(var(--neutral-900-rgb), 0.10),
+    0 20rpx 50rpx rgba(var(--neutral-900-rgb), 0.22),
+    0 8rpx 20rpx rgba(var(--neutral-900-rgb), 0.12),
     inset 0 1rpx 0 rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.66),
     inset 0 -1rpx 0 rgba(var(--neutral-900-rgb), 0.04);
   -webkit-backdrop-filter: blur(36rpx) saturate(190%);

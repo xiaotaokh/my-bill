@@ -484,7 +484,7 @@ Page({
     });
   },
 
-  onShow() {
+  async onShow() {
     if (this.data.isLoading) return;
 
     if (this.data._fromSetting) {
@@ -492,7 +492,8 @@ Page({
     }
 
     this.syncUserProfile();
-    this.loadCategories();
+    // 先加载分类（确保 activeCategory 校验后再加载资产，避免分类重命名后筛选失效）
+    await this.loadCategories();
     this.loadAssets();
   },
 
@@ -610,9 +611,16 @@ Page({
       displayIcon: category.icon && category.icon.startsWith('http') ? category.icon : null
     }));
 
+    const categoryNames = categoriesWithIcons.map(c => c.name);
+
+    // 检查当前选中的分类是否仍然存在（可能已在分类管理中被重命名）
+    const { activeCategory } = this.data;
+    const validCategory = activeCategory !== 'all' && !categoryNames.includes(activeCategory) ? 'all' : activeCategory;
+
     this.setData({
-      categories: categoriesWithIcons.map(c => c.name),
-      categoryList: categoriesWithIcons
+      categories: categoryNames,
+      categoryList: categoriesWithIcons,
+      activeCategory: validCategory
     }, () => this.updateAssetsCategoryIcon());
   },
 

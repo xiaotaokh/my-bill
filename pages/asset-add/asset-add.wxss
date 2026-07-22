@@ -26,7 +26,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 36rpx;
   padding-bottom: 24rpx;
   border-bottom: 1rpx solid var(--border-default);
 }
@@ -693,18 +692,32 @@
   border-radius: 60rpx;
   background: linear-gradient(
     135deg,
-    rgba(var(--bg-card-rgb), 0.18) 0%,
-    rgba(var(--bg-card-rgb), 0.06) 100%
+    rgba(var(--bg-card-rgb), 0.36) 0%,
+    rgba(var(--bg-card-rgb), 0.20) 100%
   );
-  border: 1rpx solid rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.24);
+  border: 1rpx solid rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.46);
   box-shadow:
-    0 24rpx 56rpx rgba(var(--neutral-900-rgb), 0.14),
-    0 8rpx 18rpx rgba(var(--neutral-900-rgb), 0.06),
-    inset 0 1rpx 0 rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.36),
-    inset 0 -1rpx 0 rgba(var(--neutral-900-rgb), 0.03);
-  -webkit-backdrop-filter: blur(42rpx) saturate(200%);
-  backdrop-filter: blur(42rpx) saturate(200%);
+    0 20rpx 50rpx rgba(var(--neutral-900-rgb), 0.22),
+    0 8rpx 20rpx rgba(var(--neutral-900-rgb), 0.12),
+    inset 0 1rpx 0 rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.66),
+    inset 0 -1rpx 0 rgba(var(--neutral-900-rgb), 0.04);
+  -webkit-backdrop-filter: blur(40rpx) saturate(190%);
+  backdrop-filter: blur(40rpx) saturate(190%);
   z-index: 100;
+}
+
+/* 深色主题适配 */
+.theme-obsidian .submit-bar {
+  background: linear-gradient(
+    135deg,
+    rgba(40, 40, 40, 0.46) 0%,
+    rgba(30, 30, 30, 0.28) 100%
+  );
+  border: 1rpx solid rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.28);
+  box-shadow:
+    0 20rpx 50rpx rgba(0, 0, 0, 0.50),
+    0 8rpx 20rpx rgba(0, 0, 0, 0.32),
+    inset 0 1rpx 0 rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.15);
 }
 
 .submit-btn {
@@ -898,8 +911,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40rpx 20rpx;
-  border: 1rpx dashed var(--border-default);
+  padding: 24rpx 16rpx;
+  border: 1rpx dashed rgba(var(--neutral-900-rgb), 0.18);
   border-radius: 12rpx;
   background: transparent;
   transition: all 0.2s ease;
@@ -926,8 +939,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40rpx 20rpx;
-  border: 1rpx dashed var(--border-default);
+  padding: 24rpx 16rpx;
+  border: 1rpx dashed rgba(var(--neutral-900-rgb), 0.18);
   border-radius: 12rpx;
   background: transparent;
   transition: all 0.2s ease;
