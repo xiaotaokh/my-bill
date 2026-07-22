@@ -5,11 +5,11 @@ function isRiskContentCode(code) {
   return value === '87014' || value === '55001' || value === '55002' || value === '55003';
 }
 
-function compressImage(filePath) {
+function compressImage(filePath, quality) {
   return new Promise((resolve, reject) => {
     wx.compressImage({
       src: filePath,
-      quality: 70,
+      quality: quality,
       success(res) {
         resolve(res.tempFilePath || filePath);
       },
@@ -36,6 +36,8 @@ function getFileSize(filePath) {
 
 async function prepareImageForSecurityCheck(filePath, size) {
   const maxDirectCheckSize = 1024 * 1024;
+  const targetSize = 900 * 1024;
+  const qualities = [70, 50, 30];
   let actualSize = size;
 
   if (!actualSize) {
@@ -50,11 +52,22 @@ async function prepareImageForSecurityCheck(filePath, size) {
     return filePath;
   }
 
-  try {
-    return await compressImage(filePath);
-  } catch (err) {
-    return filePath;
+  let currentPath = filePath;
+  let currentSize = actualSize;
+
+  for (let i = 0; i < qualities.length; i++) {
+    try {
+      currentPath = await compressImage(currentPath, qualities[i]);
+      currentSize = await getFileSize(currentPath);
+      if (currentSize && currentSize <= targetSize) {
+        return currentPath;
+      }
+    } catch (err) {
+      break;
+    }
   }
+
+  return currentPath;
 }
 
 async function checkImageSecurity(filePath, scene) {

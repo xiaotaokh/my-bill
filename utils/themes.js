@@ -59,6 +59,7 @@ const themes = {
       retired: '#B45309',
       sold: '#6B7280',
       gold: '#FBBF24',
+      dailyCostColor: '#FDE68A',    // 日均成本专用色
       subscription: '#4F46E5',
       subscriptionBg: '#EEF2FF',
 
@@ -194,6 +195,7 @@ const themes = {
       retired: '#B8A088',
       sold: '#A5A19C',
       gold: '#E8C84A',
+      dailyCostColor: '#E8C84A',    // 日均成本专用色
       subscription: '#A38472',
       subscriptionBg: '#F6F0EC',
 
@@ -329,6 +331,7 @@ const themes = {
       retired: '#B45309',
       sold: '#6B7280',
       gold: '#D4AF37',
+      dailyCostColor: '#8B6914',    // 日均成本专用色（深金棕，浅色卡片背景可读）
       subscription: '#7A5A18',
       subscriptionBg: '#FDF4D8',
 
@@ -465,6 +468,7 @@ const themes = {
       retired: '#B45309',
       sold: '#6B7280',
       gold: '#FBBF24',
+      dailyCostColor: '#FBBF24',    // 日均成本专用色
       subscription: '#2563EB',
       subscriptionBg: '#EFF6FF',
 
@@ -600,6 +604,7 @@ const themes = {
       retired: '#B45309',
       sold: '#6B7280',
       gold: '#FBBF24',
+      dailyCostColor: '#FEF3C7',    // 日均成本专用色
       subscription: '#EA580C',
       subscriptionBg: '#FFF7ED',
 
@@ -735,6 +740,7 @@ const themes = {
       retired: '#B45309',
       sold: '#6B7280',
       gold: '#FBBF24',
+      dailyCostColor: '#FDE68A',    // 日均成本专用色
       subscription: '#8B5CF6',
       subscriptionBg: '#F5F3FF',
 

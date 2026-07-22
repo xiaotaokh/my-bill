@@ -470,6 +470,7 @@ Page({
       count: 1,
       mediaType: ['image'],
       sourceType: ['album', 'camera'],
+      sizeType: ['compressed'],
       maxDuration: 30,
       camera: 'back',
       async success(res) {
