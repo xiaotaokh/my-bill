@@ -80,9 +80,9 @@ page {
   --glass-bg: rgba(var(--bg-card-rgb), 0.92);
   --glass-border: rgba(var(--neutral-900-rgb), 0.04);
   --shadow-soft: 0 8rpx 32rpx rgba(var(--shadow-rgb), 0.08);
-  --shadow-card: 0 4rpx 16rpx rgba(var(--shadow-rgb), 0.06);
-  --shadow-neumorph: -3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 10rpx rgba(var(--shadow-rgb), 0.06);
-  --shadow-neumorph-sm: -2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 6rpx rgba(var(--shadow-rgb), 0.04);
+  --shadow-card: 0 4rpx 16rpx rgba(var(--shadow-rgb), 0.12);
+  --shadow-neumorph: -3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.22);
+  --shadow-neumorph-sm: -2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.24);
 }
 
 /* 主题切换过渡 */
@@ -147,7 +147,7 @@ page {
   --accent-color: #A38472;
   --primary-gradient: linear-gradient(135deg, #A38472 0%, #B89B8A 100%);
   --shadow-soft: 0 4rpx 12rpx rgba(var(--shadow-rgb), 0.04);
-  --shadow-card: 0 2rpx 8rpx rgba(var(--shadow-rgb), 0.03);
+  --shadow-card: 0 2rpx 8rpx rgba(var(--shadow-rgb), 0.08);
   --pink: #E8C8C4;
   --hot-pink: #D99C94;
   --mint: #B8D0C0;

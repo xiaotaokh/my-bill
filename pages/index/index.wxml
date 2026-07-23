@@ -635,15 +635,15 @@
     <view class="mode-switch-fab">
       <view class="fab-group">
         <view class="fab-item {{!showSetting && !showReport ? 'active' : ''}}" bindtap="switchToHome">
-          <text class="fab-icon">🏠</text>
+          <image class="fab-icon-svg" src="/images/{{!showSetting && !showReport ? 'home-white' : 'home'}}.svg" mode="aspectFit"></image>
           <text class="fab-label">首页</text>
         </view>
         <view class="fab-item {{showReport ? 'active' : ''}}" bindtap="switchToReport">
-          <image class="fab-icon-svg" src="/images/pie-chart.svg" mode="aspectFit"></image>
+          <image class="fab-icon-svg" src="/images/{{showReport ? 'pie-chart-white' : 'pie-chart'}}.svg" mode="aspectFit"></image>
           <text class="fab-label">统计</text>
         </view>
         <view class="fab-item {{showSetting ? 'active' : ''}}" bindtap="navigateToSetting">
-          <text class="fab-icon">⚙️</text>
+          <image class="fab-icon-svg" src="/images/{{showSetting ? 'settings-white' : 'settings'}}.svg" mode="aspectFit"></image>
           <text class="fab-label">设置</text>
         </view>
       </view>

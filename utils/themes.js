@@ -90,7 +90,9 @@ const themes = {
 
       // 阴影
       shadowSoft: '0 8rpx 32rpx rgba(var(--shadow-rgb), 0.08)',
-      shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.06)',
+      shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.12)',
+      shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.24)',
+      shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.22)',
 
       // 装饰色 - 气泡和卡片边框渐变
       pink: '#F472B6',
@@ -226,7 +228,9 @@ const themes = {
 
       // 阴影 - 柔和暖影
       shadowSoft: '0 4rpx 12rpx rgba(var(--shadow-rgb), 0.04)',
-      shadowCard: '0 2rpx 8rpx rgba(var(--shadow-rgb), 0.03)',
+      shadowCard: '0 2rpx 8rpx rgba(var(--shadow-rgb), 0.08)',
+      shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.12)',
+      shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.10)',
 
       // 装饰色 - 柔和彩色系
       pink: '#E8C8C4',
@@ -363,6 +367,8 @@ const themes = {
       // 阴影 - 深色阴影
       shadowSoft: '0 8rpx 32rpx rgba(var(--shadow-rgb), 0.3)',
       shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.2)',
+      shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.5), 2rpx 2rpx 6rpx rgba(var(--shadow-rgb), 0.04)',
+      shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.6), 3rpx 3rpx 10rpx rgba(var(--shadow-rgb), 0.06)',
       shadowGold: '0 4rpx 16rpx rgba(201, 169, 98, 0.15)',
 
       // 装饰色 - 深色版亮色点缀
@@ -499,7 +505,9 @@ const themes = {
 
       // 阴影
       shadowSoft: '0 8rpx 32rpx rgba(var(--shadow-rgb), 0.08)',
-      shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.06)',
+      shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.12)',
+      shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.24)',
+      shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.22)',
 
       // 装饰色 - 自然色系
       pink: '#F9A8D4',
@@ -635,7 +643,9 @@ const themes = {
 
       // 阴影
       shadowSoft: '0 8rpx 32rpx rgba(var(--shadow-rgb), 0.08)',
-      shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.06)',
+      shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.12)',
+      shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.24)',
+      shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.22)',
 
       // 装饰色 - 活力暖色系
       pink: '#F9A8D4',
@@ -771,7 +781,9 @@ const themes = {
 
       // 阴影
       shadowSoft: '0 8rpx 32rpx rgba(var(--shadow-rgb), 0.08)',
-      shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.06)',
+      shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.12)',
+      shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.24)',
+      shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.22)',
       shadowAurora: '0 4rpx 24rpx rgba(139, 92, 246, 0.15)',
 
       // 装饰色 - 极光多彩系
