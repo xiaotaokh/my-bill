@@ -488,7 +488,10 @@ Page({
 
   canPreviewAvatar(avatarUrl) {
     if (!avatarUrl) return false;
-    return !avatarUrl.startsWith('data:image');
+    // 预设随机头像都是 SVG 格式（data:image 或上传后的 Storage URL），不支持预览
+    if (avatarUrl.startsWith('data:image')) return false;
+    if (avatarUrl.toLowerCase().includes('.svg')) return false;
+    return true;
   },
 
   previewAvatar() {
