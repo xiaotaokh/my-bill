@@ -191,6 +191,7 @@
     </view>
     <view class="random-footer">
       <button class="random-cancel-btn" bindtap="cancelRandomModal">取消</button>
+      <view class="btn-gap"></view>
       <button class="random-confirm-btn" bindtap="confirmRandomInfo">确认</button>
     </view>
   </view>

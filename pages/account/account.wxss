@@ -318,13 +318,31 @@
   line-height: 1.55;
 }
 
-.edit-btn,
-.confirm-btn,
-.random-confirm-btn {
+.edit-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
+  min-height: 92rpx;
+  margin: 0;
+  padding: 0 28rpx;
+  border: none;
+  border-radius: 14rpx;
+  background: var(--primary-600);
+  color: var(--text-inverse);
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 14rpx 26rpx rgba(var(--primary-600-rgb), 0.24);
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.confirm-btn,
+.random-confirm-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 92rpx;
   margin: 0;
   padding: 0 28rpx;
@@ -652,6 +670,7 @@
 
 .edit-actions {
   display: flex;
+  gap: 16rpx;
   margin-top: 26rpx;
 }
 
@@ -677,7 +696,6 @@
 .confirm-btn {
   flex: 1.25;
   min-height: 92rpx;
-  margin-left: 18rpx;
 }
 
 .confirm-btn.disabled {
@@ -871,9 +889,13 @@
   margin-top: 24rpx;
 }
 
+.btn-gap {
+  width: 16rpx;
+  flex-shrink: 0;
+}
+
 .random-confirm-btn {
   flex: 1.2;
-  margin-left: 18rpx;
 }
 
 @media (max-width: 360px) {
