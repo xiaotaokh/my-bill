@@ -99,7 +99,7 @@
   font-weight: 700;
   color: var(--text-default);
   text-align: center;
-  margin-top: 8rpx;
+  margin-top: 24rpx;
   margin-bottom: 20rpx;
   letter-spacing: 2rpx;
   display: flex;

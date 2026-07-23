@@ -167,7 +167,7 @@ module.exports = {
           <text>分类名称</text>
           <text class="required">*</text>
         </view>
-        <view class="input-wrap">
+        <view class="input-count-wrapper">
           <input
             class="item-input"
             placeholder="请输入分类名称"
@@ -176,6 +176,7 @@ module.exports = {
             bindinput="onCategoryNameInput"
             maxlength="10"
           />
+          <text class="input-count">{{tempCategoryName.length}}/10</text>
         </view>
       </view>
 

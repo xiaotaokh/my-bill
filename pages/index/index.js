@@ -78,6 +78,24 @@ Page({
     // 视图控制
     showSetting: false,
     showReport: false,
+    showTimeline: false,
+
+    // 时间轴
+    timelineLoading: false,
+    timelineActiveCategory: 'all',
+    timelineActiveStatus: 'all',
+    timelineShowFilters: false,
+    timelineFilterActive: false,
+    timelineFilterLabel: '',
+    timelineGroups: [],
+    timelineFilteredGroups: [],
+    timelineStatusOptions: [
+      { value: 'all', label: '全部状态', icon: '📋' },
+      { value: 'active', label: '服役中/订阅中', icon: '✅' },
+      { value: 'pending', label: '待生效', icon: '⏳' },
+      { value: 'retired', label: '已退役/已结束', icon: '🏁' },
+      { value: 'sold', label: '已卖出', icon: '💰' }
+    ],
 
     // 统计数据
     reportLoading: false,
@@ -501,6 +519,11 @@ Page({
     // 先加载分类（确保 activeCategory 校验后再加载资产，避免分类重命名后筛选失效）
     await this.loadCategories();
     this.loadAssets();
+
+    // 时间轴视图活跃时刷新时间轴数据
+    if (this.data.showTimeline) {
+      setTimeout(() => this.loadTimelineData(), 200);
+    }
   },
 
   // 加载天气
@@ -888,9 +911,11 @@ Page({
 
       // 计算总投入（按日历周期）
       let totalInvestment = 0;
+      let periodCount = 0;
       if (asset.subscriptionStatus !== 'pending' && asset.periodAmount && asset.periodType) {
         const result = this.calcSubscriptionPeriods(asset, effectiveStartDate, endDate);
         usedDays = result.usedDays;
+        periodCount = result.completedPeriods;
         totalInvestment = asset.periodAmount * result.completedPeriods;
       }
 
@@ -911,6 +936,7 @@ Page({
       return {
         ...asset,
         usedDays,
+        periodCount,
         dailyCost,
         dailyEquivalent,
         totalInvestment: totalInvestment.toFixed(2),
@@ -1295,7 +1321,7 @@ Page({
   },
 
   switchToHome() {
-    this.setData({ showSetting: false, showReport: false });
+    this.setData({ showSetting: false, showReport: false, showTimeline: false });
   },
 
   switchToReport() {
@@ -1303,12 +1329,151 @@ Page({
     this.setData({
       showReport: true,
       showSetting: false,
+      showTimeline: false,
       showSearchInput: false,
       searchKeyword: '',
       searchInputValue: '',
       searchInputFocus: false
     });
     setTimeout(() => this.loadReportData(), 100);
+  },
+
+  switchToTimeline() {
+    this.setData({
+      showTimeline: true,
+      showReport: false,
+      showSetting: false,
+      showSearchInput: false,
+      searchKeyword: '',
+      searchInputValue: '',
+      searchInputFocus: false
+    });
+    setTimeout(() => this.loadTimelineData(), 100);
+  },
+
+  // 加载时间轴数据
+  loadTimelineData() {
+    const { assets, categoryList } = this.data;
+    if (!assets || assets.length === 0) {
+      this.setData({ timelineLoading: false, timelineGroups: [], timelineFilteredGroups: [] });
+      return;
+    }
+    this.setData({ timelineLoading: true });
+
+    // 延迟执行，避免阻塞 UI
+    setTimeout(() => {
+      // 按日期分组（待生效订阅使用开始日期，其余使用购买日期）
+      const groupMap = {};
+      assets.forEach(asset => {
+        const isPendingSubscription = asset.assetType === 'subscription' && asset.subscriptionStatus === 'pending';
+        const dateKey = (isPendingSubscription ? asset.subscriptionStartDate : asset.purchaseDate) || 'unknown';
+        if (!groupMap[dateKey]) {
+          groupMap[dateKey] = [];
+        }
+        groupMap[dateKey].push(asset);
+      });
+
+      // 转换为数组并按日期降序排列
+      const groups = Object.keys(groupMap)
+        .sort((a, b) => {
+          if (a === 'unknown') return 1;
+          if (b === 'unknown') return -1;
+          return new Date(b) - new Date(a);
+        })
+        .map(dateKey => {
+          const dateObj = new Date(dateKey);
+          const year = dateObj.getFullYear();
+          const month = dateObj.getMonth() + 1;
+          const day = dateObj.getDate();
+          const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+          const weekDay = weekDays[dateObj.getDay()];
+
+          return {
+            date: dateKey,
+            dateText: isNaN(dateObj.getTime()) ? dateKey : `${year}年${month}月${day}日 ${weekDay}`,
+            assets: groupMap[dateKey].sort((a, b) => {
+              const priceA = a.assetType === 'subscription' ? parseFloat(a.totalInvestment || 0) : (a.price || 0);
+              const priceB = b.assetType === 'subscription' ? parseFloat(b.totalInvestment || 0) : (b.price || 0);
+              return priceB - priceA;
+            })
+          };
+        });
+
+      this.setData({ timelineGroups: groups, timelineLoading: false });
+      this.applyTimelineFilters();
+    }, 50);
+  },
+
+  // 应用时间轴筛选（分类 + 状态）
+  applyTimelineFilters() {
+    const { timelineGroups, timelineActiveCategory, timelineActiveStatus } = this.data;
+
+    let filtered = timelineGroups;
+
+    // 分类筛选
+    if (timelineActiveCategory !== 'all') {
+      filtered = filtered.map(group => {
+        const filteredAssets = group.assets.filter(a => a.category === timelineActiveCategory);
+        if (filteredAssets.length === 0) return null;
+        return { ...group, assets: filteredAssets };
+      }).filter(Boolean);
+    }
+
+    // 状态筛选
+    if (timelineActiveStatus !== 'all') {
+      filtered = filtered.map(group => {
+        const filteredAssets = group.assets.filter(a => {
+          if (a.assetType === 'subscription') {
+            if (timelineActiveStatus === 'active') return a.subscriptionStatus === 'active' || !a.subscriptionStatus;
+            if (timelineActiveStatus === 'pending') return a.subscriptionStatus === 'pending';
+            if (timelineActiveStatus === 'retired') return a.subscriptionStatus === 'ended';
+            return false;
+          } else {
+            return a.status === timelineActiveStatus;
+          }
+        });
+        if (filteredAssets.length === 0) return null;
+        return { ...group, assets: filteredAssets };
+      }).filter(Boolean);
+    }
+
+    // 计算筛选状态和文案
+    const filterActive = timelineActiveCategory !== 'all' || timelineActiveStatus !== 'all';
+    let filterLabel = '全部';
+    if (filterActive) {
+      const parts = [];
+      if (timelineActiveCategory !== 'all') parts.push(timelineActiveCategory);
+      if (timelineActiveStatus !== 'all') {
+        const statusOption = this.data.timelineStatusOptions.find(o => o.value === timelineActiveStatus);
+        parts.push(statusOption ? statusOption.label : timelineActiveStatus);
+      }
+      filterLabel = parts.join(' · ');
+    }
+
+    this.setData({
+      timelineFilteredGroups: filtered,
+      timelineFilterActive: filterActive,
+      timelineFilterLabel: filterLabel
+    });
+  },
+
+  // 时间轴分类筛选
+  filterTimelineByCategory(e) {
+    const category = e.currentTarget.dataset.category;
+    const newCategory = this.data.timelineActiveCategory === category ? 'all' : category;
+    this.setData({ timelineActiveCategory: newCategory }, () => this.applyTimelineFilters());
+  },
+
+  // 切换过滤面板显隐
+  toggleTimelineFilters() {
+    this.setData({ timelineShowFilters: !this.data.timelineShowFilters });
+  },
+
+  // 时间轴状态筛选
+  filterTimelineByStatus(e) {
+    const status = e.currentTarget.dataset.status;
+    const newStatus = this.data.timelineActiveStatus === status ? 'all' : status;
+    this.setData({ timelineActiveStatus: newStatus }, () => this.applyTimelineFilters());
   },
 
   navigateToCategoryManage() {
@@ -1329,6 +1494,7 @@ Page({
     this.setData({
       showSetting: true,
       showReport: false,
+      showTimeline: false,
       showSearchInput: false,
       searchKeyword: '',
       searchInputValue: '',

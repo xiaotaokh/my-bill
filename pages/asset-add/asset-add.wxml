@@ -50,15 +50,18 @@
           <text class="required">*</text>
           <text>物品名称</text>
         </view>
-        <input
-          class="item-input"
-          name="name"
-          placeholder="请输入物品名称"
-          placeholder-class="input-placeholder"
-          maxlength="50"
-          value="{{name}}"
-          bindinput="onNameInput"
-        />
+        <view class="input-count-wrapper">
+          <input
+            class="item-input"
+            name="name"
+            placeholder="请输入物品名称"
+            placeholder-class="input-placeholder"
+            maxlength="15"
+            value="{{name}}"
+            bindinput="onNameInput"
+          />
+          <text class="input-count">{{name.length}}/15</text>
+        </view>
       </view>
 
       <!-- 待订阅开关（仅订阅资产显示） -->

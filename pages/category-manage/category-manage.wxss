@@ -862,6 +862,20 @@
   padding-left: 4rpx;
 }
 
+/* 输入框字数计数器 */
+.input-count-wrapper {
+  position: relative;
+}
+
+.input-count {
+  position: absolute;
+  right: 20rpx;
+  bottom: 14rpx;
+  font-size: 22rpx;
+  color: var(--text-hint);
+  pointer-events: none;
+}
+
 .item-textarea {
   width: 100%;
   min-height: 220rpx;

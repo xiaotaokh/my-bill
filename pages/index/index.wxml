@@ -18,7 +18,7 @@
   </view>
 
   <!-- 主内容区域 -->
-  <view class="main-content" style="{{showSetting || showReport || showBatchDelete ? 'display: none;' : 'display: block;'}}">
+  <view class="main-content" style="{{showSetting || showReport || showTimeline || showBatchDelete ? 'display: none;' : 'display: block;'}}">
 
     <!-- 搜索输入框 -->
     <view class="search-bar-container" hidden="{{!showSearchInput || showSetting || showBatchDelete}}">
@@ -263,12 +263,12 @@
                 <block wx:if="{{item.subscriptionStatus === 'ended'}}">
                   <view class="stat-item">
                     <text class="stat-label">折合每日</text>
-                    <text class="stat-value cost">¥{{item.dailyEquivalent}}/天</text>
+                    <text class="stat-value cost">¥{{item.dailyEquivalent}}</text>
                   </view>
                   <view class="stat-divider"></view>
                   <view class="stat-item has-badge">
                     <text class="stat-label">日均成本</text>
-                    <text class="stat-value cost excluded">¥{{item.dailyCost}}/天</text>
+                    <text class="stat-value cost excluded">¥{{item.dailyCost}}</text>
                     <text class="exclude-badge">不计入</text>
                   </view>
                   <view class="stat-divider"></view>
@@ -276,13 +276,13 @@
                 <block wx:else>
                   <view class="stat-item">
                     <text class="stat-label">日均成本</text>
-                    <text class="stat-value cost">¥{{item.dailyCost}}/天</text>
+                    <text class="stat-value cost">¥{{item.dailyCost}}</text>
                   </view>
                   <view class="stat-divider"></view>
                 </block>
                 <view class="stat-item" wx:if="{{item.subscriptionStatus !== 'pending'}}">
                   <text class="stat-label">{{item.subscriptionStatus === 'ended' ? '订阅时长' : '已订阅'}}</text>
-                  <text class="stat-value">{{item.usedDays}}天</text>
+                  <text class="stat-value">{{item.usedDays}}天{{item.periodCount > 0 ? ' · ' + item.periodCount + '期' : ''}}</text>
                 </view>
                 <view class="stat-divider" wx:if="{{item.subscriptionStatus !== 'pending'}}"></view>
                 <view class="stat-item {{item.excludeTotal ? 'has-badge' : ''}}">
@@ -296,7 +296,7 @@
                 <block wx:if="{{item.status === 'active'}}">
                   <view class="stat-item {{item.excludeDaily ? 'has-badge' : ''}}">
                     <text class="stat-label">日均成本</text>
-                    <text class="stat-value cost {{item.excludeDaily ? 'excluded' : 'included'}}">¥{{item.dailyCost}}/天</text>
+                    <text class="stat-value cost {{item.excludeDaily ? 'excluded' : 'included'}}">¥{{item.dailyCost}}</text>
                     <text wx:if="{{item.excludeDaily}}" class="exclude-badge">不计入</text>
                   </view>
                   <view class="stat-divider"></view>
@@ -304,12 +304,12 @@
                 <block wx:else>
                   <view class="stat-item">
                     <text class="stat-label">折合每日</text>
-                    <text class="stat-value cost">¥{{item.dailyEquivalent}}/天</text>
+                    <text class="stat-value cost">¥{{item.dailyEquivalent}}</text>
                   </view>
                   <view class="stat-divider"></view>
                   <view class="stat-item has-badge">
                     <text class="stat-label">日均成本</text>
-                    <text class="stat-value cost excluded">¥{{item.dailyCost}}/天</text>
+                    <text class="stat-value cost excluded">¥{{item.dailyCost}}</text>
                     <text class="exclude-badge">不计入</text>
                   </view>
                   <view class="stat-divider"></view>
@@ -347,7 +347,7 @@
                   <text wx:else class="simple-avatar-icon">{{asset.icon || '📦'}}</text>
                 </view>
                 <text class="simple-name">{{asset.name}}</text>
-                <text class="simple-cost">¥{{asset.dailyCost}}/天</text>
+                <text class="simple-cost">¥{{asset.dailyCost}}</text>
               </view>
             </view>
           </view>
@@ -634,13 +634,17 @@
     <!-- 首页/统计/设置切换悬浮按钮组 -->
     <view class="mode-switch-fab">
       <view class="fab-group">
-        <view class="fab-item {{!showSetting && !showReport ? 'active' : ''}}" bindtap="switchToHome">
-          <image class="fab-icon-svg" src="/images/{{!showSetting && !showReport ? 'home-white' : 'home'}}.svg" mode="aspectFit"></image>
+        <view class="fab-item {{!showSetting && !showReport && !showTimeline ? 'active' : ''}}" bindtap="switchToHome">
+          <image class="fab-icon-svg" src="/images/{{!showSetting && !showReport && !showTimeline ? 'home-white' : 'home'}}.svg" mode="aspectFit"></image>
           <text class="fab-label">首页</text>
         </view>
         <view class="fab-item {{showReport ? 'active' : ''}}" bindtap="switchToReport">
           <image class="fab-icon-svg" src="/images/{{showReport ? 'pie-chart-white' : 'pie-chart'}}.svg" mode="aspectFit"></image>
           <text class="fab-label">统计</text>
+        </view>
+        <view class="fab-item {{showTimeline ? 'active' : ''}}" bindtap="switchToTimeline">
+          <image class="fab-icon-svg" src="/images/{{showTimeline ? 'timeline-white' : 'timeline'}}.svg" mode="aspectFit"></image>
+          <text class="fab-label">时间轴</text>
         </view>
         <view class="fab-item {{showSetting ? 'active' : ''}}" bindtap="navigateToSetting">
           <image class="fab-icon-svg" src="/images/{{showSetting ? 'settings-white' : 'settings'}}.svg" mode="aspectFit"></image>
@@ -650,7 +654,7 @@
     </view>
 
     <!-- 搜索和新增资产按钮组 -->
-    <view wx:if="{{!showSetting && !showReport && !showBatchDelete}}" class="action-fab-group {{statsTotalCount <= 0 ? 'only-add' : ''}} {{!showBackToTop ? 'no-back-top' : ''}}">
+    <view wx:if="{{!showSetting && !showReport && !showTimeline && !showBatchDelete}}" class="action-fab-group {{statsTotalCount <= 0 ? 'only-add' : ''}} {{!showBackToTop ? 'no-back-top' : ''}}">
       <!-- 新增资产悬浮按钮 -->
       <view class="add-asset-fab" bindtap="goToAdd">
         <image class="fab-icon-img" src="/images/add.svg" mode="aspectFit"></image>
@@ -669,6 +673,12 @@
         <image class="back-top-icon" src="/images/back-top.svg" mode="aspectFit"></image>
         <text class="fab-label">顶部</text>
       </view>
+    </view>
+
+    <!-- 时间轴回到顶部 -->
+    <view wx:if="{{showTimeline}}" class="timeline-back-top-fab {{showBackToTop ? 'show' : ''}}" bindtap="scrollToTop">
+      <image class="back-top-icon" src="/images/back-top.svg" mode="aspectFit"></image>
+      <text class="fab-label">顶部</text>
     </view>
   </view>
 
@@ -892,13 +902,13 @@
                     <block wx:if="{{asset.subscriptionStatus === 'ended'}}">
                       <view class="period-mini-stat">
                         <text class="period-mini-label">折合每日</text>
-                        <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                        <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}</text>
                       </view>
                     </block>
                     <block wx:else>
                       <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
                         <text class="period-mini-label">日均成本</text>
-                        <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                        <text class="period-mini-value cost">¥{{asset.dailyCost}}</text>
                       </view>
                     </block>
                     <view class="period-mini-stat" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
@@ -914,13 +924,13 @@
                     <block wx:if="{{asset.status === 'active'}}">
                       <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
                         <text class="period-mini-label">日均成本</text>
-                        <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                        <text class="period-mini-value cost">¥{{asset.dailyCost}}</text>
                       </view>
                     </block>
                     <block wx:else>
                       <view class="period-mini-stat">
                         <text class="period-mini-label">折合每日</text>
-                        <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                        <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}</text>
                       </view>
                     </block>
                     <view class="period-mini-stat">
@@ -989,18 +999,18 @@
                 <block wx:if="{{asset.subscriptionStatus === 'ended'}}">
                   <view class="period-mini-stat">
                     <text class="period-mini-label">折合每日</text>
-                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}</text>
                   </view>
                 </block>
                 <block wx:else>
                   <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
                     <text class="period-mini-label">日均成本</text>
-                    <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyCost}}</text>
                   </view>
                 </block>
                 <view class="period-mini-stat" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
                   <text class="period-mini-label">{{asset.subscriptionStatus === 'ended' ? '订阅时长' : '已订阅'}}</text>
-                  <text class="period-mini-value">{{asset.usedDays}}天</text>
+                  <text class="period-mini-value">{{asset.usedDays}}天{{asset.periodCount > 0 ? ' · ' + asset.periodCount + '期' : ''}}</text>
                 </view>
                 <view class="period-mini-stat {{asset.excludeTotal ? 'excluded' : ''}}">
                   <text class="period-mini-label">总投入</text>
@@ -1011,13 +1021,13 @@
                 <block wx:if="{{asset.status === 'active'}}">
                   <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
                     <text class="period-mini-label">日均成本</text>
-                    <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyCost}}</text>
                   </view>
                 </block>
                 <block wx:else>
                   <view class="period-mini-stat">
                     <text class="period-mini-label">折合每日</text>
-                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}</text>
                   </view>
                 </block>
                 <view class="period-mini-stat">
@@ -1127,18 +1137,18 @@
                 <block wx:if="{{asset.subscriptionStatus === 'ended'}}">
                   <view class="period-mini-stat">
                     <text class="period-mini-label">折合每日</text>
-                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}</text>
                   </view>
                 </block>
                 <block wx:else>
                   <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
                     <text class="period-mini-label">日均成本</text>
-                    <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyCost}}</text>
                   </view>
                 </block>
                 <view class="period-mini-stat" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
                   <text class="period-mini-label">{{asset.subscriptionStatus === 'ended' ? '订阅时长' : '已订阅'}}</text>
-                  <text class="period-mini-value">{{asset.usedDays}}天</text>
+                  <text class="period-mini-value">{{asset.usedDays}}天{{asset.periodCount > 0 ? ' · ' + asset.periodCount + '期' : ''}}</text>
                 </view>
                 <view class="period-mini-stat {{asset.excludeTotal ? 'excluded' : ''}}">
                   <text class="period-mini-label">总投入</text>
@@ -1149,13 +1159,13 @@
                 <block wx:if="{{asset.status === 'active'}}">
                   <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
                     <text class="period-mini-label">日均成本</text>
-                    <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyCost}}</text>
                   </view>
                 </block>
                 <block wx:else>
                   <view class="period-mini-stat">
                     <text class="period-mini-label">折合每日</text>
-                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}/天</text>
+                    <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}</text>
                   </view>
                 </block>
                 <view class="period-mini-stat">
@@ -1182,6 +1192,187 @@
 
     <!-- 背景装饰 -->
     <view class="report-bg-decor">
+      <view class="decor-circle decor-1"></view>
+      <view class="decor-circle decor-2"></view>
+      <view class="decor-circle decor-3"></view>
+    </view>
+  </view>
+
+  <!-- 时间轴视图 -->
+  <view class="timeline-view" wx:if="{{showTimeline}}">
+    <!-- 加载状态 -->
+    <view wx:if="{{timelineLoading}}" class="report-loading">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 时间轴内容（非加载时始终显示，保证头部和筛选器可操作） -->
+    <view wx:else class="timeline-content">
+      <!-- 头部：标题 + 过滤图标 -->
+      <view class="timeline-header">
+        <text class="timeline-page-title">时间轴</text>
+        <view class="timeline-header-right">
+          <text wx:if="{{!timelineShowFilters}}" class="timeline-filter-label {{timelineFilterActive ? 'active' : ''}}">{{timelineFilterLabel}}</text>
+          <view class="timeline-filter-toggle {{timelineFilterActive ? 'active' : ''}}" bindtap="toggleTimelineFilters">
+            <image class="timeline-filter-icon" src="/images/filter.svg" mode="aspectFit"></image>
+          </view>
+        </view>
+      </view>
+
+      <!-- 状态 + 分类筛选 Pills（点击过滤图标展开/收起） -->
+      <view class="timeline-filter-panel {{timelineShowFilters ? 'show' : ''}}">
+        <!-- 状态筛选 -->
+        <view class="timeline-status-bar">
+          <block wx:for="{{timelineStatusOptions}}" wx:key="value">
+            <view
+              class="timeline-status-pill {{timelineActiveStatus === item.value ? 'active' : ''}}"
+              bindtap="filterTimelineByStatus"
+              data-status="{{item.value}}"
+            >
+              <text class="timeline-status-icon">{{item.icon}}</text>
+              <text class="timeline-pill-text">{{item.label}}</text>
+            </view>
+          </block>
+        </view>
+
+        <!-- 分类筛选 -->
+        <view class="timeline-category-bar">
+          <view
+            class="timeline-category-pill {{timelineActiveCategory === 'all' ? 'active' : ''}}"
+            bindtap="filterTimelineByCategory"
+            data-category="all"
+          >
+            <text class="timeline-pill-text">全部分类</text>
+          </view>
+          <block wx:for="{{categoryList}}" wx:key="name">
+            <view
+              class="timeline-category-pill {{timelineActiveCategory === item.name ? 'active' : ''}}"
+              bindtap="filterTimelineByCategory"
+              data-category="{{item.name}}"
+            >
+              <image wx:if="{{item.displayIcon}}" class="timeline-pill-icon-img" src="{{item.displayIcon}}" mode="aspectFit"></image>
+              <text wx:else class="timeline-pill-icon">{{item.icon}}</text>
+              <text class="timeline-pill-text">{{item.name}}</text>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <!-- 筛选后空结果 -->
+      <view wx:if="{{timelineFilteredGroups.length === 0}}" class="timeline-empty-inline">
+        <view class="empty-face">
+          <view class="face-eyes">
+            <view class="eye eye-left"><view class="eye-pupil"></view></view>
+            <view class="eye eye-right"><view class="eye-pupil"></view></view>
+          </view>
+          <view class="face-mouth"></view>
+        </view>
+        <text class="empty-title">该分类下暂无资产</text>
+        <text class="empty-desc">试试切换其他分类或选择"全部"</text>
+      </view>
+
+      <!-- 时间轴轨道 -->
+      <view wx:else class="timeline-track">
+        <block wx:for="{{timelineFilteredGroups}}" wx:key="date">
+          <view class="timeline-node">
+            <!-- 左侧：时间轴竖线 + 节点圆点 -->
+            <view class="timeline-left">
+              <view class="timeline-dot-block">
+                <view class="timeline-dot {{index === 0 ? 'first' : ''}}"></view>
+              </view>
+              <view class="timeline-line" wx:if="{{index < timelineFilteredGroups.length - 1}}"></view>
+            </view>
+
+            <!-- 右侧：日期标题 + 资产卡片列表 -->
+            <view class="timeline-right">
+              <view class="timeline-date-header">
+                <view class="timeline-date-marker"></view>
+                <text class="timeline-date-text">{{item.dateText}}</text>
+                <text class="timeline-date-count">· {{item.assets.length}}件</text>
+              </view>
+
+              <!-- 该日期下的资产卡片 -->
+              <view
+                class="timeline-asset-card"
+                wx:for="{{item.assets}}"
+                wx:for-item="asset"
+                wx:key="_id"
+                bindtap="goToDetail"
+                data-id="{{asset._id}}"
+              >
+                <!-- 左上角：资产类型角标 -->
+                <view class="timeline-asset-type-corner" wx:if="{{asset.assetType === 'subscription'}}">
+                  <image class="timeline-type-corner-icon" src="/images/subscription-asset.svg" mode="aspectFit"></image>
+                </view>
+                <view class="timeline-asset-type-corner" wx:else>
+                  <image class="timeline-type-corner-icon" src="/images/fixed-asset.svg" mode="aspectFit"></image>
+                </view>
+
+
+                <!-- 资产主体 -->
+                <view class="timeline-asset-body">
+                  <!-- 图标 -->
+                  <view class="timeline-asset-icon">
+                    <image wx:if="{{asset.displayIcon}}" class="timeline-icon-img" src="{{asset.displayIcon}}" mode="aspectFill"></image>
+                    <text wx:else class="timeline-icon-emoji">{{asset.icon || '📦'}}</text>
+                  </view>
+
+                  <!-- 信息区 -->
+                  <view class="timeline-asset-info">
+                    <!-- 名称行 -->
+                    <view class="timeline-asset-name-row">
+                      <text class="timeline-asset-name">{{asset.name}}</text>
+                      <!-- 订阅每期金额 -->
+                      <view wx:if="{{asset.assetType === 'subscription' && asset.periodAmountDisplay}}" class="timeline-period-tag">
+                        <text class="timeline-period-symbol">¥</text>
+                        <text class="timeline-period-number">{{asset.periodAmountDisplay}}</text>
+                        <text class="timeline-period-symbol">/{{asset.periodTypeDisplay}}</text>
+                      </view>
+                      <!-- 分类标签（仅"全部"分类时展示） -->
+                      <view wx:if="{{timelineActiveCategory === 'all'}}" class="timeline-cat-tag-inline">
+                        <image wx:if="{{asset.categoryIconUrl}}" class="timeline-cat-icon-img" src="{{asset.categoryIconUrl}}" mode="aspectFit"></image>
+                        <text wx:else class="timeline-cat-icon-emoji">{{asset.categoryIcon || '📦'}}</text>
+                        <text class="timeline-cat-text">{{asset.category}}</text>
+                      </view>
+                      <!-- 状态 badge（仅"全部"状态时展示） -->
+                      <view wx:if="{{timelineActiveStatus === 'all'}}" class="timeline-status-badge {{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? 'pending' : asset.subscriptionStatus === 'ended' ? 'ended' : 'subscribing') : asset.status}}">
+                        <text>{{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? '待生效' : asset.subscriptionStatus === 'ended' ? '已结束' : '订阅中') : (asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出')}}</text>
+                      </view>
+                    </view>
+
+                    <!-- 数据行 -->
+                    <view class="timeline-asset-stats">
+                      <!-- 日均成本 / 折合每日 -->
+                      <view class="timeline-stat-item">
+                        <text class="timeline-stat-label">{{(asset.assetType === 'subscription' && asset.subscriptionStatus === 'ended') || (asset.assetType !== 'subscription' && asset.status !== 'active') ? '折合每日' : '日均成本'}}</text>
+                        <text class="timeline-stat-value cost">¥{{(asset.assetType === 'subscription' && asset.subscriptionStatus === 'ended') || (asset.assetType !== 'subscription' && asset.status !== 'active') ? asset.dailyEquivalent : asset.dailyCost}}</text>
+                      </view>
+                      <view class="timeline-stat-divider"></view>
+                      <!-- 时长 -->
+                      <view wx:if="{{!(asset.assetType === 'subscription' && asset.subscriptionStatus === 'pending')}}" class="timeline-stat-item">
+                        <text class="timeline-stat-label">{{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'ended' ? '订阅时长' : '已订阅') : (asset.status === 'active' ? '已服役' : '服役时长')}}</text>
+                        <text class="timeline-stat-value">{{asset.usedDays}}天{{asset.assetType === 'subscription' && asset.periodCount > 0 ? ' · ' + asset.periodCount + '期' : ''}}</text>
+                      </view>
+                      <view wx:if="{{!(asset.assetType === 'subscription' && asset.subscriptionStatus === 'pending')}}" class="timeline-stat-divider"></view>
+                      <!-- 金额 -->
+                      <view class="timeline-stat-item">
+                        <text class="timeline-stat-label">{{asset.assetType === 'subscription' ? '总投入' : '价格'}}</text>
+                        <text class="timeline-stat-value price">¥{{asset.assetType === 'subscription' ? asset.totalInvestment : asset.price}}</text>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <view class="timeline-bottom-spacer"></view>
+    </view>
+
+    <!-- 背景装饰 -->
+    <view class="timeline-bg-decor">
       <view class="decor-circle decor-1"></view>
       <view class="decor-circle decor-2"></view>
       <view class="decor-circle decor-3"></view>

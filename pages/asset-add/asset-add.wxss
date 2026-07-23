@@ -127,6 +127,20 @@
   font-weight: 500;
 }
 
+/* 输入框字数计数器 */
+.input-count-wrapper {
+  position: relative;
+}
+
+.input-count {
+  position: absolute;
+  right: 20rpx;
+  bottom: 14rpx;
+  font-size: 22rpx;
+  color: var(--text-hint);
+  pointer-events: none;
+}
+
 /* 选择器 */
 .item-picker {
   width: 100%;
