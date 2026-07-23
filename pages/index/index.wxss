@@ -1215,6 +1215,12 @@
   min-width: 0;
   align-items: center;
   text-align: center;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+  transform: none;
+  transition: none;
+  padding: 0;
 }
 
 .card-stats .stat-item.has-badge {
@@ -1270,10 +1276,11 @@
 .stat-divider {
   width: 1rpx;
   height: 32rpx;
-  background: var(--border-default);
+  background: var(--neutral-300);
   margin: 0 12rpx;
   align-self: center;
   flex-shrink: 0;
+  border-radius: 1rpx;
 }
 
 .category-tag {
