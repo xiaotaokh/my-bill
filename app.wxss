@@ -35,11 +35,11 @@ page {
   --text-hint: #94A3B8;
   --text-inverse: #FFFFFF;
 
-  --success: #10B981;
+  --success: #047857;
   --success-bg: #ECFDF5;
   --error: #EF4444;
   --error-bg: #FEF2F2;
-  --warning: #F59E0B;
+  --warning: #B45309;
   --warning-bg: #FFFBEB;
   --amber: #B45309;
 

@@ -21,6 +21,12 @@ App({
     // 创建新的 Promise 并保存
     // 使用 Supabase Edge Function 获取 openid
     this.globalData.openidPromise = new Promise((resolve, reject) => {
+      // 失败时清除缓存的 Promise，允许下次调用时重试
+      const clearAndReject = (err) => {
+        this.globalData.openidPromise = null;
+        reject(err);
+      };
+
       wx.login({
         success: (loginRes) => {
           if (loginRes.code) {
@@ -28,25 +34,25 @@ App({
               .then(result => {
                 const { data, error } = result;
                 if (error) {
-                  reject(error);
+                  clearAndReject(error);
                   return;
                 }
                 if (data && data.openid) {
                   this.globalData.openid = data.openid;
                   resolve(data.openid);
                 } else {
-                  reject(new Error('获取 openid 失败'));
+                  clearAndReject(new Error('获取 openid 失败'));
                 }
               })
               .catch(err => {
-                reject(err);
+                clearAndReject(err);
               });
           } else {
-            reject(new Error('wx.login 失败：' + loginRes.errMsg));
+            clearAndReject(new Error('wx.login 失败：' + loginRes.errMsg));
           }
         },
         fail: (err) => {
-          reject(err);
+          clearAndReject(err);
         }
       });
     });

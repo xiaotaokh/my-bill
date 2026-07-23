@@ -180,7 +180,7 @@ var supabase = {
       },
 
       // 执行查询 (thenable)
-      then: function(resolve) {
+      then: function(resolve, reject) {
         var self = this;
 
         var queryParts = self.filters.concat(self.orders);
@@ -192,7 +192,9 @@ var supabase = {
         baseRequest('GET', endpoint, null, null).then(function(result) {
           resolve(result);
         }).catch(function(err) {
-          resolve({ data: null, error: err });
+          if (reject) {
+            reject(err);
+          }
         });
       },
 

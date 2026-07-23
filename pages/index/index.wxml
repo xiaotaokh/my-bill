@@ -559,7 +559,7 @@
               </view>
             </view>
             <view class="batch-asset-meta">
-              <text class="batch-asset-price">¥{{item.price}}</text>
+              <text class="batch-asset-price">¥{{item._isSubscription ? item._batchPrice + '/' + item._batchPeriodInfo : item.price}}</text>
               <text class="batch-asset-divider">·</text>
               <text class="batch-asset-date">{{item.dateRange}}</text>
               <text class="batch-asset-divider">·</text>

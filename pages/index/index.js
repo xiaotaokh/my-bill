@@ -426,7 +426,13 @@ Page({
       if (dataUrl.startsWith('data:image/svg+xml,')) {
         svgContent = dataUrl.substring('data:image/svg+xml,'.length);
         // 解码 URL 编码
-        svgContent = svgContent.replace(/%23/g, '#').replace(/%20/g, ' ').replace(/%3C/g, '<').replace(/%3E/g, '>').replace(/%22/g, '"').replace(/%27/g, "'").replace(/%2F/g, '/').replace(/%3A/g, ':').replace(/%3D/g, '=');
+        try {
+          svgContent = decodeURIComponent(svgContent);
+        } catch (e) {
+          // decodeURIComponent 对格式错误会抛异常，退化为空内容
+          console.warn('SVG URL 解码失败:', e);
+          svgContent = '';
+        }
       }
 
       fsm.writeFile({
@@ -1383,7 +1389,7 @@ Page({
       if (this.data.showReport) {
         this.initPieChart();
         this.initLineChart();
-        this.initTimePeriodChart();
+        this.initTimeChart();
       }
       // 更新导航栏颜色
       const navColors = themeManager.getThemeColors();
@@ -1511,16 +1517,36 @@ Page({
 
       if (error) throw error;
 
-      const list = data.map(asset => ({
-        ...asset,
-        _id: asset.id, // Supabase id 映射到 _id
-        displayIcon: asset.icon && asset.icon.startsWith('http') ? asset.icon : null,
-        _selected: false,
-        purchaseDate: this.formatDate(asset.purchaseDate),
-        dateRange: asset.status === 'active'
-          ? `${this.formatDate(asset.purchaseDate)} - 至今`
-          : `${this.formatDate(asset.purchaseDate)} - ${this.formatDate(asset.retiredDate || asset.soldDate) || '至今'}`
-      }));
+      const list = data.map(asset => {
+        const isSubscription = asset.assetType === 'subscription';
+        let _batchPrice = Number(asset.price) || 0;
+        let _batchPeriodInfo = '';
+
+        if (isSubscription && asset.periodAmount) {
+          // 复用首页日历周期计算，与资产列表保持一致
+          const purchaseDate = this.parseDate(asset.purchaseDate);
+          const startDate = asset.subscriptionStartDate ? this.parseDate(asset.subscriptionStartDate) : purchaseDate;
+          const now = new Date();
+          const result = this.calcSubscriptionPeriods(asset, startDate, now);
+          _batchPrice = asset.periodAmount * result.completedPeriods;
+
+          _batchPeriodInfo = Number(asset.periodAmount).toFixed(2);
+        }
+
+        return {
+          ...asset,
+          _id: asset.id,
+          displayIcon: asset.icon && asset.icon.startsWith('http') ? asset.icon : null,
+          _selected: false,
+          _isSubscription: isSubscription,
+          _batchPrice: _batchPrice,
+          _batchPeriodInfo: _batchPeriodInfo,
+          purchaseDate: this.formatDate(asset.purchaseDate),
+          dateRange: asset.status === 'active'
+            ? `${this.formatDate(asset.purchaseDate)} - 至今`
+            : `${this.formatDate(asset.purchaseDate)} - ${this.formatDate(asset.retiredDate || asset.soldDate) || '至今'}`
+        };
+      });
 
       this.setData({ batchAssetList: list, filteredBatchAssetList: list, isAllSelected: false });
       wx.hideLoading();
@@ -1537,10 +1563,10 @@ Page({
       ? selectedAssets.filter(x => x !== id)
       : [...selectedAssets, id];
 
-    // 计算选中资产总金额
+    // 计算选中资产总金额（订阅资产用总投入，固定资产用价格）
     const selectedTotalPrice = batchAssetList
       .filter(a => newSelected.includes(a._id))
-      .reduce((sum, a) => sum + (Number(a.price) || 0), 0)
+      .reduce((sum, a) => sum + (Number(a._batchPrice) || 0), 0)
       .toFixed(2);
 
     const newBatchAssetList = batchAssetList.map(a => ({ ...a, _selected: newSelected.includes(a._id) }));
@@ -1572,7 +1598,7 @@ Page({
         selectedAssets: newSelected,
         selectedTotalPrice: newSelected.length > 0
           ? batchAssetList.filter(a => newSelected.includes(a._id))
-              .reduce((sum, a) => sum + (Number(a.price) || 0), 0).toFixed(2)
+              .reduce((sum, a) => sum + (Number(a._batchPrice) || 0), 0).toFixed(2)
           : '0.00',
         batchAssetList: newBatchAssetList,
         filteredBatchAssetList: newFilteredList,
@@ -1585,7 +1611,7 @@ Page({
 
       const selectedTotalPrice = batchAssetList
         .filter(a => newSelected.includes(a._id))
-        .reduce((sum, a) => sum + (Number(a.price) || 0), 0)
+        .reduce((sum, a) => sum + (Number(a._batchPrice) || 0), 0)
         .toFixed(2);
 
       const newBatchAssetList = batchAssetList.map(a => ({
