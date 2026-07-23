@@ -91,6 +91,7 @@ const themes = {
       // 阴影
       shadowSoft: '0 8rpx 32rpx rgba(var(--shadow-rgb), 0.08)',
       shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.12)',
+      shadowCardHeavy: '0 4rpx 24rpx rgba(var(--shadow-rgb), 0.30), 0 8rpx 16rpx rgba(var(--shadow-rgb), 0.18)',
       shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.24)',
       shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.22)',
 
@@ -99,6 +100,7 @@ const themes = {
       hotPink: '#EC4899',
       mint: '#34D399',
       emerald: '#10B981',
+      emeraldRgb: '16, 185, 129',
       warmYellow: '#F59E0B',
       cream: '#FEF3C7',
       creamDark: '#FDE68A',
@@ -229,6 +231,7 @@ const themes = {
       // 阴影 - 柔和暖影
       shadowSoft: '0 4rpx 12rpx rgba(var(--shadow-rgb), 0.04)',
       shadowCard: '0 2rpx 8rpx rgba(var(--shadow-rgb), 0.08)',
+      shadowCardHeavy: '0 4rpx 24rpx rgba(var(--shadow-rgb), 0.16), 0 8rpx 16rpx rgba(var(--shadow-rgb), 0.10)',
       shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.12)',
       shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.10)',
 
@@ -237,6 +240,7 @@ const themes = {
       hotPink: '#D99C94',
       mint: '#B8D0C0',
       emerald: '#8FB89E',
+      emeraldRgb: '143, 184, 158',
       warmYellow: '#E8DCC4',
       cream: '#F4F2EE',
       creamDark: '#E8E2DA',
@@ -367,6 +371,7 @@ const themes = {
       // 阴影 - 深色阴影
       shadowSoft: '0 8rpx 32rpx rgba(var(--shadow-rgb), 0.3)',
       shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.2)',
+      shadowCardHeavy: '0 4rpx 24rpx rgba(var(--shadow-rgb), 0.40), 0 8rpx 16rpx rgba(var(--shadow-rgb), 0.25)',
       shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.5), 2rpx 2rpx 6rpx rgba(var(--shadow-rgb), 0.04)',
       shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.6), 3rpx 3rpx 10rpx rgba(var(--shadow-rgb), 0.06)',
       shadowGold: '0 4rpx 16rpx rgba(201, 169, 98, 0.15)',
@@ -376,6 +381,7 @@ const themes = {
       hotPink: '#EC4899',
       mint: '#34D399',
       emerald: '#10B981',
+      emeraldRgb: '16, 185, 129',
       warmYellow: '#FBBF24',
       cream: '#F8E8B8',
       creamDark: '#D4AF37',
@@ -506,6 +512,7 @@ const themes = {
       // 阴影
       shadowSoft: '0 8rpx 32rpx rgba(var(--shadow-rgb), 0.08)',
       shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.12)',
+      shadowCardHeavy: '0 4rpx 24rpx rgba(var(--shadow-rgb), 0.30), 0 8rpx 16rpx rgba(var(--shadow-rgb), 0.18)',
       shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.24)',
       shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.22)',
 
@@ -514,6 +521,7 @@ const themes = {
       hotPink: '#EC4899',
       mint: '#A7F3D0',
       emerald: '#10B981',
+      emeraldRgb: '16, 185, 129',
       warmYellow: '#FCD34D',
       cream: '#FEF3C7',
       creamDark: '#FDE68A',
@@ -644,6 +652,7 @@ const themes = {
       // 阴影
       shadowSoft: '0 8rpx 32rpx rgba(var(--shadow-rgb), 0.08)',
       shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.12)',
+      shadowCardHeavy: '0 4rpx 24rpx rgba(var(--shadow-rgb), 0.30), 0 8rpx 16rpx rgba(var(--shadow-rgb), 0.18)',
       shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.24)',
       shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.22)',
 
@@ -652,6 +661,7 @@ const themes = {
       hotPink: '#EC4899',
       mint: '#A7F3D0',
       emerald: '#10B981',
+      emeraldRgb: '16, 185, 129',
       warmYellow: '#FCD34D',
       cream: '#FEF3C7',
       creamDark: '#FDE68A',
@@ -782,6 +792,7 @@ const themes = {
       // 阴影
       shadowSoft: '0 8rpx 32rpx rgba(var(--shadow-rgb), 0.08)',
       shadowCard: '0 4rpx 16rpx rgba(var(--shadow-rgb), 0.12)',
+      shadowCardHeavy: '0 4rpx 24rpx rgba(var(--shadow-rgb), 0.30), 0 8rpx 16rpx rgba(var(--shadow-rgb), 0.18)',
       shadowNeumorphSm: '-2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.24)',
       shadowNeumorph: '-3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.22)',
       shadowAurora: '0 4rpx 24rpx rgba(139, 92, 246, 0.15)',
@@ -791,6 +802,7 @@ const themes = {
       hotPink: '#EC4899',
       mint: '#34D399',
       emerald: '#10B981',
+      emeraldRgb: '16, 185, 129',
       warmYellow: '#FCD34D',
       cream: '#FEF3C7',
       creamDark: '#FDE68A',

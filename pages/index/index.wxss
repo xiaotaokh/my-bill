@@ -205,7 +205,7 @@
   font-size: 22rpx;
   font-weight: 600;
   color: var(--text-default);
-  max-width: 120rpx;
+  max-width: 160rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -424,7 +424,7 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   min-width: 0;
-  box-shadow: 0 4rpx 24rpx rgba(var(--shadow-rgb), 0.30), 0 8rpx 16rpx rgba(var(--shadow-rgb), 0.18);
+  box-shadow: var(--shadow-card-heavy);
   border: 1rpx solid rgba(var(--shadow-rgb), 0.35);
 }
 
@@ -445,7 +445,7 @@
 .retired-item.stat-active,
 .sold-item.stat-active {
   border: 2rpx solid var(--primary-600);
-  box-shadow: 0 4rpx 24rpx rgba(var(--shadow-rgb), 0.30), 0 8rpx 16rpx rgba(var(--shadow-rgb), 0.18);
+  box-shadow: var(--shadow-card-heavy);
 }
 
 /* 激活状态深色叠层 */
@@ -877,7 +877,7 @@
   border-radius: 24rpx;
   padding: 20rpx 16rpx;
   margin-bottom: 16rpx;
-  box-shadow: 0 4rpx 24rpx rgba(var(--shadow-rgb), 0.30), 0 8rpx 16rpx rgba(var(--shadow-rgb), 0.18);
+  box-shadow: var(--shadow-card-heavy);
   border: 1rpx solid rgba(var(--shadow-rgb), 0.35);
   display: flex;
   align-items: center;
@@ -918,7 +918,7 @@
   background: var(--bg-card);
   border-radius: 20rpx;
   padding: 16rpx 8rpx;
-  box-shadow: -3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 16rpx rgba(var(--shadow-rgb), 0.22);
+  box-shadow: var(--shadow-neumorph);
   box-sizing: border-box;
   width: 100%;
   overflow: hidden;
@@ -1026,7 +1026,7 @@
 
 .card-left {
   flex-shrink: 0;
-  width: 64rpx;
+  width: 72rpx;
 }
 
 .asset-avatar {
@@ -1424,8 +1424,8 @@
   z-index: 1;
 }
 
-/* 可爱表情 */
-.empty-face {
+/* 可爱表情 - 资产列表空状态 */
+.empty-state .empty-face {
   width: 160rpx;
   height: 160rpx;
   background: linear-gradient(180deg, var(--cream) 0%, var(--cream-dark) 100%);
@@ -1445,16 +1445,12 @@
   50% { transform: translateY(-10rpx); }
 }
 
+/* 表情部件基础共享样式 */
 .face-eyes {
   display: flex;
-  gap: 40rpx;
-  margin-bottom: 20rpx;
 }
 
 .eye {
-  width: 24rpx;
-  height: 32rpx;
-  background: var(--neutral-900);
   border-radius: 50%;
   position: relative;
   animation: eyeBlink 4s ease-in-out infinite;
@@ -1462,10 +1458,29 @@
 
 .eye-pupil {
   position: absolute;
+  border-radius: 50%;
+}
+
+.face-mouth {
+  border-top: none;
+  background: transparent;
+}
+
+.empty-state .face-eyes {
+  gap: 40rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-state .eye {
+  width: 24rpx;
+  height: 32rpx;
+  background: var(--neutral-900);
+}
+
+.empty-state .eye-pupil {
   width: 10rpx;
   height: 10rpx;
   background: var(--text-default);
-  border-radius: 50%;
   top: 6rpx;
   right: 4rpx;
 }
@@ -1483,16 +1498,14 @@
   animation-delay: 0.1s;
 }
 
-.face-mouth {
+.empty-state .face-mouth {
   width: 40rpx;
   height: 20rpx;
   border: 4rpx solid var(--neutral-900);
-  border-top: none;
   border-radius: 0 0 40rpx 40rpx;
-  background: transparent;
 }
 
-.empty-title {
+.empty-state .empty-title {
   font-size: 34rpx;
   font-weight: 700;
   color: var(--text-default);
@@ -1500,7 +1513,7 @@
   letter-spacing: 2rpx;
 }
 
-.empty-desc {
+.empty-state .empty-desc {
   font-size: 26rpx;
   color: var(--text-hint);
   text-align: center;
@@ -2625,7 +2638,7 @@
   z-index: 10;
 }
 
-.empty-face {
+.report-empty .empty-face {
   width: 140rpx;
   height: 140rpx;
   background: linear-gradient(180deg, var(--cream-light) 0%, var(--cream-mid) 100%);
@@ -2651,54 +2664,33 @@
   }
 }
 
-.face-eyes {
-  display: flex;
+.report-empty .face-eyes {
   gap: 36rpx;
   margin-bottom: 16rpx;
 }
 
-.eye {
+.report-empty .eye {
   width: 20rpx;
   height: 28rpx;
   background: var(--text-default);
-  border-radius: 50%;
-  position: relative;
-  animation: eyeBlink 4s ease-in-out infinite;
 }
 
-.eye-pupil {
-  position: absolute;
+.report-empty .eye-pupil {
   width: 8rpx;
   height: 8rpx;
   background: var(--text-default);
-  border-radius: 50%;
   top: 5rpx;
   right: 3rpx;
 }
 
-@keyframes eyeBlink {
-  0%, 45%, 55%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(0.1); }
-}
-
-.eye-left {
-  animation-delay: 0s;
-}
-
-.eye-right {
-  animation-delay: 0.1s;
-}
-
-.face-mouth {
+.report-empty .face-mouth {
   width: 36rpx;
   height: 18rpx;
   border: 3rpx solid var(--text-default);
-  border-top: none;
   border-radius: 0 0 36rpx 36rpx;
-  background: transparent;
 }
 
-.empty-title {
+.report-empty .empty-title {
   font-size: 32rpx;
   font-weight: 600;
   color: var(--text-muted);
@@ -2706,7 +2698,7 @@
   letter-spacing: 1rpx;
 }
 
-.empty-desc {
+.report-empty .empty-desc {
   font-size: 24rpx;
   color: var(--text-hint);
   text-align: center;
@@ -3261,7 +3253,7 @@
 .period-pill.active {
   background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
   color: var(--text-inverse);
-  box-shadow: 0 4rpx 12rpx rgba(var(--neutral-900-rgb),0.25);
+  box-shadow: var(--shadow-card);
   border: 1rpx solid rgba(var(--text-inverse-rgb), 0.2);
 }
 
@@ -3643,7 +3635,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--overlay-bg);
 }
 
 .category-scope-panel {

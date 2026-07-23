@@ -445,8 +445,8 @@
 .theme-obsidian .add-category-bar {
   background: linear-gradient(
     135deg,
-    rgba(40, 40, 40, 0.46) 0%,
-    rgba(30, 30, 30, 0.28) 100%
+    rgba(var(--bg-card-rgb), 0.46) 0%,
+    rgba(var(--bg-card-rgb), 0.28) 100%
   );
   border: 1rpx solid rgba(var(--glass-highlight-rgb, 255, 255, 255), 0.28);
   box-shadow:
@@ -1406,9 +1406,9 @@
 }
 
 /* ========== 主题适配：弹窗背景与新增资产页面背景一致 ========== */
-.theme-fintech .dialog-container { background: #F8FAFC; }
-.theme-minimal .dialog-container { background: #F6F4F1; }
-.theme-obsidian .dialog-container { background: #0D0D0D; }
-.theme-forest .dialog-container { background: #F0FDF4; }
-.theme-sunset .dialog-container { background: #FFFBEB; }
-.theme-aurora .dialog-container { background: #FAFAFA; }
+.theme-fintech .dialog-container,
+.theme-minimal .dialog-container,
+.theme-obsidian .dialog-container,
+.theme-forest .dialog-container,
+.theme-sunset .dialog-container,
+.theme-aurora .dialog-container { background: var(--bg-base); }

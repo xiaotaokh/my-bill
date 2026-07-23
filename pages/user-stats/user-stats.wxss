@@ -733,14 +733,14 @@ page {
 
 /* 今日访问 — 绿色呼吸灯 */
 .activity-dot.today {
-  background: #10B981;
-  box-shadow: 0 0 8rpx rgba(16, 185, 129, 0.6);
+  background: var(--emerald);
+  box-shadow: 0 0 8rpx rgba(var(--emerald-rgb), 0.6);
   animation: dotPulse 2s ease-in-out infinite;
 }
 
 @keyframes dotPulse {
-  0%, 100% { box-shadow: 0 0 4rpx rgba(16, 185, 129, 0.4); }
-  50% { box-shadow: 0 0 12rpx rgba(16, 185, 129, 0.7); }
+  0%, 100% { box-shadow: 0 0 4rpx rgba(var(--emerald-rgb), 0.4); }
+  50% { box-shadow: 0 0 12rpx rgba(var(--emerald-rgb), 0.7); }
 }
 
 /* 用户信息 */
@@ -774,15 +774,15 @@ page {
   border-radius: 12rpx;
   font-size: 22rpx;
   font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, #10B981, #059669);
-  box-shadow: 0 1rpx 6rpx rgba(16, 185, 129, 0.25);
+  color: var(--text-inverse);
+  background: linear-gradient(135deg, var(--emerald), var(--success));
+  box-shadow: 0 1rpx 6rpx rgba(var(--emerald-rgb), 0.25);
   animation: todayPulse 2s ease-in-out infinite;
 }
 
 @keyframes todayPulse {
-  0%, 100% { box-shadow: 0 1rpx 6rpx rgba(16, 185, 129, 0.25); }
-  50% { box-shadow: 0 2rpx 12rpx rgba(16, 185, 129, 0.45); }
+  0%, 100% { box-shadow: 0 1rpx 6rpx rgba(var(--emerald-rgb), 0.25); }
+  50% { box-shadow: 0 2rpx 12rpx rgba(var(--emerald-rgb), 0.45); }
 }
 
 /* 活跃度徽章 */
@@ -867,7 +867,7 @@ page {
   border-radius: 24rpx;
   background: var(--bg-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23EF4444'%3E%3Cpath d='M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5-1-1h-5l-1 1H5v2h14V4h-3.5z'/%3E%3C/svg%3E") no-repeat center;
   background-size: 28rpx 28rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-card);
   transition: all 0.2s ease;
   z-index: 1;
 }
@@ -1327,7 +1327,7 @@ page {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--overlay-bg);
   z-index: 100;
   display: flex;
   align-items: center;
@@ -1346,7 +1346,7 @@ page {
   background: var(--bg-card);
   border-radius: 20rpx;
   overflow: hidden;
-  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-soft);
   animation: cardSlideUp 0.25s ease;
 }
 
@@ -1445,12 +1445,12 @@ page {
 }
 
 .modal-bar-seg.high {
-  background: #10B981;
+  background: var(--emerald);
   min-width: 4rpx;
 }
 
 .modal-bar-seg.medium {
-  background: #F59E0B;
+  background: var(--warm-yellow);
   min-width: 4rpx;
 }
 
@@ -1478,8 +1478,8 @@ page {
   border-radius: 4rpx;
 }
 
-.bar-dot.high { background: #10B981; }
-.bar-dot.medium { background: #F59E0B; }
+.bar-dot.high { background: var(--emerald); }
+.bar-dot.medium { background: var(--warm-yellow); }
 .bar-dot.low { background: var(--border-default); }
 
 .bar-count {

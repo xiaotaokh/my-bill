@@ -54,6 +54,7 @@ page {
   --hot-pink: #EC4899;
   --mint: #10B981;
   --emerald: #10B981;
+  --emerald-rgb: 16, 185, 129;
   --warm-yellow: #F59E0B;
   --cream: #FEF3C7;
   --cream-dark: #FDE68A;
@@ -81,6 +82,7 @@ page {
   --glass-border: rgba(var(--neutral-900-rgb), 0.04);
   --shadow-soft: 0 8rpx 32rpx rgba(var(--shadow-rgb), 0.08);
   --shadow-card: 0 4rpx 16rpx rgba(var(--shadow-rgb), 0.12);
+  --shadow-card-heavy: 0 4rpx 24rpx rgba(var(--shadow-rgb), 0.30), 0 8rpx 16rpx rgba(var(--shadow-rgb), 0.18);
   --shadow-neumorph: -3rpx -3rpx 8rpx rgba(var(--text-inverse-rgb), 0.6), 3rpx 3rpx 14rpx rgba(var(--shadow-rgb), 0.22);
   --shadow-neumorph-sm: -2rpx -2rpx 6rpx rgba(var(--text-inverse-rgb), 0.5), 2rpx 2rpx 10rpx rgba(var(--shadow-rgb), 0.24);
 }
@@ -148,10 +150,12 @@ page {
   --primary-gradient: linear-gradient(135deg, #A38472 0%, #B89B8A 100%);
   --shadow-soft: 0 4rpx 12rpx rgba(var(--shadow-rgb), 0.04);
   --shadow-card: 0 2rpx 8rpx rgba(var(--shadow-rgb), 0.08);
+  --shadow-card-heavy: 0 4rpx 24rpx rgba(var(--shadow-rgb), 0.16), 0 8rpx 16rpx rgba(var(--shadow-rgb), 0.10);
   --pink: #E8C8C4;
   --hot-pink: #D99C94;
   --mint: #B8D0C0;
   --emerald: #8FB89E;
+  --emerald-rgb: 143, 184, 158;
   --warm-yellow: #E8DCC4;
   --cream: #F4F2EE;
   --cream-dark: #E8E2DA;
