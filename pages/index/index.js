@@ -518,11 +518,11 @@ Page({
     this.syncUserProfile();
     // 先加载分类（确保 activeCategory 校验后再加载资产，避免分类重命名后筛选失效）
     await this.loadCategories();
-    this.loadAssets();
+    await this.loadAssets();
 
-    // 时间轴视图活跃时刷新时间轴数据
+    // 时间轴视图活跃时刷新时间轴数据（loadAssets 完成后 assets 已是最新数据）
     if (this.data.showTimeline) {
-      setTimeout(() => this.loadTimelineData(), 200);
+      this.loadTimelineData();
     }
   },
 
