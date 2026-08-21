@@ -159,6 +159,7 @@ Page({
 
     // 状态
     isLoading: false,
+    _loadingCategories: false,
     _fromSetting: false,
     showBackToTop: false,
 
@@ -612,6 +613,9 @@ Page({
 
   // 加载类别
   async loadCategories() {
+    if (this.data._loadingCategories) return;
+    this.setData({ _loadingCategories: true });
+
     const app = getApp();
     try {
       const openid = await app.getOpenid();
@@ -622,14 +626,15 @@ Page({
         .order('sortOrder', { ascending: true });
 
       if (error) {
-        this.setData({ categories: [], categoryList: [] });
+        this.setData({ categories: [], categoryList: [], _loadingCategories: false });
         return;
       }
 
       this.processCategories(data || []);
+      this.setData({ _loadingCategories: false });
     } catch (err) {
       console.error('加载分类失败:', err);
-      this.setData({ categories: [], categoryList: [] });
+      this.setData({ categories: [], categoryList: [], _loadingCategories: false });
     }
   },
 
@@ -1584,8 +1589,8 @@ Page({
     wx.navigateTo({ url: `/pages/asset-detail/asset-detail?id=${e.currentTarget.dataset.id}` });
   },
 
-  onPullDownRefresh() {
-    this.loadAssets();
+  async onPullDownRefresh() {
+    await this.loadAssets();
     wx.stopPullDownRefresh();
   },
 
@@ -1625,15 +1630,16 @@ Page({
   },
 
   _splitIntoCols(arr, n = 5) {
-    // 估算卡片自然高度: padding(32) + 头像(padding 40 + 内容 80) + name(32) + cost(31) ≈ 215
-    const BASE_HEIGHT = 220;
+    const BASE_HEIGHT = 240;
     const BG_COLORS = themeManager.getCardBgColors();
     const cols = Array.from({ length: n }, () => []);
     arr.forEach((item, i) => {
-      const extra = [20, 50, 80][Math.floor(Math.random() * 3)];
-      item._cardHeight = BASE_HEIGHT + extra;
+      const col = i % n;
+      const count = cols[col].length;
+      // 偶数列 0/2/4：240→360→240 | 奇数列 1/3：360→240→360
+      item._cardHeight = (col % 2 === 0) === (count % 2 === 0) ? 280 : 360;
       item._bgColor = BG_COLORS[(i * 7) % BG_COLORS.length];
-      cols[i % n].push(item);
+      cols[col].push(item);
     });
     return cols;
   },

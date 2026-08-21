@@ -1506,6 +1506,9 @@ Page({
         wx.hideLoading();
         wx.showToast({ title: '保存失败，请重试', icon: 'none' });
       }
+    }).catch(err => {
+      wx.hideLoading();
+      wx.showToast({ title: '网络异常，请重试', icon: 'none' });
     });
   }
 });

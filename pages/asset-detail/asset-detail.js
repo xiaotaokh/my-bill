@@ -484,12 +484,18 @@ Page({
         await deleteStorageFile('icons', this.data.asset.icon);
       }
 
-      await supabase
+      const { error: deleteError } = await supabase
         .from('assets')
         .delete()
         .eq('id', this.data.assetId);
 
       wx.hideLoading();
+
+      if (deleteError) {
+        wx.showToast({ title: '删除失败', icon: 'none' });
+        return;
+      }
+
       wx.showToast({ title: '删除成功', icon: 'success' });
 
       // 返回上一页（onShow 会自动刷新数据）

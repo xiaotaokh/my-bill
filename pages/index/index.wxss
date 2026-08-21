@@ -911,17 +911,17 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 15rpx;
+  gap: 20rpx;
 }
 
 .masonry-col + .masonry-col {
-  margin-left: 15rpx;
+  margin-left: 20rpx;
 }
 
 .asset-card-simple {
   background: var(--bg-card);
   border-radius: 20rpx;
-  padding: 16rpx 8rpx;
+  padding: 16rpx 12rpx;
   box-shadow: var(--shadow-neumorph);
   box-sizing: border-box;
   width: 100%;
