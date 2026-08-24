@@ -1326,10 +1326,14 @@ Page({
   },
 
   switchToHome() {
+    // 已在首页，跳过重复 setData 避免悬浮菜单闪动
+    if (!this.data.showSetting && !this.data.showReport && !this.data.showTimeline) return;
     this.setData({ showSetting: false, showReport: false, showTimeline: false });
   },
 
   switchToReport() {
+    // 已在统计页，跳过重复 setData 避免悬浮菜单闪动
+    if (this.data.showReport) return;
     // 切换到统计页面时关闭搜索功能
     this.setData({
       showReport: true,
@@ -1344,6 +1348,8 @@ Page({
   },
 
   switchToTimeline() {
+    // 已在时间轴页，跳过重复 setData 避免悬浮菜单闪动
+    if (this.data.showTimeline) return;
     this.setData({
       showTimeline: true,
       showReport: false,
@@ -1495,6 +1501,8 @@ Page({
   },
 
   navigateToSetting() {
+    // 已在设置页，跳过重复 setData 避免悬浮菜单闪动
+    if (this.data.showSetting) return;
     // 切换到设置页面时关闭搜索功能
     this.setData({
       showSetting: true,

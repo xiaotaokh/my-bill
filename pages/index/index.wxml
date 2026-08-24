@@ -654,7 +654,7 @@
     </view>
 
     <!-- 搜索和新增资产按钮组 -->
-    <view wx:if="{{!showSetting && !showReport && !showTimeline && !showBatchDelete}}" class="action-fab-group {{statsTotalCount <= 0 ? 'only-add' : ''}} {{!showBackToTop ? 'no-back-top' : ''}}">
+    <view class="action-fab-group {{statsTotalCount <= 0 ? 'only-add' : ''}} {{!showBackToTop ? 'no-back-top' : ''}} {{showSetting || showReport || showTimeline || showBatchDelete ? 'action-hidden' : ''}}">
       <!-- 新增资产悬浮按钮 -->
       <view class="add-asset-fab" bindtap="goToAdd">
         <image class="fab-icon-img" src="/images/add.svg" mode="aspectFit"></image>
