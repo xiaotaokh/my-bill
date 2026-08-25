@@ -521,6 +521,61 @@ Page({
     await this.loadCategories();
     await this.loadAssets();
 
+    // 统计视图下，刷新当前展开的分类资产列表（从详情页编辑返回时保持数据最新）
+    if (this.data.showReport) {
+      const assets = this.data.assets || [];
+      if (this.data.selectedCategoryLabel) {
+        const label = this.data.selectedCategoryLabel;
+        this.setData({
+          selectedCategoryAssets: assets
+            .filter(a => (a.category || '未分类') === label)
+            .map(a => this.getChartAssetInfo(a))
+        });
+      }
+      if (this._lastLineLabel) {
+        const label = this._lastLineLabel;
+        const freshAssets = assets
+          .filter(a => {
+            const d = new Date(a.purchaseDate);
+            if (isNaN(d.getTime())) return false;
+            const dateKey = d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
+            return dateKey === label;
+          })
+          .map(a => this.getChartAssetInfo(a));
+        if (this.lineDateAssetsMap) {
+          this.lineDateAssetsMap[label] = freshAssets;
+        }
+        this.setData({ selectedLineAssets: freshAssets });
+      }
+      if (this._lastPeriodLabel) {
+        const label = this._lastPeriodLabel;
+        const { activeTimePeriod, activeGranularity } = this.data;
+        const freshAssets = assets
+          .filter(a => {
+            const d = new Date(a.purchaseDate);
+            if (isNaN(d.getTime())) return false;
+            if (activeTimePeriod === 'all') {
+              if (activeGranularity === 'year') return d.getFullYear().toString() === label;
+              if (activeGranularity === 'quarter') {
+                const q = Math.floor(d.getMonth() / 3) + 1;
+                return d.getFullYear() + 'Q' + q === label;
+              }
+              if (activeGranularity === 'month') {
+                const m = d.getMonth() + 1;
+                return d.getFullYear() + '-' + String(m).padStart(2, '0') === label;
+              }
+            }
+            return this.getTimePeriodLabel(activeTimePeriod) === label;
+          })
+          .map(a => this.getChartAssetInfo(a));
+        const ts = this.data.timePeriodStats;
+        if (ts && ts.data) {
+          const item = ts.data.find(d => d.label === label);
+          if (item) item.assets = freshAssets;
+        }
+        this.setData({ selectedPeriodAssets: freshAssets });
+      }
+    }
     // 时间轴视图活跃时刷新时间轴数据（loadAssets 完成后 assets 已是最新数据）
     if (this.data.showTimeline) {
       this.loadTimelineData();
@@ -1048,6 +1103,9 @@ Page({
       totalInvestment: asset.totalInvestment || '0.00',
       periodAmountDisplay: asset.periodAmountDisplay || '',
       periodTypeDisplay: asset.periodTypeDisplay || '',
+      _id: asset.id || '',
+      icon: asset.icon || '',
+      displayIcon: asset.icon && asset.icon.startsWith('http') ? asset.icon : '',
       excludeTotal: asset.excludeTotal === true || asset.excludeTotal === 'true',
       excludeDaily: asset.excludeDaily === true || asset.excludeDaily === 'true'
     };
@@ -2411,6 +2469,7 @@ Page({
         const dateKey = dates[dataIndex];
         const dayAssets = this.lineDateAssetsMap[dateKey] || [];
         if (!dayAssets.length) return;
+        this._lastLineLabel = dateKey;
         this.setData({
           selectedLineLabel: dateKey,
           selectedLineAssets: dayAssets
@@ -2679,6 +2738,7 @@ Page({
         if (dataIndex < 0 || dataIndex >= timePeriodStats.data.length) return;
         const dataItem = timePeriodStats.data[dataIndex];
         if (!dataItem || !dataItem.assets) return;
+        this._lastPeriodLabel = dataItem.label;
         this.setData({
           selectedPeriodLabel: dataItem.label,
           selectedPeriodAssets: dataItem.assets

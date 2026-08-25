@@ -1034,8 +1034,8 @@
 }
 
 .asset-avatar {
-  width: 72rpx;
-  height: 72rpx;
+  width: 68rpx;
+  height: 68rpx;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1050,7 +1050,7 @@
 }
 
 .avatar-icon {
-  font-size: 40rpx;
+  font-size: 54rpx;
   line-height: 1;
 }
 
@@ -3376,6 +3376,10 @@
   gap: 16rpx;
 }
 
+.period-asset-scroll {
+  max-height: 800rpx;
+}
+
 .period-asset-close {
   font-size: 24rpx;
   color: var(--text-hint);
@@ -3407,8 +3411,10 @@
 
 .category-inline-asset-list .period-asset-item {
   padding: 12rpx 0;
-  border-bottom: 0;
+  border-bottom: 1rpx solid var(--border-light);
 }
+
+
 
 .period-asset-top {
   display: flex;
@@ -3430,6 +3436,49 @@
   width: 28rpx;
   height: 28rpx;
   flex-shrink: 0;
+}
+
+.period-asset-bottom {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 12rpx;
+}
+
+.period-asset-thumb {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-page);
+}
+
+.period-asset-thumb-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.period-asset-thumb-icon {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  line-height: 1;
+}
+
+.period-asset-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
 .period-asset-name {
@@ -3503,7 +3552,6 @@
   align-items: center;
   gap: 8rpx;
   width: 100%;
-  padding-left: 38rpx;
   box-sizing: border-box;
 }
 
@@ -3522,7 +3570,7 @@
 }
 
 .period-category-tag {
-  gap: 5rpx;
+  gap: 8rpx;
   color: var(--text-muted);
   background: var(--bg-subtle);
   border: 1rpx solid var(--border-light);
@@ -3563,7 +3611,7 @@
 .period-asset-date {
   display: block;
   width: 100%;
-  padding-left: 38rpx;
+  padding-left: 10rpx;
   box-sizing: border-box;
   font-size: 20rpx;
   line-height: 1.4;
@@ -3575,7 +3623,6 @@
   flex-wrap: wrap;
   gap: 10rpx;
   width: 100%;
-  padding-left: 38rpx;
   box-sizing: border-box;
 }
 

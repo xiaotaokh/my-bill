@@ -869,7 +869,8 @@
                   <text class="period-asset-close" catchtap="closeCategoryAssets">✕</text>
                 </view>
               </view>
-              <view class="period-asset-item" wx:for="{{selectedCategoryAssets}}" wx:key="name" wx:for-item="asset">
+              <scroll-view scroll-y class="period-asset-scroll">
+              <view class="period-asset-item" wx:for="{{selectedCategoryAssets}}" wx:key="name" wx:for-item="asset" bindtap="goToDetail" data-id="{{asset._id}}">
                 <view class="period-asset-top">
                   <view class="period-asset-main">
                     <image
@@ -883,6 +884,12 @@
                     class="period-asset-status {{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? 'pending' : asset.subscriptionStatus === 'ended' ? 'ended' : 'subscribing') : asset.status}}"
                   >{{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? '待生效' : asset.subscriptionStatus === 'ended' ? '已结束' : '订阅中') : (asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出')}}</text>
                 </view>
+                <view class="period-asset-bottom">
+                  <view class="period-asset-thumb">
+                    <image wx:if="{{asset.displayIcon}}" class="period-asset-thumb-img" src="{{asset.displayIcon}}" mode="aspectFill"></image>
+                    <text wx:else class="period-asset-thumb-icon">{{asset.icon || '📦'}}</text>
+                  </view>
+                  <view class="period-asset-info">
                 <view class="period-asset-meta">
                   <view class="period-category-tag">
                     <image wx:if="{{asset.categoryIconUrl}}" class="period-category-icon-img" src="{{asset.categoryIconUrl}}" mode="aspectFit"></image>
@@ -943,7 +950,10 @@
                     </view>
                   </block>
                 </view>
+                </view>
               </view>
+              </view>
+            </scroll-view>
             </view>
           </view>
         </view>
@@ -966,7 +976,8 @@
               <text class="period-asset-close" bindtap="closeLineAssets">✕</text>
             </view>
           </view>
-          <view class="period-asset-item" wx:for="{{selectedLineAssets}}" wx:key="name" wx:for-item="asset">
+          <scroll-view scroll-y class="period-asset-scroll">
+          <view class="period-asset-item" wx:for="{{selectedLineAssets}}" wx:key="name" wx:for-item="asset" bindtap="goToDetail" data-id="{{asset._id}}">
             <view class="period-asset-top">
               <view class="period-asset-main">
                 <image
@@ -980,6 +991,12 @@
                 class="period-asset-status {{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? 'pending' : asset.subscriptionStatus === 'ended' ? 'ended' : 'subscribing') : asset.status}}"
               >{{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? '待生效' : asset.subscriptionStatus === 'ended' ? '已结束' : '订阅中') : (asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出')}}</text>
             </view>
+                <view class="period-asset-bottom">
+                  <view class="period-asset-thumb">
+                    <image wx:if="{{asset.displayIcon}}" class="period-asset-thumb-img" src="{{asset.displayIcon}}" mode="aspectFill"></image>
+                    <text wx:else class="period-asset-thumb-icon">{{asset.icon || '📦'}}</text>
+                  </view>
+                  <view class="period-asset-info">
             <view class="period-asset-meta">
               <view class="period-category-tag">
                 <image wx:if="{{asset.categoryIconUrl}}" class="period-category-icon-img" src="{{asset.categoryIconUrl}}" mode="aspectFit"></image>
@@ -1040,7 +1057,10 @@
                 </view>
               </block>
             </view>
+                </view>
+              </view>
           </view>
+          </scroll-view>
         </view>
       </view>
 
@@ -1104,7 +1124,8 @@
               <text class="period-asset-close" bindtap="closePeriodAssets">✕</text>
             </view>
           </view>
-          <view class="period-asset-item" wx:for="{{selectedPeriodAssets}}" wx:key="name" wx:for-item="asset">
+          <scroll-view scroll-y class="period-asset-scroll">
+          <view class="period-asset-item" wx:for="{{selectedPeriodAssets}}" wx:key="name" wx:for-item="asset" bindtap="goToDetail" data-id="{{asset._id}}">
             <view class="period-asset-top">
               <view class="period-asset-main">
                 <image
@@ -1118,6 +1139,12 @@
                 class="period-asset-status {{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? 'pending' : asset.subscriptionStatus === 'ended' ? 'ended' : 'subscribing') : asset.status}}"
               >{{asset.assetType === 'subscription' ? (asset.subscriptionStatus === 'pending' ? '待生效' : asset.subscriptionStatus === 'ended' ? '已结束' : '订阅中') : (asset.status === 'active' ? '服役中' : asset.status === 'retired' ? '已退役' : '已卖出')}}</text>
             </view>
+                <view class="period-asset-bottom">
+                  <view class="period-asset-thumb">
+                    <image wx:if="{{asset.displayIcon}}" class="period-asset-thumb-img" src="{{asset.displayIcon}}" mode="aspectFill"></image>
+                    <text wx:else class="period-asset-thumb-icon">{{asset.icon || '📦'}}</text>
+                  </view>
+                  <view class="period-asset-info">
             <view class="period-asset-meta">
               <view class="period-category-tag">
                 <image wx:if="{{asset.categoryIconUrl}}" class="period-category-icon-img" src="{{asset.categoryIconUrl}}" mode="aspectFit"></image>
@@ -1178,7 +1205,10 @@
                 </view>
               </block>
             </view>
+                </view>
+              </view>
           </view>
+          </scroll-view>
         </view>
 
         <!-- 空状态提示 -->
