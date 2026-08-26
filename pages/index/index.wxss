@@ -587,7 +587,7 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 0;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .category-pill:active {
@@ -2529,7 +2529,7 @@
   min-height: 100vh;
   background: linear-gradient(180deg, var(--bg-subtle) 0%, var(--bg-subtle) 100%);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   animation: reportFadeIn 0.4s ease-out;
 }
 
@@ -2764,6 +2764,8 @@
   box-shadow: var(--shadow-neumorph);
 }
 
+
+
 .main-asset-card.daily-main {
   background: var(--success);
 }
@@ -2832,6 +2834,7 @@
   background: rgba(var(--text-inverse-rgb), 0.03);
   border-radius: 16rpx;
 }
+
 
 .overview-item.daily {
   background: var(--success-bg);
@@ -2981,6 +2984,7 @@
 .status-item.sold {
   background: var(--warning-bg);
 }
+
 
 .status-icon {
   width: 48rpx;
@@ -4884,4 +4888,71 @@
 .timeline-back-top-fab .fab-label {
   font-size: 18rpx;
   color: var(--text-muted);
+}
+
+/* 卡片选中激活阴影（使用背景色的更深色号，适配所有主题） */
+.main-asset-card.overview-active {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  box-shadow: 0 0 24rpx rgba(var(--primary-700-rgb), 0.7), var(--shadow-neumorph);
+}
+
+.overview-item.included-total.overview-active {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  box-shadow: 0 0 16rpx rgba(var(--primary-600-rgb), 0.6);
+}
+
+.overview-item.exclude.overview-active {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  box-shadow: 0 0 16rpx rgba(var(--neutral-500-rgb), 0.6);
+}
+
+.status-item.active.status-active {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  box-shadow: 0 0 16rpx rgba(var(--success-rgb), 0.6);
+}
+
+.status-item.pending.status-active {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  box-shadow: 0 0 16rpx rgba(var(--primary-600-rgb), 0.5);
+}
+
+.status-item.retired.status-active {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  box-shadow: 0 0 16rpx rgba(var(--neutral-500-rgb), 0.6);
+}
+
+.status-item.sold.status-active {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  box-shadow: 0 0 16rpx rgba(var(--warning-rgb), 0.5);
+}
+
+.period-asset-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 20rpx;
+  color: var(--text-hint);
+  font-size: 26rpx;
+  gap: 20rpx;
+}
+
+.period-asset-empty-icon {
+  width: 100rpx;
+  height: 100rpx;
+  opacity: 0.35;
 }

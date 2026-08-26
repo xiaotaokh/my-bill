@@ -143,6 +143,10 @@ Page({
     selectedLineAssets: [],
     selectedPeriodLabel: '',
     selectedPeriodAssets: [],
+    selectedOverviewLabel: '',
+    selectedOverviewAssets: [],
+    selectedStatusLabel: '',
+    selectedStatusAssets: [],
 
     // 环形图中间文字
     pieCenterText: '',
@@ -524,6 +528,29 @@ Page({
     // 统计视图下，刷新当前展开的分类资产列表（从详情页编辑返回时保持数据最新）
     if (this.data.showReport) {
       const assets = this.data.assets || [];
+      if (this.data.selectedOverviewLabel) {
+        const type = this.data.selectedOverviewLabel;
+        let filtered;
+        switch (type) {
+          case 'all': filtered = assets; break;
+          case 'included': filtered = assets.filter(a => !(a.excludeTotal === true || a.excludeTotal === 'true')); break;
+          case 'excluded': filtered = assets.filter(a => a.excludeTotal === true || a.excludeTotal === 'true'); break;
+          default: filtered = [];
+        }
+        this.setData({ selectedOverviewAssets: filtered.map(a => this.getChartAssetInfo(a)) });
+      }
+      if (this.data.selectedStatusLabel) {
+        const status = this.data.selectedStatusLabel;
+        let filtered;
+        switch (status) {
+          case 'active': filtered = assets.filter(a => { if (a.assetType === 'subscription') return a.subscriptionStatus !== 'pending' && a.subscriptionStatus !== 'ended'; return a.status === 'active'; }); break;
+          case 'pending': filtered = assets.filter(a => a.assetType === 'subscription' && a.subscriptionStatus === 'pending'); break;
+          case 'retired': filtered = assets.filter(a => { if (a.assetType === 'subscription') return a.subscriptionStatus === 'ended'; return a.status === 'retired'; }); break;
+          case 'sold': filtered = assets.filter(a => a.assetType !== 'subscription' && a.status === 'sold'); break;
+          default: filtered = [];
+        }
+        this.setData({ selectedStatusAssets: filtered.map(a => this.getChartAssetInfo(a)) });
+      }
       if (this.data.selectedCategoryLabel) {
         const label = this.data.selectedCategoryLabel;
         this.setData({
@@ -766,6 +793,7 @@ Page({
         const hex = cardBgColors[(i * 7) % cardBgColors.length];
         a._cardBg = hex;
       });
+      assets.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
       this.setData({ assets, isLoading: false });
 
       // 应用筛选
@@ -2030,7 +2058,8 @@ Page({
       // 使用 calculateAssetFields 处理每个资产，复用首页的计算逻辑
       const enrichedAssets = assets.map(a => this.calculateAssetFields(a));
 
-      this.sortAssetsByPurchaseDateDesc(enrichedAssets).forEach(asset => {
+      const sortedEnriched = this.sortAssetsByPurchaseDateDesc(enrichedAssets);
+      sortedEnriched.forEach(asset => {
         const cat = asset.category || '未分类';
         const price = this.getAssetAmountForStats(asset);
         const dailyCost = this.getAssetDailyForReport(asset);
@@ -2097,7 +2126,7 @@ Page({
       this.setData({
         reportLoading: false,
         reportEmpty: assets.length === 0,
-        reportAssets: enrichedAssets,
+        reportAssets: sortedEnriched,
         reportTotalAssets: assets.length,
         reportTotalPrice: allTotalPrice.toFixed(2),
         reportAllTotalPrice: allTotalPrice.toFixed(2),
@@ -2347,6 +2376,77 @@ Page({
 
   closeCategoryAssets() {
     this.setData({ selectedCategoryLabel: '', selectedCategoryAssets: [] });
+  },
+
+  toggleOverviewAssets(e) {
+    const type = e.currentTarget.dataset.type;
+    if (!type) return;
+    if (this.data.selectedOverviewLabel === type) {
+      this.setData({ selectedOverviewLabel: '', selectedOverviewAssets: [] });
+      return;
+    }
+    const assets = this.data.reportAssets || this.data.assets || [];
+    let filtered;
+    switch (type) {
+      case 'all':
+        filtered = assets;
+        break;
+      case 'included':
+        filtered = assets.filter(a => !(a.excludeTotal === true || a.excludeTotal === 'true'));
+        break;
+      case 'excluded':
+        filtered = assets.filter(a => a.excludeTotal === true || a.excludeTotal === 'true');
+        break;
+      default:
+        filtered = [];
+    }
+    const mapped = filtered.map(a => this.getChartAssetInfo(a));
+    this.setData({
+      selectedOverviewLabel: type,
+      selectedOverviewAssets: mapped,
+      selectedStatusLabel: '',
+      selectedStatusAssets: []
+    });
+  },
+
+  toggleStatusAssets(e) {
+    const status = e.currentTarget.dataset.status;
+    if (!status) return;
+    if (this.data.selectedStatusLabel === status) {
+      this.setData({ selectedStatusLabel: '', selectedStatusAssets: [] });
+      return;
+    }
+    const assets = this.data.reportAssets || this.data.assets || [];
+    let filtered;
+    switch (status) {
+      case 'active':
+        filtered = assets.filter(a => {
+          if (a.assetType === 'subscription') return a.subscriptionStatus !== 'pending' && a.subscriptionStatus !== 'ended';
+          return a.status === 'active';
+        });
+        break;
+      case 'pending':
+        filtered = assets.filter(a => a.assetType === 'subscription' && a.subscriptionStatus === 'pending');
+        break;
+      case 'retired':
+        filtered = assets.filter(a => {
+          if (a.assetType === 'subscription') return a.subscriptionStatus === 'ended';
+          return a.status === 'retired';
+        });
+        break;
+      case 'sold':
+        filtered = assets.filter(a => a.assetType !== 'subscription' && a.status === 'sold');
+        break;
+      default:
+        filtered = [];
+    }
+    const mapped = filtered.map(a => this.getChartAssetInfo(a));
+    this.setData({
+      selectedStatusLabel: status,
+      selectedStatusAssets: mapped,
+      selectedOverviewLabel: '',
+      selectedOverviewAssets: []
+    });
   },
 
   initLineChart() {

@@ -74,6 +74,9 @@ const themes = {
 
       // RGB 变量（用于 rgba）
       primary600Rgb: '79, 70, 229',
+      primary700Rgb: '55, 48, 163',
+      neutral500Rgb: '100, 116, 139',
+      successRgb: '4, 120, 87',
       errorRgb: '239, 68, 68',
       warningRgb: '180, 83, 9',
       neutral900Rgb: '30, 41, 59',
@@ -214,6 +217,9 @@ const themes = {
 
       // RGB 变量（用于 rgba）
       primary600Rgb: '163, 132, 114',
+      primary700Rgb: '139, 111, 94',
+      neutral500Rgb: '142, 138, 133',
+      successRgb: '79, 117, 96',
       errorRgb: '155, 82, 72',
       warningRgb: '138, 100, 56',
       neutral900Rgb: '44, 42, 40',
@@ -354,6 +360,9 @@ const themes = {
 
       // RGB 变量
       primary600Rgb: '201, 169, 98',
+      primary700Rgb: '184, 134, 11',
+      neutral500Rgb: '163, 163, 163',
+      successRgb: '74, 222, 128',
       errorRgb: '248, 113, 113',
       warningRgb: '251, 191, 36',
       neutral900Rgb: '245, 245, 245',
@@ -495,6 +504,9 @@ const themes = {
 
       // RGB 变量
       primary600Rgb: '5, 150, 105',
+      primary700Rgb: '6, 95, 70',
+      neutral500Rgb: '59, 122, 90',
+      successRgb: '4, 120, 87',
       errorRgb: '239, 68, 68',
       warningRgb: '180, 83, 9',
       neutral900Rgb: '20, 83, 45',
@@ -635,6 +647,9 @@ const themes = {
 
       // RGB 变量
       primary600Rgb: '234, 88, 12',
+      primary700Rgb: '194, 65, 12',
+      neutral500Rgb: '138, 96, 80',
+      successRgb: '21, 128, 61',
       errorRgb: '239, 68, 68',
       warningRgb: '180, 83, 9',
       neutral900Rgb: '67, 20, 7',
@@ -775,6 +790,9 @@ const themes = {
 
       // RGB 变量
       primary600Rgb: '139, 92, 246',
+      primary700Rgb: '91, 33, 182',
+      neutral500Rgb: '76, 29, 149',
+      successRgb: '4, 120, 87',
       errorRgb: '239, 68, 68',
       warningRgb: '180, 83, 9',
       neutral900Rgb: '30, 27, 75',
