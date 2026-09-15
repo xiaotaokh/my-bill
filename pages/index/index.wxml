@@ -80,6 +80,18 @@
 </template>
 
 <view class="container theme-{{currentThemeKey}}" style="{{themeStyle}}">
+
+  <!-- 管理员模拟用户横幅 -->
+  <view wx:if="{{showAdminBanner}}" class="admin-banner" catchtap="switchBackToAdmin">
+    <view class="admin-banner-inner">
+      <text class="admin-banner-icon">🔍</text>
+      <view class="admin-banner-text">
+        <text class="admin-banner-title">正在查看用户「{{adminTargetName}}」的数据</text>
+        <text class="admin-banner-action">点击返回管理后台</text>
+      </view>
+      <text class="admin-banner-arrow">›</text>
+    </view>
+  </view>
   <!-- 欢迎提示弹窗 -->
   <view class="welcome-toast {{showWelcomeToast ? 'show' : ''}}" bindtap="hideWelcomeToast">
     <view class="welcome-toast-inner">

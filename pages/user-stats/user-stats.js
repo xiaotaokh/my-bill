@@ -56,8 +56,8 @@ Page({
     sortOptions: [
       { label: '最近访问', value: 'lastAccess' },
       { label: '资产数量', value: 'assetCount' },
-      { label: '活跃度', value: 'activity' }
-    ],
+      { label: '活跃度', value: 'activity' },
+      { label: '访问次数', value: 'visitCount' },    ],
     sortIndex: 0,
 
     // 统计数据
@@ -162,6 +162,7 @@ Page({
       );
     }
 
+
     // 排序
     const sortValue = this.data.sortOptions[this.data.sortIndex].value;
     filtered.sort((a, b) => {
@@ -172,10 +173,10 @@ Page({
       } else if (sortValue === 'assetCount') {
         return (b.assetCount || 0) - (a.assetCount || 0);
       } else if (sortValue === 'activity') {
-        // 活跃度排序：high > medium > low
         const order = { high: 3, medium: 2, low: 1 };
         return (order[b.activityLevel] || 0) - (order[a.activityLevel] || 0);
-      }
+      } else if (sortValue === 'visitCount') {
+        return (b.totalVisitCount || 0) - (a.totalVisitCount || 0);      }
       return 0;
     });
 
@@ -183,32 +184,35 @@ Page({
   },
 
   // 计算活跃度等级
-  calculateActivityLevel(lastAccessTime) {
+  calculateActivityLevel(lastAccessTime, thirtyDayVisitCount) {
     if (!lastAccessTime) return { level: 'low', text: '低活跃' };
 
     const now = new Date();
     const last = new Date(lastAccessTime);
     const daysDiff = Math.floor((now - last) / (1000 * 60 * 60 * 24));
+    const freq = thirtyDayVisitCount || 0;
 
-    if (daysDiff <= 7) {
+    // 高活跃 = 近7天访问 且 近30天≥3次
+    if (daysDiff <= 7 && freq >= 3) {
       return { level: 'high', text: '高活跃' };
-    } else if (daysDiff <= 21) {
-      return { level: 'medium', text: '中活跃' };
-    } else {
-      return { level: 'low', text: '低活跃' };
     }
+    // 中活跃 = 近30天有访问但不满足高活跃条件
+    if (daysDiff <= 30 && freq >= 1) {
+      return { level: 'medium', text: '中活跃' };
+    }
+    // 低活跃 = 超30天未访问或无访问记录
+    return { level: 'low', text: '低活跃' };
   },
-
-  // 计算统计数据
   calculateStats(users) {
     const now = new Date();
 
-    // 活跃用户（7天内访问）
+    // 活跃客户 = 近7天访问 + 近30天≥3次
     const activeUsers = users.filter(user => {
       if (!user.lastAccessTime) return false;
       const last = new Date(user.lastAccessTime);
       const daysDiff = Math.floor((now - last) / (1000 * 60 * 60 * 24));
-      return daysDiff <= 7;
+      const freq = user.thirtyDayVisitCount || 0;
+      return daysDiff <= 7 && freq >= 3;
     });
 
     // 资产总数
@@ -261,7 +265,7 @@ Page({
         }
 
         // 计算活跃度
-        const activity = this.calculateActivityLevel(user.lastAccessTime);
+        const activity = this.calculateActivityLevel(user.lastAccessTime, user.thirtyDayVisitCount || 0);
 
         // 判断是否今日访问
         var userLastDate = '';
@@ -298,7 +302,9 @@ Page({
           firstAccessText: this.formatTime(user.firstAccessTime),
           lastAccessText: this.formatTime(user.lastAccessTime),
           activityLevel: activity.level,
+          totalVisitCount: user.totalVisitCount || 0,
           activityLevelText: activity.text,
+          todayVisitCount: user.todayVisitCount || 0,
           isTodayAccess: isTodayAccess,
           assets: assets,
           totalAssetPriceText: totalAssetPriceText,
@@ -405,7 +411,7 @@ Page({
             avatarUrl = getDefaultAvatar(user._openid);
           }
 
-          var activity = self.calculateActivityLevel(user.lastAccessTime);
+          var activity = self.calculateActivityLevel(user.lastAccessTime, user.thirtyDayVisitCount || 0);
 
           var userLastDate = '';
           if (user.lastAccessTime) {
@@ -437,7 +443,9 @@ Page({
             firstAccessText: self.formatTime(user.firstAccessTime),
             lastAccessText: self.formatTime(user.lastAccessTime),
             activityLevel: activity.level,
+            totalVisitCount: user.totalVisitCount || 0,
             activityLevelText: activity.text,
+            todayVisitCount: user.todayVisitCount || 0,
             isTodayAccess: isTodayAccess,
             assets: assets,
             totalAssetPriceText: totalAssetPriceText,
@@ -1025,7 +1033,7 @@ Page({
     var high = 0, medium = 0, low = 0;
 
     users.forEach(function(u) {
-      var level = this.calculateActivityLevel(u.lastAccessTime);
+      var level = this.calculateActivityLevel(u.lastAccessTime, u.thirtyDayVisitCount || 0);
       if (level.level === 'high') high++;
       else if (level.level === 'medium') medium++;
       else low++;
@@ -1173,6 +1181,36 @@ Page({
     }).catch(err => {
       wx.hideLoading();
       wx.showToast({ title: '身份验证失败', icon: 'none' });
+    });
+  },
+
+  // 切换为指定用户的身份（管理员模拟用户）
+  // 跳转到资产详情
+  goToDetail(e) {
+    const assetId = e.currentTarget.dataset.id;
+    if (assetId) {
+      wx.navigateTo({ url: "/pages/asset-detail/asset-detail?id=" + assetId });
+    }
+  },
+  switchToUser(e) {
+    const openid = e.currentTarget.dataset.openid;
+    const name = e.currentTarget.dataset.name;
+    const app = getApp();
+
+    wx.showModal({
+      title: '切换用户',
+      content: `将以「${name}」的身份查看小程序，当前页面的数据将关闭。确定切换？`,
+      confirmText: '切换',
+      confirmColor: '#3B82F6',
+      success: (res) => {
+        if (res.confirm) {
+          app.switchToUser(openid, name);
+          wx.showToast({ title: `已切换到「${name}」`, icon: 'success', duration: 1500 });
+          setTimeout(() => {
+            wx.reLaunch({ url: '/pages/index/index' });
+          }, 1600);
+        }
+      }
     });
   }
 });

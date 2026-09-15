@@ -60,9 +60,34 @@ App({
     return this.globalData.openidPromise;
   },
 
+  // 切换为指定用户的身份（管理员模拟用户）
+  switchToUser(targetOpenid, targetName) {
+    this.globalData.adminOpenid = this.globalData.openid;
+    this.globalData.isAdminMode = true;
+    this.globalData.openid = targetOpenid;
+    this.globalData.openidPromise = null;
+    this.globalData.userInfo = null;
+    this.globalData.adminTargetName = targetName || '';
+  },
+
+  // 切换回管理员身份
+  switchBackToAdmin() {
+    if (this.globalData.adminOpenid) {
+      this.globalData.openid = this.globalData.adminOpenid;
+    }
+    this.globalData.isAdminMode = false;
+    this.globalData.adminOpenid = null;
+    this.globalData.openidPromise = null;
+    this.globalData.userInfo = null;
+    this.globalData.adminTargetName = '';
+  },
+
   globalData: {
     userInfo: null,
     openid: null,
-    openidPromise: null  // 保存 openid 的 Promise
+    openidPromise: null,  // 保存 openid 的 Promise
+    adminOpenid: null,    // 管理员的原始 openid（模拟用户时保存）
+    isAdminMode: false,   // 是否处于模拟用户模式
+    adminTargetName: ''   // 被模拟用户的名称
   }
 })

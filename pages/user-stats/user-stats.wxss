@@ -808,6 +808,14 @@ page {
   color: var(--text-hint);
 }
 
+.visit-count-badge {
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  background: var(--color-primary-light, #EBF5FF);
+  color: var(--color-primary, #3B82F6);
+}
 /* 用户资产统计摘要 */
 .user-asset-summary {
   display: flex;
@@ -906,139 +914,293 @@ page {
 }
 
 /* 用户资产列表区域 */
-.user-assets-section {
-  padding: 0 24rpx 24rpx;
+/* 资产列表容器 — 与统计页面样式保持一致 */
+.period-asset-list {
+  margin: 0 24rpx 24rpx;
+  padding: 20rpx;
+  background: var(--bg-card);
+  border-radius: 12rpx;
+  border: 1rpx solid var(--border-default);
 }
 
-.assets-header {
+.period-asset-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12rpx 0;
-  border-top: 1rpx dashed var(--border-default);
-  margin-top: 8rpx;
+  padding-bottom: 16rpx;
+  margin-bottom: 12rpx;
+  border-bottom: 1rpx solid var(--border-default);
 }
 
-.assets-title {
+.period-asset-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.period-asset-title {
   font-size: 26rpx;
   font-weight: 600;
-  color: var(--primary-600);
+  color: var(--text-default);
 }
 
-.assets-count {
+.period-asset-count {
   font-size: 22rpx;
   color: var(--text-hint);
 }
 
-/* 资产项 */
-.asset-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 16rpx;
-  padding: 16rpx;
-  background: var(--bg-subtle);
-  border-radius: 12rpx;
-  margin-top: 12rpx;
-  transition: background 0.2s ease;
+.period-asset-scroll {
+  overflow-y: auto;
+  max-height: 800rpx;
 }
 
-.asset-item:active {
-  background: var(--bg-card);
-}
-
-.asset-icon-box {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.asset-icon {
-  font-size: 28rpx;
-  line-height: 1;
-}
-
-.asset-icon-img {
-  width: 100%;
-  height: 100%;
-}
-
-.asset-info {
-  flex: 1;
+/* 资产项 — 与统计页面样式保持一致 */
+.period-asset-item {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  padding: 16rpx 0;
+  gap: 10rpx;
+  border-bottom: 1rpx solid var(--border-light);
 }
 
-.asset-header {
+.period-asset-item:last-child {
+  border-bottom: 0;
+}
+
+.period-asset-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16rpx;
+  width: 100%;
+}
+
+.period-asset-main {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 10rpx;
 }
 
-.asset-name {
-  font-size: 26rpx;
+.period-asset-type-icon {
+  width: 28rpx;
+  height: 28rpx;
+  flex-shrink: 0;
+}
+
+.period-asset-name {
+  min-width: 0;
+  font-size: 24rpx;
   font-weight: 600;
   color: var(--text-default);
-  max-width: 180rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.asset-status-badge {
-  padding: 2rpx 8rpx;
-  border-radius: 8rpx;
+.period-asset-status {
+  flex-shrink: 0;
+  padding: 5rpx 12rpx;
+  border-radius: 999rpx;
   font-size: 18rpx;
-}
-
-.asset-status-badge.active {
-  background: var(--success-bg);
-  color: var(--primary-700);
-}
-
-.asset-status-badge.retired {
-  background: var(--warning-bg);
-  color: var(--warning);
-}
-
-.asset-status-badge.sold {
-  background: var(--bg-subtle);
+  font-weight: 600;
+  line-height: 1.2;
   color: var(--text-muted);
+  background: var(--bg-subtle);
+  border: 1rpx solid var(--border-light);
 }
 
-.asset-stats-row {
+.period-asset-status.active {
+  color: var(--success);
+  background: var(--success-bg);
+  border-color: rgba(var(--primary-600-rgb), 0.25);
+}
+
+.period-asset-status.subscribing {
+  color: var(--subscription);
+  background: var(--subscription-bg);
+  border-color: rgba(var(--subscription-rgb), 0.3);
+}
+
+.period-asset-status.pending {
+  color: var(--warning);
+  background: var(--warning-bg);
+  border-color: rgba(var(--warning-rgb), 0.3);
+}
+
+.period-asset-status.retired {
+  color: var(--warning);
+  background: var(--warning-bg);
+  border-color: rgba(var(--warning-rgb), 0.25);
+}
+
+.period-asset-status.ended {
+  color: var(--error);
+  background: var(--error-bg);
+  border-color: rgba(var(--error-rgb), 0.3);
+}
+
+.period-asset-status.sold {
+  color: var(--text-hint);
+  background: var(--bg-subtle);
+  border-color: var(--border-default);
+}
+
+.period-asset-bottom {
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  gap: 16rpx;
+  margin-top: 12rpx;
 }
 
-.asset-stat {
+.period-asset-thumb {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-page);
+}
+
+.period-asset-thumb-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.period-asset-thumb-icon {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  line-height: 1;
+}
+
+.period-asset-info {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2rpx;
+  gap: 8rpx;
 }
 
-.asset-stat .stat-label {
+.period-asset-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.period-category-tag,
+.period-exclude-tag {
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+  padding: 4rpx 10rpx;
+  border-radius: 999rpx;
+  font-size: 18rpx;
+  font-weight: 600;
+  line-height: 1.25;
+  box-sizing: border-box;
+}
+
+.period-category-tag {
+  gap: 8rpx;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  border: 1rpx solid var(--border-light);
+}
+
+.period-category-icon {
+  flex-shrink: 0;
+  font-size: 18rpx;
+  line-height: 1;
+}
+
+.period-category-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.period-exclude-tag {
+  flex-shrink: 0;
+  color: var(--error);
+  background: rgba(var(--error-rgb), 0.10);
+  border: 1rpx solid rgba(var(--error-rgb), 0.20);
+}
+
+.period-exclude-tag.daily {
+  color: var(--warning);
+  background: rgba(var(--warning-rgb), 0.10);
+  border-color: rgba(var(--warning-rgb), 0.20);
+}
+
+.period-asset-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.period-mini-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6rpx;
+  max-width: 100%;
+  padding: 6rpx 10rpx;
+  border-radius: 12rpx;
+  background: var(--bg-subtle);
+  border: 1rpx solid var(--border-light);
+  box-sizing: border-box;
+}
+
+.period-mini-stat.period-amount-stat {
+  background: rgba(var(--primary-600-rgb), 0.08);
+  border-color: rgba(var(--primary-600-rgb), 0.18);
+}
+
+.period-mini-label {
+  flex-shrink: 0;
+  font-size: 18rpx;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.period-mini-value {
+  min-width: 0;
   font-size: 20rpx;
-  color: var(--text-hint);
-}
-
-.asset-stat .stat-value {
-  font-size: 22rpx;
+  font-weight: 700;
   color: var(--text-default);
-  font-weight: 500;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.asset-stat .stat-value.cost {
+.period-mini-value.cost {
+  color: var(--success);
+}
+
+.period-mini-value.price {
   color: var(--primary-600);
 }
 
-/* 无资产提示 */
+.period-mini-stat.excluded .period-mini-label,
+.period-mini-stat.excluded .period-mini-value {
+  color: var(--text-hint);
+}
 .no-assets-tip {
   display: flex;
   flex-direction: column;

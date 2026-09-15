@@ -44,6 +44,10 @@ Page({
     showUserStats: false,
     isAdmin: false,
 
+    // 管理员模拟用户模式
+    showAdminBanner: false,
+    adminTargetName: '',
+
     // 用户头像和昵称（头部显示）
     userAvatar: '',
     userNickName: '',
@@ -211,6 +215,7 @@ Page({
     this.checkAdmin();
     this.checkUserAuth();
     this.initTheme();
+    this.checkAdminMode();
   },
 
   // 检查用户是否已授权 - 新用户自动分配随机头像昵称
@@ -261,6 +266,9 @@ Page({
 
   // 记录一次真实访问。日志写入失败不影响首页使用。
   async recordAccess(openid) {
+    // 管理员模拟用户时，不记录访问信息
+    var app = getApp();
+    if (app.globalData.isAdminMode) return;
     if (!openid) return;
     const accessTime = getChinaTimeISO();
 
@@ -300,6 +308,9 @@ Page({
 
   // 显示欢迎提示弹窗
   showWelcomeToast(message, subMessage = '', duration = 5) {
+    // 管理员模拟用户时，不显示欢迎提示
+    var app = getApp();
+    if (app.globalData.isAdminMode) return;
     const durationMs = duration * 1000 + WELCOME_ENTER_MS;
     this.setData({
       showWelcomeToast: true,
@@ -500,10 +511,16 @@ Page({
           showUserStats: true
         });
       } else {
-        this.setData({
+        // 非管理员身份：检查是否处于模拟用户模式
+        var resetData = {
           isAdmin: false,
           showUserStats: false
-        });
+        };
+        if (!app.globalData.isAdminMode) {
+          resetData.showAdminBanner = false;
+          resetData.adminTargetName = "";
+        }
+        this.setData(resetData);
       }
     }).catch(err => {
       this.setData({
@@ -1582,6 +1599,39 @@ Page({
     wx.navigateTo({ url: '/pages/user-stats/user-stats' });
   },
 
+
+  // 检测管理员模拟用户模式
+  checkAdminMode() {
+    var app = getApp();
+    if (app.globalData.isAdminMode) {
+      this.setData({
+        showAdminBanner: true,
+        adminTargetName: app.globalData.adminTargetName || ""
+      });
+    } else {
+      this.setData({ showAdminBanner: false });
+    }
+  },
+
+  // 切换回管理员身份
+  switchBackToAdmin() {
+    var app = getApp();
+    wx.showModal({
+      title: "返回管理后台",
+      content: "确定切换回管理员账号？",
+      confirmText: "返回",
+      confirmColor: "#3B82F6",
+      success: function(res) {
+        if (res.confirm) {
+          app.switchBackToAdmin();
+          wx.showToast({ title: "已返回管理员", icon: "success", duration: 1500 });
+          setTimeout(function() {
+            wx.reLaunch({ url: "/pages/index/index" });
+          }, 1600);
+        }
+      }
+    });
+  },
   navigateToAccount() {
     wx.navigateTo({ url: '/pages/account/account' });
   },
