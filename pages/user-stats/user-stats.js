@@ -369,6 +369,7 @@ Page({
       wx.showToast({ title: '网络错误', icon: 'none' });
       if (callback) callback();
     });
+    });
   },
 
   // 滚动到底部触发加载更多
@@ -500,6 +501,7 @@ Page({
         self.setData({ loadingMore: false });
         wx.showToast({ title: '网络错误', icon: 'none' });
       });
+    });
   },
 
   calculateAccessStats(users, accessStats) {
