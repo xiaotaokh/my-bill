@@ -53,7 +53,7 @@ serve(async (req) => {
 
     // 分页参数
     const page = Math.max(1, parseInt(body.page) || 1)
-    const pageSize = Math.min(50, Math.max(5, parseInt(body.pageSize) || 20))
+    const pageSize = Math.max(5, parseInt(body.pageSize) || 20)
     const offset = (page - 1) * pageSize
     const isFirstPage = page === 1
 
@@ -105,6 +105,7 @@ serve(async (req) => {
         .from('access_logs')
         .select('_openid')
         .in('_openid', recentOpenids)
+        .limit(5000)
         .gte('accessTime', thirtyDaysAgoUTC.toISOString())
 
       if (!activeLogsError && activeLogs) {
@@ -131,28 +132,31 @@ serve(async (req) => {
       )
     }
 
-    // 查询当前页用户的全部 access_logs，同时计算 thirtyDayVisitCount / totalVisitCount / todayVisitCount
+    // 查询当前页用户的 access_logs（分批避免 in() 超限），计算 visitCount
     const userOpenids = users.map(u => u._openid)
     let thirtyDayVisitCountMap: Record<string, number> = {}
     let totalVisitCountMap: Record<string, number> = {}
     let todayVisitCountMap: Record<string, number> = {}
     if (userOpenids.length > 0) {
-      const { data: allLogs, error: allLogsError } = await supabase
-        .from('access_logs')
-        .select('_openid, accessTime')
-        .in('_openid', userOpenids)
-
-      if (!allLogsError && allLogs) {
-        const todayStr = getTodayChinaDateStr()
-        allLogs.forEach(log => {
-          totalVisitCountMap[log._openid] = (totalVisitCountMap[log._openid] || 0) + 1
-          if (log.accessTime >= thirtyDaysAgoUTC.toISOString()) {
-            thirtyDayVisitCountMap[log._openid] = (thirtyDayVisitCountMap[log._openid] || 0) + 1
-          }
-          if (getChinaDateStr(log.accessTime) === todayStr) {
-            todayVisitCountMap[log._openid] = (todayVisitCountMap[log._openid] || 0) + 1
-          }
-        })
+      const todayStr = getTodayChinaDateStr()
+      const BATCH = 100
+      for (let i = 0; i < userOpenids.length; i += BATCH) {
+        const batch = userOpenids.slice(i, i + BATCH)
+        const { data: batchLogs } = await supabase
+          .from('access_logs')
+          .select('_openid, accessTime')
+          .in('_openid', batch)
+        if (batchLogs) {
+          batchLogs.forEach((log: any) => {
+            totalVisitCountMap[log._openid] = (totalVisitCountMap[log._openid] || 0) + 1
+            if (log.accessTime >= thirtyDaysAgoUTC.toISOString()) {
+              thirtyDayVisitCountMap[log._openid] = (thirtyDayVisitCountMap[log._openid] || 0) + 1
+            }
+            if (getChinaDateStr(log.accessTime) === todayStr) {
+              todayVisitCountMap[log._openid] = (todayVisitCountMap[log._openid] || 0) + 1
+            }
+          })
+        }
       }
     }
 
@@ -226,7 +230,7 @@ serve(async (req) => {
         .from('access_logs')
         .select('_openid, accessTime')
         .neq('_openid', ADMIN_OPENID)
-        .order('accessTime', { ascending: true })
+        .order('accessTime', { ascending: true }).limit(10000)
 
       if (!accessLogsError && accessLogs) {
         const todayDateStr = getTodayChinaDateStr()

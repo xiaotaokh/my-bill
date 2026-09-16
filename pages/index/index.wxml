@@ -33,13 +33,13 @@
             <block wx:if="{{asset.subscriptionStatus === 'ended'}}">
               <view class="period-mini-stat">
                 <text class="period-mini-label">折合每日</text>
-                <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}</text>
+                <text class="period-mini-value cost">¥{{asset._dailyEquivalentText}}</text>
               </view>
             </block>
             <block wx:else>
               <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
                 <text class="period-mini-label">日均成本</text>
-                <text class="period-mini-value cost">¥{{asset.dailyCost}}</text>
+                <text class="period-mini-value cost">¥{{asset._dailyCostText}}</text>
               </view>
             </block>
             <view class="period-mini-stat" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
@@ -48,20 +48,20 @@
             </view>
             <view class="period-mini-stat {{asset.excludeTotal ? 'excluded' : ''}}">
               <text class="period-mini-label">总投入</text>
-              <text class="period-mini-value price">¥{{asset.totalInvestment}}</text>
+              <text class="period-mini-value price">¥{{asset._priceText}}</text>
             </view>
           </block>
           <block wx:else>
             <block wx:if="{{asset.status === 'active'}}">
               <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
                 <text class="period-mini-label">日均成本</text>
-                <text class="period-mini-value cost">¥{{asset.dailyCost}}</text>
+                <text class="period-mini-value cost">¥{{asset._dailyCostText}}</text>
               </view>
             </block>
             <block wx:else>
               <view class="period-mini-stat">
                 <text class="period-mini-label">折合每日</text>
-                <text class="period-mini-value cost">¥{{asset.dailyEquivalent}}</text>
+                <text class="period-mini-value cost">¥{{asset._dailyEquivalentText}}</text>
               </view>
             </block>
             <view class="period-mini-stat">
@@ -70,7 +70,7 @@
             </view>
             <view class="period-mini-stat {{asset.excludeTotal ? 'excluded' : ''}}">
               <text class="period-mini-label">价格</text>
-              <text class="period-mini-value price">¥{{asset.price}}</text>
+              <text class="period-mini-value price">¥{{asset._priceText}}</text>
             </view>
           </block>
         </view>
@@ -355,12 +355,12 @@
                 <block wx:if="{{item.subscriptionStatus === 'ended'}}">
                   <view class="stat-item">
                     <text class="stat-label">折合每日</text>
-                    <text class="stat-value cost">¥{{item.dailyEquivalent}}</text>
+                    <text class="stat-value cost">¥{{item._dailyEquivalentText}}</text>
                   </view>
                   <view class="stat-divider"></view>
                   <view class="stat-item has-badge">
                     <text class="stat-label">日均成本</text>
-                    <text class="stat-value cost excluded">¥{{item.dailyCost}}</text>
+                    <text class="stat-value cost excluded">¥{{item._dailyCostText}}</text>
                     <text class="exclude-badge">不计入</text>
                   </view>
                   <view class="stat-divider"></view>
@@ -368,7 +368,7 @@
                 <block wx:else>
                   <view class="stat-item">
                     <text class="stat-label">日均成本</text>
-                    <text class="stat-value cost">¥{{item.dailyCost}}</text>
+                    <text class="stat-value cost">¥{{item._dailyCostText}}</text>
                   </view>
                   <view class="stat-divider"></view>
                 </block>
@@ -379,7 +379,7 @@
                 <view class="stat-divider" wx:if="{{item.subscriptionStatus !== 'pending'}}"></view>
                 <view class="stat-item {{item.excludeTotal ? 'has-badge' : ''}}">
                   <text class="stat-label">总投入</text>
-                  <text class="stat-value price {{item.excludeTotal ? 'excluded' : ''}}">¥{{item.totalInvestment}}</text>
+                  <text class="stat-value price {{item.excludeTotal ? 'excluded' : ''}}">¥{{item._priceText}}</text>
                   <text wx:if="{{item.excludeTotal}}" class="exclude-badge">不计入</text>
                 </view>
               </block>
@@ -388,7 +388,7 @@
                 <block wx:if="{{item.status === 'active'}}">
                   <view class="stat-item {{item.excludeDaily ? 'has-badge' : ''}}">
                     <text class="stat-label">日均成本</text>
-                    <text class="stat-value cost {{item.excludeDaily ? 'excluded' : 'included'}}">¥{{item.dailyCost}}</text>
+                    <text class="stat-value cost {{item.excludeDaily ? 'excluded' : 'included'}}">¥{{item._dailyCostText}}</text>
                     <text wx:if="{{item.excludeDaily}}" class="exclude-badge">不计入</text>
                   </view>
                   <view class="stat-divider"></view>
@@ -396,12 +396,12 @@
                 <block wx:else>
                   <view class="stat-item">
                     <text class="stat-label">折合每日</text>
-                    <text class="stat-value cost">¥{{item.dailyEquivalent}}</text>
+                    <text class="stat-value cost">¥{{item._dailyEquivalentText}}</text>
                   </view>
                   <view class="stat-divider"></view>
                   <view class="stat-item has-badge">
                     <text class="stat-label">日均成本</text>
-                    <text class="stat-value cost excluded">¥{{item.dailyCost}}</text>
+                    <text class="stat-value cost excluded">¥{{item._dailyCostText}}</text>
                     <text class="exclude-badge">不计入</text>
                   </view>
                   <view class="stat-divider"></view>
@@ -413,7 +413,7 @@
                 <view class="stat-divider"></view>
                 <view class="stat-item {{item.excludeTotal ? 'has-badge' : ''}}">
                   <text class="stat-label">价格</text>
-                  <text class="stat-value price {{item.excludeTotal ? 'excluded' : ''}}">¥{{item.price}}</text>
+                  <text class="stat-value price {{item.excludeTotal ? 'excluded' : ''}}">¥{{item._priceText}}</text>
                   <text wx:if="{{item.excludeTotal}}" class="exclude-badge">不计入</text>
                 </view>
               </block>
@@ -439,7 +439,7 @@
                   <text wx:else class="simple-avatar-icon">{{asset.icon || '📦'}}</text>
                 </view>
                 <text class="simple-name">{{asset.name}}</text>
-                <text class="simple-cost">¥{{asset.dailyCost}}</text>
+                <text class="simple-cost">¥{{asset._dailyCostText}}</text>
               </view>
             </view>
           </view>
@@ -651,7 +651,7 @@
               </view>
             </view>
             <view class="batch-asset-meta">
-              <text class="batch-asset-price">¥{{item._isSubscription ? item._batchPrice + '/' + item._batchPeriodInfo : item.price}}</text>
+              <text class="batch-asset-price">¥{{item._isSubscription ? item._batchPriceText + '/' + item._batchPeriodInfo : item._priceText}}</text>
               <text class="batch-asset-divider">·</text>
               <text class="batch-asset-date">{{item.dateRange}}</text>
               <text class="batch-asset-divider">·</text>
@@ -704,7 +704,7 @@
         <text class="summary-text">已选择</text>
         <text class="summary-count">{{selectedAssets.length}}</text>
         <text class="summary-text">项</text>
-        <text wx:if="{{selectedTotalPrice > 0}}" class="summary-price">¥{{selectedTotalPrice}}</text>
+        <text wx:if="{{selectedTotalPrice > 0}}" class="summary-price">¥{{_selectedTotalPriceText}}</text>
       </view>
       <view class="delete-btn-wrapper">
         <view class="delete-btn {{selectedAssets.length > 0 ? 'active' : 'disabled'}}" bindtap="confirmBatchDelete">
@@ -952,6 +952,101 @@
           <scroll-view wx:if="{{selectedStatusAssets.length > 0}}" scroll-y class="period-asset-scroll">
             <template is="assetItem" wx:for="{{selectedStatusAssets}}" wx:key="name" wx:for-item="asset" data="{{asset: asset}}"></template>
           </scroll-view>
+        </view>
+      </view>
+
+      <!-- 消费趋势对比 -->
+      <view class="report-chart-section">
+        <view class="section-header">
+          <view class="section-title-group">
+            <text class="section-title">消费趋势对比</text>
+          </view>
+          <image class="section-icon-svg" src="/images/trend-compare.svg" mode="aspectFit"></image>
+        </view>
+        <!-- 粒度选择 -->
+        <view class="comparison-tabs">
+          <view
+            class="comparison-tab {{comparisonGranularity === 'day' ? 'active' : ''}}"
+            bindtap="onComparisonGranularityChange"
+            data-granularity="day"
+          >日</view>
+          <view
+            class="comparison-tab {{comparisonGranularity === 'week' ? 'active' : ''}}"
+            bindtap="onComparisonGranularityChange"
+            data-granularity="week"
+          >周</view>
+          <view
+            class="comparison-tab {{comparisonGranularity === 'month' ? 'active' : ''}}"
+            bindtap="onComparisonGranularityChange"
+            data-granularity="month"
+          >月</view>
+          <view
+            class="comparison-tab {{comparisonGranularity === 'quarter' ? 'active' : ''}}"
+            bindtap="onComparisonGranularityChange"
+            data-granularity="quarter"
+          >季</view>
+          <view
+            class="comparison-tab {{comparisonGranularity === 'year' ? 'active' : ''}}"
+            bindtap="onComparisonGranularityChange"
+            data-granularity="year"
+          >年</view>
+        </view>
+        <view class="comparison-cards">
+          <view class="comparison-card mom-card">
+            <view class="comparison-card-header">
+              <image class="comparison-card-icon" src="/images/mom.svg" mode="aspectFit"></image>
+              <text class="comparison-card-title">环比</text>
+            </view>
+            <view class="comparison-card-body">
+              <view class="comparison-card-subtitle">
+                <text>{{comparisonCurrent.label}}</text>
+                <text class="comparison-card-vs">vs</text>
+                <text>{{comparisonPrevious.label}}</text>
+              </view>
+              <view class="comparison-card-values">
+                <text class="comparison-card-amount">¥{{comparisonCurrent.amountText}}</text>
+                <text wx:if="{{comparisonPrevious.changePercent}}" class="comparison-card-change {{comparisonPrevious.change > 0 ? 'up' : comparisonPrevious.change < 0 ? 'down' : 'flat'}}">{{comparisonPrevious.change > 0 ? '↑' : comparisonPrevious.change < 0 ? '↓' : ''}}{{comparisonPrevious.changePercent}}</text>
+              </view>
+              <view class="comparison-card-detail">
+                <text wx:if="{{comparisonPrevious.changePercent && comparisonPrevious.changePercent !== '新增' && comparisonPrevious.change > 0}}" class="comparison-detail-text up">↑¥{{comparisonPrevious.changeText}}</text>
+                <text wx:elif="{{comparisonPrevious.changePercent && comparisonPrevious.changePercent !== '新增' && comparisonPrevious.change === 0}}" class="comparison-detail-text flat">持平</text>
+                <text wx:elif="{{comparisonPrevious.changePercent && comparisonPrevious.changePercent !== '新增' && comparisonPrevious.changePercent !== '-100.0%' && comparisonPrevious.change < 0}}" class="comparison-detail-text down">↓¥{{comparisonPrevious.changeText}}</text>
+                <text wx:elif="{{comparisonPrevious.changePercent === '新增'}}" class="comparison-detail-text"></text>
+                <text wx:elif="{{comparisonPrevious.changePercent === '-100.0%' && comparisonPrevious.change < 0}}" class="comparison-detail-text"></text>
+                <text wx:else class="comparison-detail-text flat">无消费</text>
+                <text class="comparison-detail-label">¥{{comparisonPrevious.amountText}}</text>
+              </view>
+            </view>
+          </view>
+          <view class="comparison-card yoy-card" wx:if="{{comparisonShowYoY}}">
+            <view class="comparison-card-header">
+              <image class="comparison-card-icon" src="/images/yoy.svg" mode="aspectFit"></image>
+              <text class="comparison-card-title">同比</text>
+            </view>
+            <view class="comparison-card-body">
+              <view class="comparison-card-subtitle">
+                <text>{{comparisonCurrent.label}}</text>
+                <text class="comparison-card-vs">vs</text>
+                <text>{{comparisonYoY.label}}</text>
+              </view>
+              <view class="comparison-card-values">
+                <text class="comparison-card-amount">¥{{comparisonCurrent.amountText}}</text>
+                <text wx:if="{{comparisonYoY.changePercent}}" class="comparison-card-change {{comparisonYoY.change > 0 ? 'up' : comparisonYoY.change < 0 ? 'down' : 'flat'}}">{{comparisonYoY.change > 0 ? '↑' : comparisonYoY.change < 0 ? '↓' : ''}}{{comparisonYoY.changePercent}}</text>
+              </view>
+              <view class="comparison-card-detail">
+                <text wx:if="{{comparisonYoY.changePercent && comparisonYoY.changePercent !== '新增' && comparisonYoY.change > 0}}" class="comparison-detail-text up">↑¥{{comparisonYoY.changeText}}</text>
+                <text wx:elif="{{comparisonYoY.changePercent && comparisonYoY.changePercent !== '新增' && comparisonYoY.change === 0}}" class="comparison-detail-text flat">持平</text>
+                <text wx:elif="{{comparisonYoY.changePercent && comparisonYoY.changePercent !== '新增' && comparisonYoY.changePercent !== '-100.0%' && comparisonYoY.change < 0}}" class="comparison-detail-text down">↓¥{{comparisonYoY.changeText}}</text>
+                <text wx:elif="{{comparisonYoY.changePercent === '新增'}}" class="comparison-detail-text"></text>
+                <text wx:elif="{{comparisonYoY.changePercent === '-100.0%' && comparisonYoY.change < 0}}" class="comparison-detail-text"></text>
+                <text wx:else class="comparison-detail-text flat">无消费</text>
+                <text class="comparison-detail-label">¥{{comparisonYoY.amountText}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="comparison-summary">
+          <text class="comparison-summary-text">{{comparisonCurrent.label}}共 <text class="comparison-summary-count">{{comparisonCurrent.count}}</text> 件新增资产</text>
         </view>
       </view>
 
@@ -1267,7 +1362,7 @@
                       <!-- 日均成本 / 折合每日 -->
                       <view class="timeline-stat-item">
                         <text class="timeline-stat-label">{{(asset.assetType === 'subscription' && asset.subscriptionStatus === 'ended') || (asset.assetType !== 'subscription' && asset.status !== 'active') ? '折合每日' : '日均成本'}}</text>
-                        <text class="timeline-stat-value cost">¥{{(asset.assetType === 'subscription' && asset.subscriptionStatus === 'ended') || (asset.assetType !== 'subscription' && asset.status !== 'active') ? asset.dailyEquivalent : asset.dailyCost}}</text>
+                        <text class="timeline-stat-value cost">¥{{(asset.assetType === 'subscription' && asset.subscriptionStatus === 'ended') || (asset.assetType !== 'subscription' && asset.status !== 'active') ? asset._dailyEquivalentText : asset._dailyCostText}}</text>
                       </view>
                       <view class="timeline-stat-divider"></view>
                       <!-- 时长 -->
@@ -1279,7 +1374,7 @@
                       <!-- 金额 -->
                       <view class="timeline-stat-item">
                         <text class="timeline-stat-label">{{asset.assetType === 'subscription' ? '总投入' : '价格'}}</text>
-                        <text class="timeline-stat-value price">¥{{asset.assetType === 'subscription' ? asset.totalInvestment : asset.price}}</text>
+                        <text class="timeline-stat-value price">¥{{asset._priceText}}</text>
                       </view>
                     </view>
                   </view>

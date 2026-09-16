@@ -1214,6 +1214,8 @@ Page({
 
     if (!periodAmount || parseFloat(periodAmount) <= 0) {
       errors.periodAmount = '请输入有效的每期金额';
+    } else if (parseFloat(this.data.periodAmount) > 9999999999.99) {
+      errors.periodAmount = '每期金额不能超过 9,999,999,999.99';
     }
 
     if (pendingSubscription && !subscriptionStartDate) {
@@ -1246,6 +1248,8 @@ Page({
       // 订阅资产验证
       if (!this.data.periodAmount || parseFloat(this.data.periodAmount) <= 0) {
         errors.periodAmount = '请输入有效的每期金额';
+      } else if (parseFloat(this.data.periodAmount) > 9999999999.99) {
+        errors.periodAmount = '每期金额不能超过 9,999,999,999.99';
       }
       if (this.data.periodType === 'custom') {
         const days = parseInt(this.data.periodDays);
@@ -1262,6 +1266,8 @@ Page({
         errors.price = '请输入有效的价格';
       } else if (isNaN(formData.price)) {
         errors.price = '价格必须是数字';
+      } else if (parseFloat(formData.price) > 9999999999.99) {
+        errors.price = '价格不能超过 9,999,999,999.99';
       }
     }
 

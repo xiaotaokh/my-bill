@@ -8,6 +8,8 @@ const echarts = require('../../components/ec-canvas/echarts');
 const { themeManager } = require('../../utils/themeManager');
 // 引入 Supabase
 const { supabase, uploadFileToStorage, deleteStorageFile, getChinaTimeISO } = require('../../utils/supabase');
+
+const { formatCurrency } = require('../../utils/format');
 const { PRESET_AVATARS, PRESET_NICKNAMES } = require('../../utils/presetAvatars');
 const { isAdmin, ADMIN_OPENID } = require('../../utils/auth');
 
@@ -152,6 +154,14 @@ Page({
     selectedStatusLabel: '',
     selectedStatusAssets: [],
 
+    // 环比/同比
+    comparisonGranularity: 'month',
+    comparisonGranularityOptions: ['日', '周', '月', '季', '年'],
+    comparisonCurrent: { amount: 0, count: 0, label: '', amountText: '0.00' },
+    comparisonPrevious: { amount: 0, count: 0, label: '', change: 0, changePercent: '', amountText: '0.00', changeText: '0.00' },
+    comparisonYoY: { amount: 0, count: 0, label: '', change: 0, changePercent: '', amountText: '0.00', changeText: '0.00' },
+    comparisonShowYoY: true,
+
     // 环形图中间文字
     pieCenterText: '',
     pieCenterSubText: '总资产',
@@ -162,6 +172,7 @@ Page({
     filteredBatchAssetList: [],
     selectedAssets: [],
     selectedTotalPrice: '0.00',
+    _selectedTotalPriceText: '0.00',
     isAllSelected: false,
     batchSearchKeyword: '',
 
@@ -867,7 +878,7 @@ Page({
     if (asset.assetType !== 'subscription' || !asset.periodAmount) return { amount: '', period: '' };
     const periodTypeText = this.getPeriodTypeText(asset.periodType, asset.periodDays);
     return {
-      amount: asset.periodAmount,
+      amount: formatCurrency(Number(asset.periodAmount)),
       period: periodTypeText
     };
   },
@@ -1045,6 +1056,9 @@ Page({
         dailyCost,
         dailyEquivalent,
         totalInvestment: totalInvestment.toFixed(2),
+        _priceText: formatCurrency(totalInvestment),
+        _dailyCostText: formatCurrency(parseFloat(dailyCost)),
+        _dailyEquivalentText: formatCurrency(parseFloat(dailyEquivalent)),
         periodAmountDisplay: this.formatPeriodAmount(asset).amount,
         periodTypeDisplay: this.formatPeriodAmount(asset).period,
         dateRange: asset.subscriptionStatus === 'pending'
@@ -1094,6 +1108,9 @@ Page({
       usedDays,
       dailyCost,
       dailyEquivalent,
+      _priceText: formatCurrency(asset.price || 0),
+      _dailyCostText: formatCurrency(parseFloat(dailyCost)),
+      _dailyEquivalentText: formatCurrency(parseFloat(dailyEquivalent)),
       dateRange: asset.status === 'active' ? `${startDate} - 至今` : `${startDate} - ${dateRangeEnd}`,
       categoryIcon,
       categoryIconUrl
@@ -1134,7 +1151,12 @@ Page({
     const amount = this.getAssetAmountForStats(asset);
     return {
       name: asset.name,
-      price: amount.toFixed(2),
+      // 数值字段：供图表计算使用
+      price: amount,
+      // 展示字段：与页面卡片保持一致（超万显万、超亿显亿）
+      _priceText: asset._priceText || formatCurrency(amount),
+      _dailyCostText: asset._dailyCostText || formatCurrency(parseFloat(asset.dailyCost) || 0),
+      _dailyEquivalentText: asset._dailyEquivalentText || formatCurrency(parseFloat(asset.dailyEquivalent) || 0),
       assetType: asset.assetType === 'subscription' ? 'subscription' : 'fixed',
       subscriptionStatus: asset.subscriptionStatus,
       status: asset.status,
@@ -1301,8 +1323,9 @@ Page({
       }
     });
 
-    const totalPriceStr = totalPrice.toFixed(2);
-    const dailyCostStr = dailyCostTotal.toFixed(2);
+
+    const totalPriceStr = formatCurrency(totalPrice);
+    const dailyCostStr = formatCurrency(dailyCostTotal);
 
     // 根据数字长度计算字体大小
     const calcFontSize = (numStr, baseSize, minSize) => {
@@ -1316,8 +1339,8 @@ Page({
 
     this.setData({
       totalPrice: totalPriceStr,
-      filteredTotalPrice: filteredTotal.toFixed(2),
-      filteredDailyCost: filteredDailyTotal.toFixed(2),
+      filteredTotalPrice: formatCurrency(filteredTotal),
+      filteredDailyCost: formatCurrency(filteredDailyTotal),
       dailyCost: dailyCostStr,
       totalPriceSize: calcFontSize(totalPriceStr, 48, 26),
       dailyCostSize: calcFontSize(dailyCostStr, 28, 20),
@@ -1810,11 +1833,11 @@ Page({
 
   enterBatchDelete() {
     this.loadAllAssetsForBatch();
-    this.setData({ showSetting: false, showBatchDelete: true, selectedAssets: [], selectedTotalPrice: '0.00', isAllSelected: false, batchSearchKeyword: '' });
+    this.setData({ showSetting: false, showBatchDelete: true, selectedAssets: [], selectedTotalPrice: '0.00', _selectedTotalPriceText: '0.00', isAllSelected: false, batchSearchKeyword: '' });
   },
 
   exitBatchDelete() {
-    this.setData({ showBatchDelete: false, showSetting: true, selectedAssets: [], selectedTotalPrice: '0.00', isAllSelected: false, batchAssetList: [], filteredBatchAssetList: [], batchSearchKeyword: '' });
+    this.setData({ showBatchDelete: false, showSetting: true, selectedAssets: [], selectedTotalPrice: '0.00', _selectedTotalPriceText: '0.00', isAllSelected: false, batchAssetList: [], filteredBatchAssetList: [], batchSearchKeyword: '' });
   },
 
   async loadAllAssetsForBatch() {
@@ -1846,7 +1869,7 @@ Page({
           const result = this.calcSubscriptionPeriods(asset, startDate, now);
           _batchPrice = asset.periodAmount * result.completedPeriods;
 
-          _batchPeriodInfo = Number(asset.periodAmount).toFixed(2);
+          _batchPeriodInfo = formatCurrency(Number(asset.periodAmount));
         }
 
         return {
@@ -1856,6 +1879,7 @@ Page({
           _selected: false,
           _isSubscription: isSubscription,
           _batchPrice: _batchPrice,
+          _batchPriceText: formatCurrency(_batchPrice),
           _batchPeriodInfo: _batchPeriodInfo,
           purchaseDate: this.formatDate(asset.purchaseDate),
           dateRange: asset.status === 'active'
@@ -1884,6 +1908,7 @@ Page({
       .filter(a => newSelected.includes(a._id))
       .reduce((sum, a) => sum + (Number(a._batchPrice) || 0), 0)
       .toFixed(2);
+    const _selectedTotalPriceText = formatCurrency(parseFloat(selectedTotalPrice) || 0);
 
     const newBatchAssetList = batchAssetList.map(a => ({ ...a, _selected: newSelected.includes(a._id) }));
     const newFilteredList = filteredBatchAssetList.map(a => ({ ...a, _selected: newSelected.includes(a._id) }));
@@ -1891,6 +1916,7 @@ Page({
     this.setData({
       selectedAssets: newSelected,
       selectedTotalPrice,
+      _selectedTotalPriceText,
       batchAssetList: newBatchAssetList,
       filteredBatchAssetList: newFilteredList,
       isAllSelected: newSelected.length === newFilteredList.length && newFilteredList.length > 0
@@ -1916,6 +1942,9 @@ Page({
           ? batchAssetList.filter(a => newSelected.includes(a._id))
               .reduce((sum, a) => sum + (Number(a._batchPrice) || 0), 0).toFixed(2)
           : '0.00',
+        _selectedTotalPriceText: newSelected.length > 0
+          ? formatCurrency(batchAssetList.filter(a => newSelected.includes(a._id)).reduce((sum, a) => sum + (Number(a._batchPrice) || 0), 0))
+          : '0.00',
         batchAssetList: newBatchAssetList,
         filteredBatchAssetList: newFilteredList,
         isAllSelected: false
@@ -1929,6 +1958,7 @@ Page({
         .filter(a => newSelected.includes(a._id))
         .reduce((sum, a) => sum + (Number(a._batchPrice) || 0), 0)
         .toFixed(2);
+      const _selectedTotalPriceText = formatCurrency(parseFloat(selectedTotalPrice) || 0);
 
       const newBatchAssetList = batchAssetList.map(a => ({
         ...a,
@@ -1939,6 +1969,7 @@ Page({
       this.setData({
         selectedAssets: newSelected,
         selectedTotalPrice,
+        _selectedTotalPriceText,
         batchAssetList: newBatchAssetList,
         filteredBatchAssetList: newFilteredList,
         isAllSelected: true
@@ -2043,6 +2074,7 @@ Page({
         filteredBatchAssetList: filteredRemaining,
         selectedAssets: [],
         selectedTotalPrice: '0.00',
+        _selectedTotalPriceText: '0.00',
         isAllSelected: false
       });
       wx.showToast({ title: `已删除 ${selectedAssets.length} 项`, icon: 'success' });
@@ -2169,7 +2201,7 @@ Page({
         .map((item, index) => ({
           ...item,
           color: distinctReportColors[index],
-          totalFixed: item.total.toFixed(2),
+          totalFixed: formatCurrency(item.total),
           percentFixed: categoryTotal > 0 ? ((item.total / categoryTotal) * 100).toFixed(1) : '0.0'
         }));
 
@@ -2179,31 +2211,31 @@ Page({
         reportAssets: sortedEnriched,
         reportTotalAssets: assets.length,
         reportTotalPrice: allTotalPrice.toFixed(2),
-        reportAllTotalPrice: allTotalPrice.toFixed(2),
-        reportIncludedTotalPrice: includedTotalPrice.toFixed(2),
+        reportAllTotalPrice: formatCurrency(allTotalPrice),
+        reportIncludedTotalPrice: formatCurrency(includedTotalPrice),
         reportExcludedPrice: excludedTotalPrice.toFixed(2),
-        reportExcludedTotalPrice: excludedTotalPrice.toFixed(2),
+        reportExcludedTotalPrice: formatCurrency(excludedTotalPrice),
         reportIncludedCount: includedCount,
         reportExcludedCount: excludedTotalCount,
         reportExcludedTotalCount: excludedTotalCount,
         reportIncludedDailyCount: includedDailyCount,
         reportCategoryStats,
         reportCategoryAssetsMap: categoryAssetsMap,
-        pieCenterText: '¥' + allTotalPrice.toFixed(2),
+        pieCenterText: '¥' + formatCurrency(allTotalPrice),
         pieCenterSubText: '全部总资产',
         // 状态统计
         reportActiveCount: activeCount,
-        reportActivePrice: activePrice.toFixed(2),
+        reportActivePrice: formatCurrency(activePrice),
         reportPendingCount: pendingCount,
-        reportPendingPrice: pendingPrice.toFixed(2),
+        reportPendingPrice: formatCurrency(pendingPrice),
         reportRetiredCount: retiredCount,
-        reportRetiredPrice: retiredPrice.toFixed(2),
+        reportRetiredPrice: formatCurrency(retiredPrice),
         reportSoldCount: soldCount,
-        reportSoldPrice: soldPrice.toFixed(2),
+        reportSoldPrice: formatCurrency(soldPrice),
         reportDailyCost: allDailyCost.toFixed(2),
-        reportAllDailyCost: allDailyCost.toFixed(2),
-        reportIncludedDailyCost: includedDailyCost.toFixed(2),
-        reportExcludedDailyCost: excludedDailyCost.toFixed(2),
+        reportAllDailyCost: formatCurrency(allDailyCost),
+        reportIncludedDailyCost: formatCurrency(includedDailyCost),
+        reportExcludedDailyCost: formatCurrency(excludedDailyCost),
         reportExcludedDailyCount: excludedDailyCount
       });
 
@@ -2212,6 +2244,7 @@ Page({
           this.initPieChart();
           this.initLineChart();
           this.calculateTimePeriodStats();
+          this.calculateComparison();
         }, 200);
       }
     } catch (err) {
@@ -2219,9 +2252,215 @@ Page({
     }
   },
 
+
+  // ============================================
+  // 环比/同比
+  // ============================================
+
+  onComparisonGranularityChange(e) {
+    const granularity = e.currentTarget.dataset.granularity;
+    const showYoY = granularity !== 'year';
+    this.setData({
+      comparisonGranularity: granularity,
+      comparisonShowYoY: showYoY
+    });
+    this.calculateComparison();
+  },
+
+  calculateComparison() {
+    const assets = this.data.reportAssets || this.data.assets || [];
+    if (assets.length === 0) {
+      this.setData({
+        comparisonCurrent: { amount: 0, count: 0, label: '', amountText: '0.00' },
+        comparisonPrevious: { amount: 0, count: 0, label: '', change: 0, changePercent: '', amountText: '0.00', changeText: '0.00' },
+        comparisonYoY: { amount: 0, count: 0, label: '', change: 0, changePercent: '', amountText: '0.00', changeText: '0.00' }
+      });
+      return;
+    }
+    const granularity = this.data.comparisonGranularity;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let currentStart, currentEnd, prevStart, prevEnd, yoyStart, yoyEnd;
+    if (granularity === 'day') {
+      currentStart = today;
+      currentEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+      prevStart = new Date(today);
+      prevStart.setDate(prevStart.getDate() - 1);
+      prevEnd = new Date(prevStart.getFullYear(), prevStart.getMonth(), prevStart.getDate(), 23, 59, 59, 999);
+      yoyStart = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+      yoyEnd = new Date(yoyStart.getFullYear(), yoyStart.getMonth(), yoyStart.getDate(), 23, 59, 59, 999);
+    } else if (granularity === 'week') {
+      const dayOfWeek = today.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      currentStart = new Date(today);
+      currentStart.setDate(currentStart.getDate() + mondayOffset);
+      currentStart.setHours(0, 0, 0, 0);
+      currentEnd = new Date(currentStart);
+      currentEnd.setDate(currentEnd.getDate() + 6);
+      currentEnd.setHours(23, 59, 59, 999);
+      prevStart = new Date(currentStart);
+      prevStart.setDate(prevStart.getDate() - 7);
+      prevEnd = new Date(currentEnd);
+      prevEnd.setDate(prevEnd.getDate() - 7);
+      yoyStart = new Date(currentStart);
+      yoyStart.setFullYear(yoyStart.getFullYear() - 1);
+      yoyEnd = new Date(currentEnd);
+      yoyEnd.setFullYear(yoyEnd.getFullYear() - 1);
+    } else if (granularity === 'month') {
+      currentStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      currentEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+      prevStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const prevEndDay = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+      const prevDay = Math.min(today.getDate(), prevEndDay);
+      prevEnd = new Date(today.getFullYear(), today.getMonth() - 1, prevDay, 23, 59, 59, 999);
+      yoyStart = new Date(today.getFullYear() - 1, today.getMonth(), 1);
+      const yoyEndDay = new Date(today.getFullYear() - 1, today.getMonth() + 1, 0).getDate();
+      const yoyDay = Math.min(today.getDate(), yoyEndDay);
+      yoyEnd = new Date(today.getFullYear() - 1, today.getMonth(), yoyDay, 23, 59, 59, 999);
+    } else if (granularity === 'quarter') {
+      const quarter = Math.floor(today.getMonth() / 3);
+      currentStart = new Date(today.getFullYear(), quarter * 3, 1);
+      currentEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+      prevStart = new Date(today.getFullYear(), (quarter - 1) * 3, 1);
+      const prevQEnd = new Date(today.getFullYear(), quarter * 3, 0);
+      const prevDay = Math.min(today.getDate(), prevQEnd.getDate());
+      prevEnd = new Date(today.getFullYear(), (quarter - 1) * 3 + 2, prevDay, 23, 59, 59, 999);
+      const prevQActualEnd = new Date(today.getFullYear(), quarter * 3, 0, 23, 59, 59, 999);
+      if (prevEnd > prevQActualEnd) prevEnd = prevQActualEnd;
+      yoyStart = new Date(today.getFullYear() - 1, quarter * 3, 1);
+      const yoyQEnd = new Date(today.getFullYear() - 1, (quarter + 1) * 3, 0);
+      const yoyDay = Math.min(today.getDate(), yoyQEnd.getDate());
+      yoyEnd = new Date(today.getFullYear() - 1, quarter * 3 + 2, yoyDay, 23, 59, 59, 999);
+      const yoyQActualEnd = new Date(today.getFullYear() - 1, (quarter + 1) * 3, 0, 23, 59, 59, 999);
+      if (yoyEnd > yoyQActualEnd) yoyEnd = yoyQActualEnd;
+    } else if (granularity === 'year') {
+      currentStart = new Date(today.getFullYear(), 0, 1);
+      currentEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+      prevStart = new Date(today.getFullYear() - 1, 0, 1);
+      const prevDay = Math.min(today.getDate(), new Date(today.getFullYear() - 1, today.getMonth() + 1, 0).getDate());
+      prevEnd = new Date(today.getFullYear() - 1, today.getMonth(), prevDay, 23, 59, 59, 999);
+    }
+    const countPeriod = (start, end) => {
+      let total = 0;
+      let count = 0;
+      assets.forEach(a => {
+        if (!a.purchaseDate) return;
+        const pd = new Date(a.purchaseDate);
+        if (pd >= start && pd <= end) {
+          total += this.getAssetAmountForStats(a);
+          count++;
+        }
+      });
+      return { amount: total, count };
+    };
+    const current = countPeriod(currentStart, currentEnd);
+    const previous = countPeriod(prevStart, prevEnd);
+    let prevChange = 0;
+    let prevChangePercent = '';
+    if (previous.amount > 0) {
+      prevChange = current.amount - previous.amount;
+      const pct = ((prevChange / previous.amount) * 100);
+      if (pct > 999) {
+      prevChangePercent = '>999%';
+    } else if (pct < -999) {
+      prevChangePercent = '<-999%';
+    } else {
+      prevChangePercent = pct.toFixed(1) + '%';
+    }
+    } else if (current.amount > 0) {
+      prevChange = current.amount;
+      prevChangePercent = '新增';
+    } else {
+      prevChange = 0;
+      prevChangePercent = '';
+    }
+    let yoyChange = 0;
+    let yoyChangePercent = '';
+    if (granularity !== 'year') {
+      const yoy = countPeriod(yoyStart, yoyEnd);
+      if (yoy.amount > 0) {
+        yoyChange = current.amount - yoy.amount;
+        const pct = ((yoyChange / yoy.amount) * 100);
+        if (pct > 999) {
+        yoyChangePercent = '>999%';
+      } else if (pct < -999) {
+        yoyChangePercent = '<-999%';
+      } else {
+        yoyChangePercent = pct.toFixed(1) + '%';
+      }
+      } else if (current.amount > 0) {
+        yoyChange = current.amount;
+        yoyChangePercent = '新增';
+      } else {
+        yoyChange = 0;
+        yoyChangePercent = '';
+      }
+      this.setData({
+        comparisonYoY: {
+          amount: yoy.amount,
+          count: yoy.count,
+          label: this._getYoYLabel(granularity),
+          amountText: formatCurrency(yoy.amount),
+          change: yoyChange,
+          changeText: formatCurrency(Math.abs(yoyChange)),
+          changePercent: yoyChangePercent
+        }
+      });
+    }
+    this.setData({
+      comparisonCurrent: {
+        amount: current.amount,
+        count: current.count,
+        label: this._getPeriodLabel(granularity, 'current'),
+        amountText: formatCurrency(current.amount)
+      },
+      comparisonPrevious: {
+        amount: previous.amount,
+        count: previous.count,
+        label: this._getPeriodLabel(granularity, 'previous'),
+        amountText: formatCurrency(previous.amount),
+        change: prevChange,
+        changeText: formatCurrency(Math.abs(prevChange)),
+        changePercent: prevChangePercent
+      }
+    });
+  },
+
+  _getPeriodLabel(granularity, type) {
+    const today = new Date();
+    if (granularity === 'day') {
+      return type === 'current' ? '今天' : '昨天';
+    } else if (granularity === 'week') {
+      return type === 'current' ? '本周' : '上周';
+    } else if (granularity === 'month') {
+      if (type === 'current') return (today.getMonth() + 1) + '月';
+      const prevMonth = today.getMonth() === 0 ? 12 : today.getMonth();
+      return prevMonth + '月';
+    } else if (granularity === 'quarter') {
+      const q = Math.floor(today.getMonth() / 3) + 1;
+      if (type === 'current') return 'Q' + q;
+      return 'Q' + (q === 1 ? 4 : q - 1);
+    } else if (granularity === 'year') {
+      return type === 'current' ? today.getFullYear() + '年' : (today.getFullYear() - 1) + '年';
+    }
+    return '';
+  },
+
+  _getYoYLabel(granularity) {
+    const today = new Date();
+    if (granularity === 'day') return '去年同日';
+    if (granularity === 'week') return '去年同周';
+    if (granularity === 'month') return '去年' + (today.getMonth() + 1) + '月';
+    if (granularity === 'quarter') return '去年Q' + (Math.floor(today.getMonth() / 3) + 1);
+    return '';
+  },
+
   initPieChart() {
-    const { reportCategoryStats, pieCenterText, pieCenterSubText } = this.data;
+    const { reportCategoryStats } = this.data;
     if (!reportCategoryStats.length) return;
+
+    // 中间文字与图例切换共用同一套计算逻辑
+    const pieCenterContent = this.getPieCenterContent();
 
     // 获取当前主题颜色（用于图表样式）
     const themeColors = themeManager.getThemeColors();
@@ -2267,12 +2506,12 @@ Page({
             const catAssets = this.data.reportCategoryAssetsMap[catName] || [];
             const percent = ((catValue / total) * 100).toFixed(1);
 
-            let assetList = catAssets.slice(0, 5).map(asset => `${asset.name}: ¥${asset.price}`).join('\n');
+            let assetList = catAssets.slice(0, 5).map(asset => `${asset.name}: ¥${asset._priceText}`).join('\n');
             if (catAssets.length > 5) {
               assetList += `\n... 等${catAssets.length}项`;
             }
 
-            return `${catName}\n总计: ¥${catValue.toFixed(2)} (${percent}%)\n${assetList}`;
+            return `${catName}\n总计: ¥${formatCurrency(catValue)} (${percent}%)\n${assetList}`;
           }
         },
         legend: {
@@ -2294,7 +2533,7 @@ Page({
               top: '0',
               style: {
                 fill: themeColors.textDefault,
-                text: pieCenterText,
+                text: pieCenterContent.text,
                 font: 'bold 18px sans-serif',
                 textAlign: 'center'
               }
@@ -2305,7 +2544,7 @@ Page({
               top: '24',
               style: {
                 fill: themeColors.textMuted,
-                text: pieCenterSubText,
+                text: pieCenterContent.subText,
                 font: '12px sans-serif',
                 textAlign: 'center'
               }
@@ -2330,13 +2569,44 @@ Page({
         }]
       });
 
-      // 图例点击事件 - 重置为总金额
-      chart.on('legendselectchanged', () => {
-        this.updatePieCenterText('¥' + this.pieTotal.toFixed(2), '总资产');
+      // 图例点击事件 - 按当前可见（选中）类别更新中间合计
+      chart.on('legendselectchanged', params => {
+        this.updatePieCenterBySelection(params && params.selected ? params.selected : null);
       });
 
       return chart;
     });
+  },
+
+  // 计算环形图中间文字：按当前可见（图例选中）的类别合计
+  getPieCenterContent(selectedMap) {
+    const stats = this.data.reportCategoryStats || [];
+    if (!stats.length) return { text: '', subText: '' };
+
+    const total = stats.reduce((sum, item) => sum + item.total, 0);
+    this.pieTotal = total;
+
+    const selectedStats = selectedMap
+      ? stats.filter(item => selectedMap[item.name] !== false)
+      : stats;
+
+    // 全部类别可见（或未传图例状态）时展示全部总资产
+    if (selectedStats.length === stats.length) {
+      return { text: '¥' + formatCurrency(total), subText: '全部总资产' };
+    }
+
+    const selectedTotal = selectedStats.reduce((sum, item) => sum + item.total, 0);
+    return {
+      text: '¥' + formatCurrency(selectedTotal),
+      subText: `已选 ${selectedStats.length}/${stats.length} 类`
+    };
+  },
+
+  // 根据图例选中状态刷新中间文字
+  updatePieCenterBySelection(selectedMap) {
+    const { text, subText } = this.getPieCenterContent(selectedMap);
+    if (!text) return;
+    this.updatePieCenterText(text, subText);
   },
 
   // 更新环形图中间文字
@@ -2569,9 +2839,9 @@ Page({
             const dayTotal = params[0].value;
             const dayAssets = this.lineDateAssetsMap[dateKey] || [];
 
-            let assetList = dayAssets.map(asset => `${asset.name}: ¥${asset.price}`).join('\n');
+            let assetList = dayAssets.map(asset => `${asset.name}: ¥${asset._priceText}`).join('\n');
 
-            return `${dateKey}\n金额: ¥${dayTotal.toFixed(2)}\n${assetList}`;
+            return `${dateKey}\n金额: ¥${formatCurrency(dayTotal)}\n${assetList}`;
           }
         },
         legend: {
@@ -2596,7 +2866,7 @@ Page({
         },
         yAxis: {
           type: 'value',
-          axisLabel: { formatter: '¥{value}' },
+          axisLabel: { formatter: value => '¥' + formatCurrency(Number(value) || 0) },
           splitLine: { lineStyle: { type: 'dashed' } }
         },
         series: [
@@ -2678,7 +2948,7 @@ Page({
     if (!assets || assets.length === 0) {
       return {
         data: [],
-        summary: { totalAmount: 0, totalCount: 0 }
+        summary: { totalAmount: formatCurrency(0), totalCount: 0 }
       };
     }
 
@@ -2716,7 +2986,7 @@ Page({
     const data = Object.values(groupMap).sort((a, b) => a.label.localeCompare(b.label));
     const totalAmount = data.reduce((sum, d) => sum + d.totalAmount, 0);
     const summary = {
-      totalAmount: totalAmount.toFixed(2),
+      totalAmount: formatCurrency(totalAmount),
       totalCount: data.reduce((sum, d) => sum + d.count, 0)
     };
 
@@ -2823,11 +3093,11 @@ Page({
             if (!params || !params.length) return '';
             const d = params[0];
             const dataItem = timePeriodStats.data[d.dataIndex];
-            let assetList = dataItem.assets.slice(0, 5).map(a => `${a.name}: ¥${a.price}`).join('\n');
+            let assetList = dataItem.assets.slice(0, 5).map(a => `${a.name}: ¥${a._priceText}`).join('\n');
             if (dataItem.assets.length > 5) {
               assetList += `\n... 等${dataItem.assets.length}项`;
             }
-            return `${d.name}\n金额: ¥${dataItem.totalAmount.toFixed(2)}\n数量: ${dataItem.count}件\n${assetList}`;
+            return `${d.name}\n金额: ¥${formatCurrency(dataItem.totalAmount)}\n数量: ${dataItem.count}件\n${assetList}`;
           }
         },
         grid: {
@@ -2850,7 +3120,7 @@ Page({
           {
             type: 'value',
             name: '金额(元)',
-            axisLabel: { formatter: '¥{value}' },
+            axisLabel: { formatter: value => '¥' + formatCurrency(Number(value) || 0) },
             splitLine: { lineStyle: { type: 'dashed' } }
           },
           {

@@ -3,8 +3,10 @@ const echarts = require('../../components/ec-canvas/echarts');
 const { themeManager } = require('../../utils/themeManager');
 const { supabase } = require('../../utils/supabase');
 const { ADMIN_OPENID } = require('../../utils/auth');
+const { formatCurrency } = require('../../utils/format');
 
 const { PRESET_AVATARS } = require('../../utils/presetAvatars');
+
 
 // 根据 openid 确定性选取默认头像（从30种SVG中按hash选取）
 function getDefaultAvatar(openid) {
@@ -45,7 +47,7 @@ Page({
 
     // 分页
     userPage: 1,
-    userPageSize: 20,
+    userPageSize: 999,
     userTotalCount: 0,
     userHasMore: false,
 
@@ -75,8 +77,9 @@ Page({
     chartDateStart: '',     // 自定义起始日期（YYYY-MM-DD）
     chartDateEnd: '',       // 自定义结束日期（YYYY-MM-DD）
     showDateFilter: false,  // 是否展示日期筛选面板
-    showActiveModal: false, // 活跃客户弹窗
+    showActiveModal: false, // 高活跃客户弹窗
     activeModalData: { high: 0, medium: 0, low: 0, total: 0 },
+    activityDistribution: null,
     accessEc: { lazyLoad: true },
 
     // SVG 图标
@@ -197,7 +200,7 @@ Page({
       return { level: 'high', text: '高活跃' };
     }
     // 中活跃 = 近30天有访问但不满足高活跃条件
-    if (daysDiff <= 30 && freq >= 1) {
+    if (daysDiff <= 30 && freq >= 2) {
       return { level: 'medium', text: '中活跃' };
     }
     // 低活跃 = 超30天未访问或无访问记录
@@ -206,7 +209,7 @@ Page({
   calculateStats(users) {
     const now = new Date();
 
-    // 活跃客户 = 近7天访问 + 近30天≥3次
+    // 高活跃客户 = 近7天访问 + 近30天≥3次
     const activeUsers = users.filter(user => {
       if (!user.lastAccessTime) return false;
       const last = new Date(user.lastAccessTime);
@@ -288,12 +291,16 @@ Page({
           return {
             ...asset,
             icon: assetIcon,
-            displayIcon: displayIcon
+            displayIcon: displayIcon,
+            _priceText: formatCurrency(Number(asset.price) || 0),
+            _dailyCostText: formatCurrency(Number(asset.dailyCost) || 0),
+            _periodAmountText: formatCurrency(Number(asset.periodAmount) || 0),
+            _dailyEquivalentText: formatCurrency(Number(asset.dailyEquivalent) || 0)
           };
         });
 
         // 格式化 totalAssetPrice 避免浮点数精度问题
-        const totalAssetPriceText = (user.totalAssetPrice || 0).toFixed(2);
+        const totalAssetPriceText = formatCurrency(user.totalAssetPrice || 0);
 
         return {
           ...user,
@@ -314,6 +321,11 @@ Page({
 
       // 过滤掉管理员
       processedUsers = processedUsers.filter(u => u._openid !== ADMIN_OPENID);
+
+      // 存储后端返回的活跃度分布
+      if (data && data.activityDistribution) {
+        this.setData({ activityDistribution: data.activityDistribution });
+      }
 
       // 全量统计数据优先用服务端返回值
       var serverActiveCount = (data && data.activeUserCount != null) ? data.activeUserCount : null;
@@ -356,7 +368,6 @@ Page({
       });
       wx.showToast({ title: '网络错误', icon: 'none' });
       if (callback) callback();
-    });
     });
   },
 
@@ -430,11 +441,15 @@ Page({
             return {
               ...asset,
               icon: assetIcon,
-              displayIcon: displayIcon
+              displayIcon: displayIcon,
+              _priceText: formatCurrency(Number(asset.price) || 0),
+              _dailyCostText: formatCurrency(Number(asset.dailyCost) || 0),
+              _periodAmountText: formatCurrency(Number(asset.periodAmount) || 0),
+              _dailyEquivalentText: formatCurrency(Number(asset.dailyEquivalent) || 0)
             };
           });
 
-          var totalAssetPriceText = (user.totalAssetPrice || 0).toFixed(2);
+          var totalAssetPriceText = formatCurrency(user.totalAssetPrice || 0);
 
           return {
             ...user,
@@ -485,10 +500,8 @@ Page({
         self.setData({ loadingMore: false });
         wx.showToast({ title: '网络错误', icon: 'none' });
       });
-    });
   },
 
-  // 计算访问统计数据：按自然日补齐空日期，用于每日折线图
   calculateAccessStats(users, accessStats) {
     const now = new Date();
     const chinaOffset = 8 * 60;
@@ -917,7 +930,7 @@ Page({
               var u = list[i];
               var name = truncateByWidth(u.name || '未知', 8);
               var count = (u.visitCount || u.assetCount || 0) + (u.visitCount ? '次' : '件');
-              var price = '¥' + Number(u.assetPrice).toFixed(0);
+              var price = '¥' + formatCurrency(Number(u.assetPrice));
               lines.push(name + '  ' + count + '  ' + price);
             }
             if (dataItem.users.length > 5) {
@@ -1029,6 +1042,14 @@ Page({
   },
 
   showActiveUserDetail() {
+    var dist = this.data.activityDistribution;
+    if (dist) {
+      this.setData({
+        showActiveModal: true,
+        activeModalData: { high: dist.high, medium: dist.medium, low: dist.low, total: (dist.high + dist.medium + dist.low) }
+      });
+      return;
+    }
     var users = this.data.users || [];
     var high = 0, medium = 0, low = 0;
 

@@ -1,6 +1,7 @@
 // asset-detail.js
 const { themeManager } = require('../../utils/themeManager');
 const { supabase, deleteStorageFile } = require('../../utils/supabase');
+const { formatCurrency } = require('../../utils/format');
 Page({
   data: {
     themeStyle: '',
@@ -18,10 +19,15 @@ Page({
       usedDays: 0,
       dailyCost: '0.00',
       dailyEquivalent: '0.00',
+      _dailyCostText: '0.00',
+      _dailyEquivalentText: '0.00',
+      _priceText: '0.00',
       dateRange: '',
       // 订阅资产专属字段
       periodTypeText: '',
       totalInvestment: '0.00',
+      _totalInvestmentText: '0.00',
+      _periodAmountText: '0.00',
       subscriptionStartDateFormatted: '',
       subscriptionEndDateFormatted: ''
     }
@@ -222,9 +228,14 @@ Page({
       usedDays: usedDays,
       dailyCost: dailyCost,
       dailyEquivalent: dailyEquivalent,
+      _dailyCostText: formatCurrency(parseFloat(dailyCost)),
+      _dailyEquivalentText: formatCurrency(parseFloat(dailyEquivalent)),
+      _priceText: formatCurrency(Number(asset.price) || 0),
       dateRange: asset.status === 'active' ? `${startDate} - 至今` : `${startDate} - ${dateRangeEnd}`,
       periodTypeText: '',
       totalInvestment: '0.00',
+      _totalInvestmentText: '0.00',
+      _periodAmountText: '0.00',
       subscriptionStartDateFormatted: '',
       subscriptionEndDateFormatted: ''
     };
@@ -401,6 +412,11 @@ Page({
       usedDays: usedDays,
       dailyCost: dailyCost,
       dailyEquivalent: dailyEquivalent,
+      _dailyCostText: formatCurrency(parseFloat(dailyCost)),
+      _dailyEquivalentText: formatCurrency(parseFloat(dailyEquivalent)),
+      _priceText: formatCurrency(Number(asset.price) || 0),
+      _totalInvestmentText: formatCurrency(parseFloat(totalInvestment) || 0),
+      _periodAmountText: formatCurrency(Number(asset.periodAmount) || 0),
       dateRange: dateRange,
       periodTypeText: periodTypeText,
       periodCount: completedPeriods,

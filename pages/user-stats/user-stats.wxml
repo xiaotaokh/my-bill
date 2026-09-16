@@ -23,7 +23,7 @@
       <!-- 顶部渐变装饰条 -->
       <view class="dashboard-accent"></view>
 
-      <!-- 主指标行：用户总数 / 资产总数 / 活跃客户 -->
+      <!-- 主指标行：用户总数 / 资产总数 / 高活跃客户 -->
       <view class="stats-row-main">
         <!-- 用户总数 - 主指标 -->
         <view class="stat-block stat-block-primary">
@@ -43,14 +43,14 @@
           <text class="stat-block-label">资产总数</text>
         </view>
 
-        <!-- 活跃客户 -->
+        <!-- 高活跃客户 -->
         <view class="stat-block stat-block-live">
           <view class="stat-block-icon">
             <image class="stat-block-icon-img" src="{{lightningIcon}}" mode="aspectFit" />
           </view>
           <text class="stat-block-value">{{activeUserCount}}</text>
           <view class="stat-block-label-row">
-            <text class="stat-block-label">活跃客户</text>
+            <text class="stat-block-label">高活跃客户</text>
             <image class="stat-detail-icon" src="{{detailIcon}}" mode="aspectFit" catchtap="showActiveUserDetail" />
           </view>
           <view class="live-indicator"></view>
@@ -324,18 +324,18 @@
                   <block wx:if="{{asset.assetType === 'subscription'}}">
                     <view class="period-mini-stat period-amount-stat" wx:if="{{asset.periodAmount}}">
                       <text class="period-mini-label">每期金额</text>
-                      <text class="period-mini-value price">¥{{asset.periodAmount}}/{{asset.periodType}}</text>
+                      <text class="period-mini-value price">¥{{asset._periodAmountText}}/{{asset.periodType}}</text>
                     </view>
                     <block wx:if="{{asset.subscriptionStatus === 'ended'}}">
                       <view class="period-mini-stat">
                         <text class="period-mini-label">折合每日</text>
-                        <text class="period-mini-value cost">¥{{asset.dailyCost}}</text>
+                        <text class="period-mini-value cost">¥{{asset._dailyCostText}}</text>
                       </view>
                     </block>
                     <block wx:else>
                       <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
                         <text class="period-mini-label">日均成本</text>
-                        <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                        <text class="period-mini-value cost">¥{{asset._dailyCostText}}/天</text>
                       </view>
                     </block>
                     <view class="period-mini-stat" wx:if="{{asset.subscriptionStatus !== 'pending'}}">
@@ -347,7 +347,7 @@
                     <block wx:if="{{asset.status === 'active'}}">
                       <view class="period-mini-stat {{asset.excludeDaily ? 'excluded' : ''}}">
                         <text class="period-mini-label">日均成本</text>
-                        <text class="period-mini-value cost">¥{{asset.dailyCost}}/天</text>
+                        <text class="period-mini-value cost">¥{{asset._dailyCostText}}/天</text>
                       </view>
                     </block>
                     <view class="period-mini-stat">
@@ -356,7 +356,7 @@
                     </view>
                     <view class="period-mini-stat {{asset.excludeTotal ? 'excluded' : ''}}">
                       <text class="period-mini-label">价格</text>
-                      <text class="period-mini-value price">¥{{asset.price}}</text>
+                      <text class="period-mini-value price">¥{{asset._priceText}}</text>
                     </view>
                   </block>
                 </view>
@@ -428,26 +428,26 @@
     <text class="search-empty-desc">换个关键词试试</text>
   </view>
 
-  <!-- 活跃客户分布弹窗 -->
+  <!-- 活跃用户分布弹窗 -->
   <view wx:if="{{showActiveModal}}" class="modal-overlay" bindtap="closeActiveModal">
     <view class="modal-card" catchtap="">
       <!-- 顶部色条 -->
       <view class="modal-accent"></view>
       <!-- 标题栏 -->
       <view class="modal-header">
-        <text class="modal-title">活跃客户分布</text>
+        <text class="modal-title">活跃用户分布</text>
         <view class="modal-close" bindtap="closeActiveModal">
           <text>✕</text>
         </view>
       </view>
       <!-- 内容区 -->
       <view class="modal-body">
-        <!-- 醒目数字：活跃客户数 -->
+        <!-- 醒目数字：高活跃客户数 -->
         <view class="modal-hero">
           <text class="modal-hero-num">{{activeModalData.high}}</text>
           <text class="modal-hero-unit">/{{activeModalData.total}}人</text>
         </view>
-        <text class="modal-hero-label">活跃客户（近7天来过 + 近30天≥3次）</text>
+        <text class="modal-hero-label">高活跃客户（近7天来过 + 近30天≥3次）</text>
 
         <!-- 分布条 -->
         <view class="modal-bar-wrap">
@@ -477,7 +477,7 @@
 
         <!-- 说明文字 -->
         <view class="modal-desc">
-          <text>活跃客户 = 近7天访问且≥3次，中活跃 = 近30天访问但不同时满足上述条件，低活跃 = 超30天未访问</text>
+          <text>高活跃客户 = 近7天访问且≥3次，中活跃 = 近30天访问但不同时满足上述条件，低活跃 = 超30天未访问</text>
         </view>
       </view>
     </view>
