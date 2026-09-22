@@ -8,7 +8,8 @@
  * 注意：Service Role Key 有管理员权限，请勿泄露
  */
 
-const SUPABASE_URL = 'https://scogsobcckvybkwcmvqh.supabase.co';
+// 与小程序保持一致：走自建反代域名（supabase.co 在部分网络下被阻断）
+const SUPABASE_URL = 'https://api.xiaotaokh.top';
 
 // 孤儿文件列表（从 SQL 查询结果获取）
 const orphanFiles = {

@@ -1,8 +1,39 @@
 // utils/supabase.js - Supabase REST API 封装（小程序版）
 // 使用 wx.request 直接调用 Supabase REST API
 
-const SUPABASE_URL = 'https://scogsobcckvybkwcmvqh.supabase.co';
+// 统一走自建反向代理域名
+// 原因：supabase.co 在中国移动网络下会遭遇 TLS SNI 阻断（握手被重置），
+// 直连会导致小程序 request:fail，所有数据都拉不到。
+// 反代链路：小程序 -> api.xiaotaokh.top (Cloudflare Worker) -> Supabase
+const SUPABASE_URL = 'https://api.xiaotaokh.top';
 const SUPABASE_ANON_KEY = 'sb_publishable_EqhquS2f1xsGfXGQxhMHPw_u9a1qSe9';
+
+// 网络请求失败时的统一处理：
+// 1. 打印定位信息（哪个接口、什么方法、什么错误），避免只看到裸的 request:fail
+// 2. 在原始错误对象上补充 method / url 后抛出，保留原有 errMsg，不影响调用方判断
+function handleRequestFail(method, url, err) {
+  const errMsg = (err && (err.errMsg || err.message)) || String(err);
+  console.error('[supabase] 请求失败', {
+    method: method,
+    url: url,
+    errMsg: errMsg
+  });
+
+  if (err && typeof err === 'object') {
+    err.method = method;
+    err.url = url;
+    if (!err.errMsg) {
+      err.errMsg = errMsg;
+    }
+    return err;
+  }
+
+  const error = new Error(method + ' ' + url + ' 失败：' + errMsg);
+  error.method = method;
+  error.url = url;
+  error.errMsg = errMsg;
+  return error;
+}
 
 // 基础请求函数
 function baseRequest(method, endpoint, data, prefer) {
@@ -33,7 +64,7 @@ function baseRequest(method, endpoint, data, prefer) {
         }
       },
       fail: function(err) {
-        reject(err);
+        reject(handleRequestFail(method, url, err));
       }
     });
   });
@@ -61,7 +92,7 @@ function invokeFunction(functionName, data) {
         }
       },
       fail: function(err) {
-        reject(err);
+        reject(handleRequestFail('POST', url, err));
       }
     });
   });
@@ -102,7 +133,7 @@ function uploadFileToFunction(functionName, filePath, formData) {
         }
       },
       fail: function(err) {
-        reject(err);
+        reject(handleRequestFail('UPLOAD', url, err));
       }
     });
   });
@@ -323,7 +354,7 @@ function uploadFileToStorage(bucket, fileName, filePath) {
         }
       },
       fail: function(err) {
-        reject(err);
+        reject(handleRequestFail('UPLOAD', url, err));
       }
     });
   });
@@ -339,9 +370,11 @@ function deleteStorageFile(bucket, fileUrl) {
   }
   var fileName = fileUrl.substring(prefix.length);
 
+  var deleteUrl = SUPABASE_URL + '/storage/v1/object/' + bucket;
+
   return new Promise(function(resolve, reject) {
     wx.request({
-      url: SUPABASE_URL + '/storage/v1/object/' + bucket,
+      url: deleteUrl,
       method: 'DELETE',
       data: JSON.stringify({ prefixes: [fileName] }),
       header: {
@@ -357,7 +390,7 @@ function deleteStorageFile(bucket, fileUrl) {
         }
       },
       fail: function(err) {
-        reject(err);
+        reject(handleRequestFail('DELETE', deleteUrl, err));
       }
     });
   });
