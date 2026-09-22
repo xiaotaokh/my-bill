@@ -1,5 +1,4 @@
 // index.js
-const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 const WELCOME_ENTER_MS = 400;
 
 // 引入 echarts
@@ -15,20 +14,6 @@ const { isAdmin, ADMIN_OPENID } = require('../../utils/auth');
 
 Page({
   data: {
-    // 日期
-    currentYear: new Date().getFullYear(),
-    currentMonth: new Date().getMonth() + 1,
-    currentDay: new Date().getDate(),
-    currentWeek: weekDays[new Date().getDay()],
-
-    // 天气
-    weatherText: '',
-    weatherTemp: '',
-    weatherIcon: '',
-    weatherTempMax: '',
-    weatherTempMin: '',
-    weatherLoading: true,
-
     // 统计数据
     totalPrice: 0,
     dailyCost: 0,
@@ -49,10 +34,6 @@ Page({
     // 管理员模拟用户模式
     showAdminBanner: false,
     adminTargetName: '',
-
-    // 用户头像和昵称（头部显示）
-    userAvatar: '',
-    userNickName: '',
 
     // 资产列表
     assets: [],
@@ -222,7 +203,6 @@ Page({
   onLoad() {
     this.loadCategories();
     this.loadAssets();
-    this.loadWeather();
     this.checkAdmin();
     this.checkUserAuth();
     this.initTheme();
@@ -268,7 +248,6 @@ Page({
             nickName: user.nickName,
             avatarUrl: user.avatarUrl
           };
-          this.syncUserProfile();
           await this.recordAccess(openid);
         }
       }
@@ -303,18 +282,6 @@ Page({
       .catch(function(err) {
         console.warn('记录访问日志异常:', err);
       });
-  },
-
-  // 同步用户头像和昵称到页面数据
-  syncUserProfile() {
-    const app = getApp();
-    const info = app.globalData.userInfo;
-    if (info && info.avatarUrl && info.nickName) {
-      this.setData({
-        userAvatar: info.avatarUrl,
-        userNickName: info.nickName
-      });
-    }
   },
 
   // 显示欢迎提示弹窗
@@ -399,7 +366,6 @@ Page({
           nickName: randomNickname,
           avatarUrl: finalAvatarUrl
         };
-        this.syncUserProfile();
         this.recordAccess(openid);
       }
     } catch (err) {
@@ -420,7 +386,6 @@ Page({
         nickName: randomNickname,
         avatarUrl: randomAvatar
       };
-      this.syncUserProfile();
       this.recordAccess(openid);
     }
   },
@@ -458,7 +423,6 @@ Page({
         nickName: randomNickname,
         avatarUrl: finalAvatarUrl
       };
-      this.syncUserProfile();
       this.recordAccess(openid);
     } catch (err) {
       console.error('上传随机头像失败:', err);
@@ -470,7 +434,6 @@ Page({
         nickName: randomNickname,
         avatarUrl: randomAvatar
       };
-      this.syncUserProfile();
       this.recordAccess(openid);
     }
   },
@@ -565,7 +528,6 @@ Page({
       this.setData({ showSetting: true, _fromSetting: false });
     }
 
-    this.syncUserProfile();
     // 先加载分类（确保 activeCategory 校验后再加载资产，避免分类重命名后筛选失效）
     await this.loadCategories();
     await this.loadAssets();
@@ -654,90 +616,6 @@ Page({
     }
   },
 
-  // 加载天气
-  loadWeather() {
-    this.setData({ weatherLoading: true });
-
-    wx.getLocation({
-      type: 'gcj02',
-      success: (res) => {
-        const { latitude, longitude } = res;
-        this.fetchWeather(latitude, longitude);
-      },
-      fail: (err) => {
-        // 位置获取失败时显示默认状态
-        this.setData({
-          weatherText: '',
-          weatherTemp: '',
-          weatherIcon: '',
-          weatherLoading: false
-        });
-      }
-    });
-  },
-
-  // 获取天气数据（通过 Supabase Edge Function）
-  fetchWeather(latitude, longitude) {
-    supabase.functions.invoke('getWeather', { latitude, longitude })
-      .then(result => {
-        const { data, error } = result;
-
-        if (error || !data || !data.success) {
-          this.setData({ weatherLoading: false });
-          return;
-        }
-
-        const { now, forecast } = data;
-
-        const updateData = { weatherLoading: false };
-
-        if (now) {
-          updateData.weatherText = now.text || '';
-          updateData.weatherTemp = now.temp || '';
-          updateData.weatherIcon = this.getWeatherIcon(now.text);
-        }
-
-        if (forecast && forecast[0]) {
-          updateData.weatherTempMax = forecast[0].tempMax || '';
-          updateData.weatherTempMin = forecast[0].tempMin || '';
-        }
-
-        this.setData(updateData);
-      }).catch(err => {
-        this.setData({ weatherLoading: false });
-      });
-  },
-
-  // 根据天气描述获取对应的图标
-  getWeatherIcon(text) {
-    const iconMap = {
-      '晴': '☀️',
-      '多云': '⛅',
-      '阴': '☁️',
-      '小雨': '🌧️',
-      '中雨': '🌧️',
-      '大雨': '🌧️',
-      '暴雨': '⛈️',
-      '雷阵雨': '⛈️',
-      '小雪': '🌨️',
-      '中雪': '🌨️',
-      '大雪': '❄️',
-      '雨夹雪': '🌨️',
-      '雾': '🌫️',
-      '霾': '🌫️',
-      '风': '💨',
-      '浮尘': '🌪️',
-      '扬沙': '🌪️'
-    };
-
-    for (const key in iconMap) {
-      if (text && text.includes(key)) {
-        return iconMap[key];
-      }
-    }
-    return '🌡️';
-  },
-
   // 加载类别
   async loadCategories() {
     if (this.data._loadingCategories) return;
@@ -786,7 +664,7 @@ Page({
   },
 
   // 加载资产
-  async loadAssets(searchKeyword) {
+  async loadAssets() {
     if (this.data.isLoading) return;
 
     this.setData({ isLoading: true });
@@ -794,9 +672,6 @@ Page({
 
     const app = getApp();
     const { currentSortIndex, sortOrder, sortDbFields } = this.data;
-
-    // 使用传入的搜索关键词，或当前状态中的值
-    const keyword = searchKeyword !== undefined ? searchKeyword : this.data.searchKeyword;
 
     try {
       const openid = await app.getOpenid();
@@ -806,11 +681,6 @@ Page({
         .from('assets')
         .select('*')
         .eq('_openid', openid);
-
-      // 添加名称搜索条件（Supabase 使用 ilike）
-      if (keyword) {
-        query = query.ilike('name', `%${keyword}%`);
-      }
 
       const sortField = sortDbFields[currentSortIndex];
       const orderField = sortField || 'createdAt';
@@ -1259,6 +1129,12 @@ Page({
       filtered = filtered.filter(a => a.category === activeCategory);
     }
 
+    // 按关键词筛选（本地匹配资产名称，不区分大小写）
+    const keyword = (this.data.searchKeyword || '').trim().toLowerCase();
+    if (keyword) {
+      filtered = filtered.filter(a => (a.name || '').toLowerCase().includes(keyword));
+    }
+
     this.setData({ filteredAssets: filtered }, () => {
       this.calculateStats();
       this._updateSimpleCols(filtered);
@@ -1471,22 +1347,22 @@ Page({
   switchToHome() {
     // 已在首页，跳过重复 setData 避免悬浮菜单闪动
     if (!this.data.showSetting && !this.data.showReport && !this.data.showTimeline) return;
-    this.setData({ showSetting: false, showReport: false, showTimeline: false });
+    this.setData({ showSetting: false, showReport: false, showTimeline: false }, () => {
+      // 从其他视图返回时，按当前分类/状态/搜索条件重建列表
+      this.applyFilters();
+    });
   },
 
   switchToReport() {
     // 已在统计页，跳过重复 setData 避免悬浮菜单闪动
     if (this.data.showReport) return;
-    // 切换到统计页面时关闭搜索功能
     this.setData({
       showReport: true,
       showSetting: false,
-      showTimeline: false,
-      showSearchInput: false,
-      searchKeyword: '',
-      searchInputValue: '',
-      searchInputFocus: false
+      showTimeline: false
     });
+    // 切换到统计页面时关闭搜索功能
+    this.resetSearchState();
     setTimeout(() => this.loadReportData(), 100);
   },
 
@@ -1496,12 +1372,9 @@ Page({
     this.setData({
       showTimeline: true,
       showReport: false,
-      showSetting: false,
-      showSearchInput: false,
-      searchKeyword: '',
-      searchInputValue: '',
-      searchInputFocus: false
+      showSetting: false
     });
+    this.resetSearchState();
     setTimeout(() => this.loadTimelineData(), 100);
   },
 
@@ -1679,16 +1552,13 @@ Page({
   navigateToSetting() {
     // 已在设置页，跳过重复 setData 避免悬浮菜单闪动
     if (this.data.showSetting) return;
-    // 切换到设置页面时关闭搜索功能
     this.setData({
       showSetting: true,
       showReport: false,
-      showTimeline: false,
-      showSearchInput: false,
-      searchKeyword: '',
-      searchInputValue: '',
-      searchInputFocus: false
+      showTimeline: false
     });
+    // 切换到设置页面时关闭搜索功能
+    this.resetSearchState();
   },
 
   showAboutInfo() {
@@ -3201,15 +3071,10 @@ Page({
   // 显示/隐藏搜索输入框
   toggleSearchInput() {
     if (this.data.showSearchInput) {
-      // 关闭时恢复原状
-      this.setData({
-        searchKeyword: '',
-        searchInputValue: '',
-        showSearchInput: false,
-        searchInputFocus: false
-      });
-      this.loadAssets('');  // 传入空字符串确保加载全部资产
+      this.exitSearch();
     } else {
+      // 搜索框在内容顶部，先回到顶部再聚焦，避免输入框在屏幕外
+      wx.pageScrollTo({ scrollTop: 0, duration: 200 });
       // 先显示搜索框，延迟设置 focus 确保键盘弹出
       this.setData({
         showSearchInput: true,
@@ -3221,33 +3086,61 @@ Page({
     }
   },
 
-  // 搜索输入
-  onSearchInput(e) {
-    this.setData({ searchInputValue: e.detail.value });
-  },
-
-  // 执行搜索
-  doSearch() {
-    const keyword = this.data.searchInputValue.trim();
-    this.setData({ searchKeyword: keyword });
-    this.loadAssets(keyword);
-  },
-
-  // 清空输入框内容
-  clearSearch() {
-    this.setData({
-      searchInputValue: ''
-    });
-  },
-
-  // 取消搜索 - 恢复原状
-  cancelSearch() {
+  // 清空搜索状态并取消未触发的防抖
+  resetSearchState() {
+    if (this._searchTimer) {
+      clearTimeout(this._searchTimer);
+      this._searchTimer = null;
+    }
     this.setData({
       searchKeyword: '',
       searchInputValue: '',
       showSearchInput: false,
       searchInputFocus: false
     });
-    this.loadAssets('');  // 传入空字符串确保加载全部资产
+  },
+
+  // 退出搜索，本地恢复完整列表
+  exitSearch() {
+    this.resetSearchState();
+    this.applyFilters();
+  },
+
+  // 搜索输入 - 防抖后本地过滤
+  onSearchInput(e) {
+    const value = e.detail.value;
+    this.setData({ searchInputValue: value });
+
+    if (this._searchTimer) {
+      clearTimeout(this._searchTimer);
+    }
+    this._searchTimer = setTimeout(() => {
+      this._searchTimer = null;
+      this.setData({ searchKeyword: value.trim() }, () => {
+        this.applyFilters();
+      });
+    }, 300);
+  },
+
+  // 键盘回车时立即应用搜索
+  doSearch() {
+    if (this._searchTimer) {
+      clearTimeout(this._searchTimer);
+      this._searchTimer = null;
+    }
+    this.setData({ searchKeyword: this.data.searchInputValue.trim() }, () => {
+      this.applyFilters();
+    });
+  },
+
+  // 清空输入框内容
+  clearSearch() {
+    this.setData({ searchInputValue: '' });
+    this.doSearch();
+  },
+
+  // 取消搜索 - 恢复原状
+  cancelSearch() {
+    this.exitSearch();
   }
 });

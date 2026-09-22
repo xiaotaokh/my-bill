@@ -132,148 +132,10 @@
   position: relative;
 }
 
-/* 日期显示 - 简化样式 */
-.date-section {
-  position: relative;
-  z-index: 1;
-  padding: 0;
-  margin-bottom: 0;
-}
-
-.date-display {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10rpx 20rpx;
-}
-
-.date-left {
-  display: flex;
-  align-items: flex-end;
-  gap: 0;
-}
-
-.date-day {
-  font-size: 48rpx;
-  font-weight: 700;
-  color: var(--text-default);
-  line-height: 1;
-}
-
-.date-info {
-  display: flex;
-  flex-direction: column;
-  gap: 6rpx;
-  padding-bottom: 6rpx;
-  margin-left: 12rpx;
-}
-
-.date-month {
-  font-size: 24rpx;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.date-week {
-  font-size: 20rpx;
-  color: var(--text-hint);
-}
-
-/* 用户头像和昵称 */
-.user-profile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4rpx;
-  padding: 4rpx 10rpx 2rpx;
-  border-radius: 32rpx;
-  flex-shrink: 0;
-}
-
-.user-profile:active {
-  opacity: 0.7;
-}
-
-.header-avatar {
-  width: 44rpx;
-  height: 44rpx;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.header-nickname {
-  font-size: 22rpx;
-  font-weight: 600;
-  color: var(--text-default);
-  max-width: 160rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* 天气显示 */
-.weather-info {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  padding: 14rpx 0;
-}
-
-.weather-icon {
-  font-size: 44rpx;
-}
-
-.weather-detail {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4rpx;
-}
-
-.weather-main {
-  display: flex;
-  align-items: baseline;
-  gap: 8rpx;
-}
-
-.weather-temp {
-  font-size: 32rpx;
-  color: var(--text-default);
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.weather-text {
-  font-size: 22rpx;
-  color: var(--text-muted);
-  line-height: 1.2;
-}
-
-.weather-range {
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-  font-size: 20rpx;
-  line-height: 1.2;
-}
-
-.temp-max {
-  color: var(--text-default);
-}
-
-.temp-divider {
-  color: var(--border-default);
-  margin: 0 2rpx;
-}
-
-.temp-min {
-  color: var(--text-hint);
-}
-
 /* 总资产卡片 - 左右布局 */
 .total-card {
   position: relative;
-  margin: 0 20rpx 24rpx;
+  margin: 20rpx 20rpx 24rpx;
   padding: 24rpx 40rpx;
   background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
   border-radius: 32rpx;
@@ -1365,6 +1227,30 @@
   color: var(--accent-bg-text-muted);
 }
 
+/* 搜索无结果 */
+.search-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  padding: 120rpx 40rpx;
+}
+
+.search-empty-icon {
+  font-size: 64rpx;
+}
+
+.search-empty-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-default);
+}
+
+.search-empty-desc {
+  font-size: 24rpx;
+  color: var(--text-hint);
+}
+
 /* 空状态 - 活泼可爱风格 */
 .empty-state {
   display: flex;
@@ -1931,16 +1817,9 @@
   display: none;
 }
 
-/* 搜索按钮激活状态 */
-/* 搜索输入框容器 - 商务黑白灰风格 */
-.search-bar-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 16rpx 20rpx;
-  background: var(--bg-base);
-  z-index: 1000;
+/* 搜索输入框容器 - 随内容排列，不再悬浮在页面顶部 */
+.search-bar-inline {
+  padding: 20rpx;
 }
 
 /* 搜索输入框 - 商务黑白灰风格 */

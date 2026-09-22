@@ -113,7 +113,7 @@
   <view class="main-content" style="{{showSetting || showReport || showTimeline || showBatchDelete ? 'display: none;' : 'display: block;'}}">
 
     <!-- 搜索输入框 -->
-    <view class="search-bar-container" hidden="{{!showSearchInput || showSetting || showBatchDelete}}">
+    <view class="search-bar-inline" wx:if="{{showSearchInput}}">
       <view class="search-bar">
         <image class="search-icon-img" src="/images/search-icon-dark.svg" mode="aspectFit"></image>
         <input
@@ -131,41 +131,8 @@
       </view>
     </view>
 
-    <!-- 日期显示 -->
-    <view class="date-section">
-      <view class="date-display">
-        <view class="date-left">
-          <text class="date-day">{{currentDay}}</text>
-          <view class="date-info">
-            <text class="date-month">{{currentMonth}}月 {{currentYear}}</text>
-            <text class="date-week">{{currentWeek}}</text>
-          </view>
-        </view>
-        <!-- 用户头像和昵称 -->
-        <view class="user-profile" bindtap="navigateToAccount" wx:if="{{userNickName}}">
-          <image class="header-avatar" src="{{userAvatar}}" mode="aspectFill"></image>
-          <text class="header-nickname">{{userNickName}}</text>
-        </view>
-        <!-- 天气显示 -->
-        <view class="weather-info" wx:if="{{!weatherLoading && weatherText}}">
-          <text class="weather-icon">{{weatherIcon}}</text>
-          <view class="weather-detail">
-            <view class="weather-main">
-              <text class="weather-temp">{{weatherTemp}}°</text>
-              <text class="weather-text">{{weatherText}}</text>
-            </view>
-            <view class="weather-range" wx:if="{{weatherTempMax || weatherTempMin}}">
-              <text class="temp-max">{{weatherTempMax}}°</text>
-              <text class="temp-divider">/</text>
-              <text class="temp-min">{{weatherTempMin}}°</text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </view>
-
     <!-- 总资产卡片 -->
-    <view class="total-card">
+    <view class="total-card" wx:if="{{!showSearchInput}}">
       <view class="total-label">
         <text>计入总资产</text>
         <image class="metric-tip-icon" src="/images/about.svg" mode="aspectFit" bindtap="showTotalAssetTip" />
@@ -188,7 +155,7 @@
     </view>
 
     <!-- 统计指标卡片 -->
-    <view class="stats-section">
+    <view class="stats-section" wx:if="{{!showSearchInput}}">
       <view class="stat-row">
         <view class="stat-item active-item {{activeStatus === 'active' ? 'stat-active' : ''}}" style="background: {{statBgColors[0]}};" bindtap="filterByStatus" data-status="active">
           <view class="stat-icon active-icon">
@@ -231,7 +198,7 @@
 
     <view class="asset-content-panel">
       <!-- 筛选和排序 -->
-      <view class="filter-section">
+      <view class="filter-section" wx:if="{{!showSearchInput}}">
         <!-- 分类筛选 - 带图标 -->
         <view class="category-bar">
           <!-- 分类列表 -->
@@ -447,7 +414,14 @@
       </block>
 
       <block wx:else>
-        <view class="empty-state">
+        <!-- 搜索无结果 -->
+        <view wx:if="{{showSearchInput}}" class="search-empty">
+          <text class="search-empty-icon">🔍</text>
+          <text class="search-empty-title">未找到匹配的资产</text>
+          <text class="search-empty-desc">换个关键词试试</text>
+        </view>
+        <!-- 无资产 -->
+        <view wx:else class="empty-state">
           <view class="empty-bubble bubble-1"></view>
           <view class="empty-bubble bubble-2"></view>
           <view class="empty-bubble bubble-3"></view>
