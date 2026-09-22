@@ -1,5 +1,14 @@
 const { uploadFileToFunction } = require('./supabase');
 
+// 图片审核相关的统一文案，供各页面复用（改文案只需改这里）
+const SECURITY_MESSAGES = {
+  checking: '图片审核中...',
+  riskTitle: '图片未通过审核',
+  riskContent: '这张图片可能含有违规内容，请换一张再试。',
+  failedTitle: '图片审核失败',
+  failedContent: '没能完成图片审核，请检查网络后重试，或换一张图片。'
+};
+
 function isRiskContentCode(code) {
   const value = String(code);
   return value === '87014' || value === '55001' || value === '55002' || value === '55003';
@@ -99,7 +108,47 @@ async function checkImageSecurity(filePath, scene) {
   };
 }
 
+// 审核未通过时的统一弹窗（内容违规 / 接口异常分开处理）
+function showSecurityCheckResultModal(checkResult) {
+  if (checkResult && checkResult.isRiskContent) {
+    wx.showModal({
+      title: SECURITY_MESSAGES.riskTitle,
+      content: SECURITY_MESSAGES.riskContent,
+      showCancel: false,
+      confirmText: '知道了'
+    });
+    return;
+  }
+
+  // 非内容违规（接口异常等）：技术原因只写日志，不展示给用户
+  console.error('[图片审核] 接口未通过', {
+    errCode: checkResult && checkResult.errCode,
+    errMsg: checkResult && checkResult.errMsg,
+    raw: checkResult && checkResult.raw
+  });
+  wx.showModal({
+    title: SECURITY_MESSAGES.failedTitle,
+    content: SECURITY_MESSAGES.failedContent,
+    showCancel: false,
+    confirmText: '知道了'
+  });
+}
+
+// 审核过程异常（网络超时等）时的统一弹窗
+function showSecurityCheckErrorModal(err, tag) {
+  console.error('[图片审核] ' + (tag || '图片') + '检查异常', err);
+  wx.showModal({
+    title: SECURITY_MESSAGES.failedTitle,
+    content: SECURITY_MESSAGES.failedContent,
+    showCancel: false,
+    confirmText: '知道了'
+  });
+}
+
 module.exports = {
+  SECURITY_MESSAGES,
   checkImageSecurity,
-  prepareImageForSecurityCheck
+  prepareImageForSecurityCheck,
+  showSecurityCheckResultModal,
+  showSecurityCheckErrorModal
 };

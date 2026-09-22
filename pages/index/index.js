@@ -354,7 +354,16 @@ Page({
   async createRandomUserInfo(isNewUser = false) {
     const { presetAvatars, presetNicknames } = this.data;
     const app = getApp();
-    const openid = await app.getOpenid();
+
+    let openid;
+    try {
+      openid = await app.getOpenid();
+    } catch (err) {
+      // 拿不到 openid 说明网络异常，直接跳过初始化，
+      // 避免抛出未处理的 Promise 拒绝（控制台红字）
+      console.error('[index] 获取 openid 失败，跳过新用户信息初始化', err);
+      return;
+    }
 
     // 随机选择头像
     const randomAvatar = presetAvatars[Math.floor(Math.random() * presetAvatars.length)];
@@ -420,7 +429,15 @@ Page({
   async updateUserInfoWithRandom(userId, isNewUser = false) {
     const { presetAvatars, presetNicknames } = this.data;
     const app = getApp();
-    const openid = await app.getOpenid();
+
+    let openid;
+    try {
+      openid = await app.getOpenid();
+    } catch (err) {
+      // 同上：网络异常时跳过补充，不产生未处理的 Promise 拒绝
+      console.error('[index] 获取 openid 失败，跳过用户信息补充', err);
+      return;
+    }
 
     const randomAvatar = presetAvatars[Math.floor(Math.random() * presetAvatars.length)];
     const randomNickname = presetNicknames[Math.floor(Math.random() * presetNicknames.length)] +

@@ -1,7 +1,13 @@
 // pages/category-manage/category-manage.js
 const { themeManager } = require('../../utils/themeManager');
 const { supabase, uploadFileToStorage, deleteStorageFile, getChinaTimeISO } = require('../../utils/supabase');
-const { checkImageSecurity, prepareImageForSecurityCheck } = require('../../utils/contentSecurity');
+const {
+  checkImageSecurity,
+  prepareImageForSecurityCheck,
+  SECURITY_MESSAGES,
+  showSecurityCheckResultModal,
+  showSecurityCheckErrorModal
+} = require('../../utils/contentSecurity');
 
 Page({
   data: {
@@ -520,7 +526,7 @@ Page({
           return;
         }
 
-        wx.showLoading({ title: '安全校验中...', mask: true });
+        wx.showLoading({ title: SECURITY_MESSAGES.checking, mask: true });
 
         try {
           const securityFilePath = await prepareImageForSecurityCheck(tempFilePath, size);
@@ -528,14 +534,7 @@ Page({
           wx.hideLoading();
 
           if (!checkResult.ok) {
-            wx.showModal({
-              title: checkResult.isRiskContent ? '图片校验未通过' : '图片校验失败',
-              content: checkResult.isRiskContent
-                ? '你选择的图片可能包含违规信息，请更换后重试。'
-                : `微信图片安全接口未通过本次校验：${checkResult.errMsg || checkResult.errCode || '未知原因'}`,
-              showCancel: false,
-              confirmText: '知道了'
-            });
+            showSecurityCheckResultModal(checkResult);
             return;
           }
 
@@ -543,13 +542,7 @@ Page({
           that.uploadImage(tempFilePath);
         } catch (err) {
           wx.hideLoading();
-          console.error('分类图片安全校验失败', err);
-          wx.showModal({
-            title: '安全校验失败',
-            content: `图片内容安全校验失败：${(err && err.message) || '未知错误'}`,
-            showCancel: false,
-            confirmText: '知道了'
-          });
+          showSecurityCheckErrorModal(err, '分类图片');
         }
       },
       fail: function(err) {
